@@ -1,0 +1,69 @@
+[project]
+name = "script-languages-package-management"
+version = "0.1.0"
+requires-python = ">=3.12,<4.0"
+description = "This project provides a unified way of installing different packages from sources like coda, apt and PyPi"
+authors = [
+    {name = "Exasol AG", email = "opensource@exasol.com"},
+]
+readme = "README.md"
+license = "MIT"
+keywords = ['exasol', 'script-languages-package-management']
+dynamic = ["dependencies"]
+
+[tool.poetry]
+requires-poetry = ">=2.1.0"
+packages = [
+    { include = "exasol" },
+]
+
+[poetry.urls]
+repository = "https://github.com/exasol/script-languages-package-management"
+homepage = "https://github.com/exasol/script-languages-package-management"
+
+[tool.poetry.dependencies]
+
+[tool.poetry.group.dev.dependencies]
+exasol-toolbox = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+relative_files = true
+source = [
+    "exasol",
+]
+
+[tool.coverage.report]
+fail_under = 15
+
+[tool.black]
+line-length = 88
+verbose = false
+include = "\\.pyi?$"
+
+[tool.isort]
+profile = "black"
+force_grid_wrap = 2
+
+[tool.pylint.master]
+fail-under = 5.0
+ignore = []
+
+[tool.pylint.format]
+max-line-length = 88
+max-module-lines = 800
+
+[[tool.mypy.overrides]]
+module = [
+    "test.*",
+]
+ignore_errors = true
+
+[tool.sonar]
+projectKey = "com.exasol:script-languages-package-management"
+hostUrl = "https://sonarcloud.io"
+organization = "exasol"
+exclusions = "exasol/script-languages-package-management/version.py"
