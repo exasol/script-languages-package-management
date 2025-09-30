@@ -24,7 +24,7 @@ This project provides a unified way of installing different packages from source
 
 ## 🔌️ Prerequisites
 
-- [Python](https://www.python.org/) >= 3.9
+- [Python](https://www.python.org/) >= 3.10
 
 ## 💾 Installation
 

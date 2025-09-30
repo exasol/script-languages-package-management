@@ -1,7 +1,7 @@
 [project]
 name = "script-languages-package-management"
 version = "0.1.0"
-requires-python = ">=3.12,<4.0"
+requires-python = ">=3.10,<4.0"
 description = "This project provides a unified way of installing different packages from sources like coda, apt and PyPi"
 authors = [
     {name = "Exasol AG", email = "opensource@exasol.com"},
