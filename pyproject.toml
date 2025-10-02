@@ -31,13 +31,6 @@ exasol-toolbox = "^1.6.0"
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-testpaths = [
-    "test"
-]
-
-[tool.poetry.scripts]
-exaslpm = 'exasol.script_languages_package_management.cli.main:main'
-
 [tool.coverage.run]
 relative_files = true
 source = [
