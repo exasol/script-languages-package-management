@@ -10,6 +10,6 @@ def conda():
 
 @conda.command()
 @click.option('--package-file', required=True, type=click.Path(exists=True), help='Path to the conda package file')
-@click.option('--channel-file', required=False, type=click.Path(exists=True), help='Path to the conda channels file')
+@click.option('--channel-file', required=True, type=click.Path(exists=True), help='Path to the conda channels file')
 def install(package_file, channel_file):
     install_packages(package_file, channel_file)

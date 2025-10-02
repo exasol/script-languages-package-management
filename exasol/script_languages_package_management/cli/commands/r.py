@@ -9,6 +9,6 @@ def r():
     pass
 
 @r.command()
-@click.option('--package-file', required=True, type=click.Path(), help='Path to the R package file')
+@click.option('--package-file', required=True, type=click.Path(exists=True), help='Path to the R package file')
 def install(package_file):
     install_packages(package_file)
