@@ -1,4 +1,5 @@
 from inspect import cleandoc
+from pathlib import Path
 
 import pytest
 
@@ -11,20 +12,13 @@ def apt_package_file_content():
     git|1:2.34.1-1ubuntu1.15
     """)
 
-
-@pytest.fixture
-def apt_package_file(file_uploader, apt_package_file_content):
-    file_uploader("/", "apt_package", apt_package_file_content)
-    return "/apt_package"
-
-def test_apt_install(docker_runner, apt_package_file, apt_package_file_content, cli_helper):
-    exit_code, out = docker_runner(cli_helper.apt.install(apt_package_file))
-    assert exit_code == 0, out
-    output = out.decode("utf-8")
+def test_apt_install(docker_container, apt_package_file_content, cli_helper):
+    apt_package_file = docker_container.make_and_upload_file(Path("/"), "apt_file", apt_package_file_content)
+    _, out = docker_container.run_exaslpm(cli_helper.apt.install(apt_package_file))
     for line in apt_package_file_content.splitlines():
-        assert line in output, f"Line '{line}' is missing in output: \n{output}"
+        assert line in out, f"Line '{line}' is missing in output: \n{out}"
 
 
-def test_apt_list(list_apt_package_factory):
-    apt_packages = list_apt_package_factory()
+def test_apt_list(docker_container):
+    apt_packages = docker_container.list_apt()
     assert len(apt_packages) == 2, apt_packages

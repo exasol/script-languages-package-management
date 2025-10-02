@@ -1,10 +1,11 @@
-import io
-import json
-import tarfile
-from os import PathLike
-
-from docker_test_environment_builder import *
 from test.integration.cli_helper import CliHelper
+from typing import Iterator
+
+import pytest
+
+from test.integration.docker_test_environment.docker_test_container import DockerTestContainer
+from test.integration.docker_test_environment.docker_test_image import DockerTestImage
+from test.integration.docker_test_environment.docker_test_image_builder import DockerTestImageBuilder
 
 
 def pytest_addoption(parser):
@@ -13,33 +14,23 @@ def pytest_addoption(parser):
                      default=False)
 
 
-@pytest.fixture
-def file_uploader(docker_container):
-    def make_and_upload_file(target_path_in_container: PathLike, file_name: str,  content: str) -> None:
-        tarstream = io.BytesIO()
-        content_data = content.encode("utf-8")
-        with tarfile.open(fileobj=tarstream, mode='w') as tar:
-            tarinfo = tarfile.TarInfo(name=file_name)
-            tarinfo.size = len(content_data)
-            tar.addfile(tarinfo, io.BytesIO(content_data))
-        tarstream.seek(0)
-        res = docker_container.put_archive(str(target_path_in_container), tarstream.read())
-        assert res
-    return make_and_upload_file
+@pytest.fixture(scope='session')
+def docker_img(request, tmp_path_factory) -> Iterator[DockerTestImage]:
+    keep_docker_image = request.config.getoption("--keep-docker-image")
+    ubuntu_version = request.config.getoption("--test-image-ubuntu-version")
+    image_builder = DockerTestImageBuilder(build_path=tmp_path_factory.mktemp("image"), ubuntu_version=ubuntu_version)
+    image = image_builder.build()
+    yield image
+    if not keep_docker_image:
+        image.remove()
+
+@pytest.fixture(scope='function')
+def docker_container(docker_img, request) -> Iterator[DockerTestContainer]:
+    container = docker_img.start_container(request.node.name)
+    yield container
+    container.remove()
+
 
 @pytest.fixture
-def cli_helper(exaslpm_executable):
-    return CliHelper(f"/{exaslpm_executable}")
-
-@pytest.fixture
-def list_apt_package_factory(docker_runner):
-    def list_apt():
-        err, out = docker_runner(["bash", "-c", """dpkg-query -W -f='{"package":"${Package}","version":"${Version}"}\n'"""])
-        assert err == 0, out
-        output = out.decode("utf-8")
-        packages = []
-        for line in output.strip().splitlines():
-            if line.strip():  # avoid empty lines
-                packages.append(json.loads(line))
-        return packages
-    return list_apt
+def cli_helper():
+    return CliHelper()
