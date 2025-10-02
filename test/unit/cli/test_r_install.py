@@ -7,9 +7,7 @@ from unittest.mock import (
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from exasol.script_languages_package_management.cli.commands import (
-    r
-)
+from exasol.script_languages_package_management.cli.commands import r
 
 
 @pytest.fixture
@@ -29,10 +27,8 @@ def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 def test_mock_deploy_ci_build_fail_without_package_file(cli, mock_install_packages):
-    assert (
-        cli.run().failed
-        and "Missing option '--package-file'" in cli.output
-    )
+    assert cli.run().failed and "Missing option '--package-file'" in cli.output
+
 
 def test_mock_deploy_ci(cli, mock_install_packages, some_package_file):
     cli.run("--package-file", some_package_file)
@@ -41,4 +37,3 @@ def test_mock_deploy_ci(cli, mock_install_packages, some_package_file):
     # Validate the exact call using mock_calls and IsInstance matcher
     expected_call = call(some_package_file)
     assert mock_install_packages.mock_calls == [expected_call]
-
