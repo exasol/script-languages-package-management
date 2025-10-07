@@ -35,9 +35,6 @@ testpaths = [
     "test"
 ]
 
-[tool.poetry.scripts]
-exaslcpm = 'exasol.script_languages_package_management.cli.main:main'
-
 [tool.coverage.run]
 relative_files = true
 source = [
