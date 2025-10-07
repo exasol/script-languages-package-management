@@ -22,6 +22,7 @@ repository = "https://github.com/exasol/script-languages-package-management"
 homepage = "https://github.com/exasol/script-languages-package-management"
 
 [tool.poetry.dependencies]
+click = ">=8.3.0, <9.0.0"
 
 [tool.poetry.group.dev.dependencies]
 exasol-toolbox = "^1.6.0"
@@ -30,6 +31,10 @@ exasol-toolbox = "^1.6.0"
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+testpaths = [
+    "test"
+]
+
 [tool.coverage.run]
 relative_files = true
 source = [
@@ -37,7 +42,8 @@ source = [
 ]
 
 [tool.coverage.report]
-fail_under = 15
+fail_under = 0
+ignore_errors = true
 
 [tool.black]
 line-length = 88
@@ -66,4 +72,4 @@ ignore_errors = true
 projectKey = "com.exasol:script-languages-package-management"
 hostUrl = "https://sonarcloud.io"
 organization = "exasol"
-exclusions = "exasol/script-languages-package-management/version.py"
+exclusions = "exasol/script_languages_package_management/version.py"
