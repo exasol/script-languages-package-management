@@ -149,3 +149,5 @@ TAGS
 .lint.txt
 
 *.dot
+
+build/
