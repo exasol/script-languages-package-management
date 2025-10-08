@@ -10,12 +10,12 @@ from test.integration.docker_test_environment.docker_test_image_builder import D
 
 def pytest_addoption(parser):
     parser.addoption("--test-image-ubuntu-version", action="store", help="Ubuntu version to use for testing", default="24.04")
-    parser.addoption("--keep-docker-image", action="store_true", help="Runs the notebook test with a Docker-DB with a GPU device attached.",
+    parser.addoption("--keep-docker-image", action="store_true", help="Keep docker image after testing.",
                      default=False)
 
 
 @pytest.fixture(scope='session')
-def docker_img(request, tmp_path_factory) -> Iterator[DockerTestImage]:
+def docker_image(request, tmp_path_factory) -> Iterator[DockerTestImage]:
     keep_docker_image = request.config.getoption("--keep-docker-image")
     ubuntu_version = request.config.getoption("--test-image-ubuntu-version")
     image_builder = DockerTestImageBuilder(build_path=tmp_path_factory.mktemp("image"), ubuntu_version=ubuntu_version)
@@ -25,8 +25,8 @@ def docker_img(request, tmp_path_factory) -> Iterator[DockerTestImage]:
         image.remove()
 
 @pytest.fixture(scope='function')
-def docker_container(docker_img, request) -> Iterator[DockerTestContainer]:
-    container = docker_img.start_container(request.node.name)
+def docker_container(docker_image, request) -> Iterator[DockerTestContainer]:
+    container = docker_image.start_container(request.node.name)
     yield container
     container.remove()
 

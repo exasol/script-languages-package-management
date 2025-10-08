@@ -27,7 +27,9 @@ def build_standalone_binary(session: nox.Session):
     args = p.parse_args(session.posargs)
     exe_name = args.executable_name
 
-    if bool(exe_name):
+    if not bool(exe_name):
+        session.error("PyInstaller needs a valid executable-name")
+    else:
         old_cwd = os.getcwd()
         try:
             os.chdir(ROOT)
@@ -52,5 +54,3 @@ def build_standalone_binary(session: nox.Session):
                     session.warn(f"Expected temporary build path '{build_path}' doesn't exist")
         finally:
             os.chdir(old_cwd)
-    else:
-        session.error("PyInstaller needs a valid executable-name")

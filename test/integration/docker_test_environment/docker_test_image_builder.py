@@ -10,7 +10,7 @@ from test.integration.docker_test_environment.docker_test_image import DockerTes
 from test.integration.docker_test_environment.exaslcpm_info import ExaslcpmInfo
 
 
-def _build(target_path: Path, target_exec_bin_name: str):
+def _build_binary(target_path: Path, target_exec_bin_name: str):
     result = subprocess.run(
         ["nox", "-s", "build-standalone-binary", "--", "--executable-name", target_exec_bin_name, "--cleanup"],
         capture_output=True,
@@ -30,10 +30,10 @@ class DockerTestImageBuilder:
     def _build_exaslpm_executable(self) -> None:
         target_exec_path = self.build_path / self.exaslpm_info.executable_name
         tmp_exec_bin_name = f"exaslpm_{self.uuid}"
-        _build(target_exec_path, tmp_exec_bin_name)
+        _build_binary(target_exec_path, tmp_exec_bin_name)
 
     @property
-    def _docker_img_tag(self):
+    def _docker_image_tag(self):
         return f"exasol/script-languages-package-management-int-test:{self.uuid}"
 
     @property
@@ -54,7 +54,7 @@ class DockerTestImageBuilder:
 
         image, build_logs = self.docker_client.images.build(
             path=str(self.build_path),
-            tag=self._docker_img_tag
+            tag=self._docker_image_tag
         )
-        return DockerTestImage(image, self._docker_img_tag, self.exaslpm_info, self.docker_client)
+        return DockerTestImage(image, self._docker_image_tag, self.exaslpm_info, self.docker_client)
 
