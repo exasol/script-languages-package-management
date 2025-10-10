@@ -9,13 +9,8 @@ from pathlib import Path
 class Config:
     root: Path = Path(__file__).parent
     doc: Path = Path(__file__).parent / "doc"
-    source: Path = Path("exasol/script_languages_package_management")
-    version_file: Path = (
-        Path(__file__).parent
-        / "exasol"
-        / "script_languages_package_management"
-        / "version.py"
-    )
+    source: Path = Path("exasol/exaslpm")
+    version_file: Path = Path(__file__).parent / "exasol" / "exaslpm" / "version.py"
     path_filters: Iterable[str] = ()
     python_versions = ["3.10", "3.11", "3.12"]
     pyupgrade_args: Iterable[str] = ("--py312-plus",)
