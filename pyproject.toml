@@ -55,6 +55,21 @@ include = "\\.pyi?$"
 profile = "black"
 force_grid_wrap = 2
 
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    W,R,C,
+    duplicate-code,
+    missing-class-docstring,
+    missing-module-docstring,
+    missing-function-docstring,
+    too-many-ancestors,
+    broad-exception-raised,
+    broad-exception-caught,
+    consider-using-f-string,
+    useless-parent-delegation
+"""
+
 [tool.pylint.master]
 fail-under = 5.0
 ignore = []

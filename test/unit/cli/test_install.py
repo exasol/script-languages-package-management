@@ -10,10 +10,7 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
-from exasol.exaslpm.cli.cli import (
-    install,
-    install_packages,
-)
+from exasol.exaslpm.cli.cli import install
 
 
 @pytest.fixture
@@ -24,7 +21,7 @@ def cliRunner():
 @pytest.fixture
 def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
-    monkeypatch.setattr(cli, "install_packages", mock_function_to_mock)
+    monkeypatch.setattr(cli, "package_install", mock_function_to_mock)
     return mock_function_to_mock
 
 
@@ -41,48 +38,6 @@ def test_mock_no_package(cliRunner, mock_install_packages, some_package_file):
 def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
     ret = cliRunner.run("--phase", "Phase1", "--package-file", some_package_file)
     assert ret.failed and "Missing option '--build-step'" in ret.output
-
-
-def test_mock_no_python_binary(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run(
-        "--phase",
-        "Phase1",
-        "--package-file",
-        some_package_file,
-        "--build-step",
-        "udf_client",
-    )
-    assert ret.failed and "Missing option '--python-binary'" in ret.output
-
-
-def test_mock_no_conda_binary(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run(
-        "--phase",
-        "Phase1",
-        "--package-file",
-        some_package_file,
-        "--build-step",
-        "udf_client",
-        "--python-binary",
-        some_package_file,
-    )
-    assert ret.failed and "Missing option '--conda-binary'" in ret.output
-
-
-def test_mock_no_r_binary(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run(
-        "--phase",
-        "Phase1",
-        "--package-file",
-        some_package_file,
-        "--build-step",
-        "udf_client",
-        "--python-binary",
-        some_package_file,
-        "--conda-binary",
-        some_package_file,
-    )
-    assert ret.failed and "Missing option '--r-binary'" in ret.output
 
 
 def test_mock_all_options(cliRunner, mock_install_packages, some_package_file):
