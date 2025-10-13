@@ -11,4 +11,11 @@ def package_install(
     conda_binary: pathlib.Path,
     r_binary: pathlib.Path,
 ):
-    click.echo(f"Option1: {phase}, Option2: {package_file}")
+    click.echo(
+        f"Phase: {phase}, \
+        Package File: {package_file}, \
+        Build Step: {build_step}, \
+        Python Binary: {python_binary}, \
+        Conda Binary: {conda_binary}, \
+        R Binary: {r_binary}",
+    )

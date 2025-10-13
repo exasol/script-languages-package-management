@@ -1,4 +1,6 @@
+import pathlib
 from test.unit.cli.cli_runner import CliRunner
+from unittest import mock
 
 # from click.testing import CliRunner
 from unittest.mock import (
@@ -40,7 +42,14 @@ def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file)
     assert ret.failed and "Missing option '--build-step'" in ret.output
 
 
-def test_mock_all_options(cliRunner, mock_install_packages, some_package_file):
+def test_mock_all_options(
+    cliRunner,
+    mock_install_packages,
+    some_package_file,
+    python_package_file,
+    conda_package_file,
+    r_package_file,
+):
     ret = cliRunner.run(
         "--phase",
         "Phase1",
@@ -49,10 +58,21 @@ def test_mock_all_options(cliRunner, mock_install_packages, some_package_file):
         "--build-step",
         "udf_client",
         "--python-binary",
-        some_package_file,
+        python_package_file,
         "--conda-binary",
-        some_package_file,
+        conda_package_file,
         "--r-binary",
-        some_package_file,
+        r_package_file,
     )
     assert ret.succeeded
+
+    assert mock_install_packages.mock_calls == [
+        mock.call(
+            "Phase1",
+            pathlib.PosixPath(some_package_file),
+            "udf_client",
+            pathlib.PosixPath(python_package_file),
+            pathlib.PosixPath(conda_package_file),
+            pathlib.PosixPath(r_package_file),
+        )
+    ]

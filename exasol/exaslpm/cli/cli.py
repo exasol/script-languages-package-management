@@ -1,5 +1,4 @@
 import pathlib
-from typing import Optional
 
 import click
 
@@ -19,7 +18,6 @@ def cli():
 
             $ exaslpm --help
     """
-    pass
 
 
 @cli.command()

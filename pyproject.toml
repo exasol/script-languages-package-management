@@ -58,11 +58,8 @@ force_grid_wrap = 2
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
 disable = """
-    W,R,C,
+    R,C,
     duplicate-code,
-    missing-class-docstring,
-    missing-module-docstring,
-    missing-function-docstring,
     too-many-ancestors,
     broad-exception-raised,
     broad-exception-caught,
