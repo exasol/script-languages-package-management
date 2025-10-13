@@ -21,7 +21,7 @@ def cli():
 
 
 @cli.command()
-@click.option("--phase", required=True, type=str, help="Name of the phase")
+@click.option("--phase", required=False, type=str, help="Name of the phase")
 @click.option(
     "--package-file",
     type=click.Path(exists=True, path_type=pathlib.Path),
