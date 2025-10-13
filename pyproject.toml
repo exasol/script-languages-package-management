@@ -1,7 +1,7 @@
 [project]
 name = "script-languages-package-management"
 version = "0.1.0"
-requires-python = ">=3.10,<4.0"
+requires-python = ">=3.10,<3.15"
 description = "This project provides a unified way of installing different packages from sources like coda, apt and PyPi"
 authors = [
     {name = "Exasol AG", email = "opensource@exasol.com"},
@@ -26,6 +26,7 @@ click = ">=8.3.0, <9.0.0"
 
 [tool.poetry.group.dev.dependencies]
 exasol-toolbox = "^1.6.0"
+pyinstaller = "^6.15.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
@@ -54,6 +55,18 @@ include = "\\.pyi?$"
 profile = "black"
 force_grid_wrap = 2
 
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    R,C,
+    duplicate-code,
+    too-many-ancestors,
+    broad-exception-raised,
+    broad-exception-caught,
+    consider-using-f-string,
+    useless-parent-delegation
+"""
+
 [tool.pylint.master]
 fail-under = 5.0
 ignore = []
@@ -72,4 +85,4 @@ ignore_errors = true
 projectKey = "com.exasol:script-languages-package-management"
 hostUrl = "https://sonarcloud.io"
 organization = "exasol"
-exclusions = "exasol/script_languages_package_management/version.py"
+exclusions = "exasol/exaslpm/version.py"
