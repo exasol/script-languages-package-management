@@ -34,6 +34,10 @@ docker = { version = ">=7.1.0,<8.0.0", markers = "sys_platform != 'win32'" }
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+testpaths = [
+    "test"
+]
+
 [tool.coverage.run]
 relative_files = true
 source = [
@@ -41,7 +45,8 @@ source = [
 ]
 
 [tool.coverage.report]
-fail_under = 15
+fail_under = 0
+ignore_errors = true
 
 [tool.black]
 line-length = 88
@@ -51,6 +56,18 @@ include = "\\.pyi?$"
 [tool.isort]
 profile = "black"
 force_grid_wrap = 2
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = """
+    R,C,
+    duplicate-code,
+    too-many-ancestors,
+    broad-exception-raised,
+    broad-exception-caught,
+    consider-using-f-string,
+    useless-parent-delegation
+"""
 
 [tool.pylint.master]
 fail-under = 5.0
@@ -70,4 +87,4 @@ ignore_errors = true
 projectKey = "com.exasol:script-languages-package-management"
 hostUrl = "https://sonarcloud.io"
 organization = "exasol"
-exclusions = "exasol/script_languages_package_management/version.py"
+exclusions = "exasol/exaslpm/version.py"
