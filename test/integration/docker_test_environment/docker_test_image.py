@@ -5,7 +5,7 @@ import shutil
 from docker.models.images import Image
 
 from test.integration.docker_test_environment.docker_test_container import DockerTestContainer
-from test.integration.docker_test_environment.exaslcpm_info import ExaslcpmInfo
+from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 
 def _build(target_path: Path, target_exec_bin_name: str):
@@ -18,7 +18,7 @@ def _build(target_path: Path, target_exec_bin_name: str):
     shutil.move(Path("dist") / target_exec_bin_name, target_path)
 
 class DockerTestImage:
-    def __init__(self, image: Image, tag: str, exaslpm_info: ExaslcpmInfo, docker_client) -> None:
+    def __init__(self, image: Image, tag: str, exaslpm_info: ExaslpmInfo, docker_client) -> None:
         self.image = image
         self.tag = tag
         self.exaslpm_info = exaslpm_info

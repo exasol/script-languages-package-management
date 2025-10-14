@@ -3,10 +3,10 @@ from pathlib import Path
 
 
 @dataclass
-class ExaslcpmInfo:
-    executable_name = "exaslcpm"
+class ExaslpmInfo:
+    executable_name = "exaslpm"
     path_in_container = Path("/")
 
     @property
-    def exaslcpm_path_in_container(self) -> Path:
+    def exaslpm_path_in_container(self) -> Path:
         return self.path_in_container / self.executable_name

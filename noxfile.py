@@ -16,7 +16,7 @@ ROOT = Path(__file__).parent
 
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
-    script_path = str(ROOT / "exasol" / "script_languages_package_management" / "cli" / "main.py")
+    script_path = str(ROOT / "exasol" / "exaslpm" / "main.py")
 
     p = ArgumentParser(
         usage='nox -s build-standalone-binary -- --executable-name "itde_os_x86-64"',

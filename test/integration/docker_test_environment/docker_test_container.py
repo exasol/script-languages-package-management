@@ -5,11 +5,11 @@ from os import PathLike
 from pathlib import Path
 
 from docker.models.containers import Container
-from test.integration.docker_test_environment.exaslcpm_info import ExaslcpmInfo
+from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 
 class DockerTestContainer:
-    def __init__(self, container: Container, exaslpm_info: ExaslcpmInfo) -> None:
+    def __init__(self, container: Container, exaslpm_info: ExaslpmInfo) -> None:
         self.container = container
         self.exaslpm_info = exaslpm_info
 
@@ -20,7 +20,7 @@ class DockerTestContainer:
         return exit_code, output.decode("utf-8")
 
     def run_exaslpm(self, param_list: list[str], check_exit_code: bool = True) -> tuple[int, str]:
-        (exit_code, output) = self.container.exec_run([str(self.exaslpm_info.exaslcpm_path_in_container)] + param_list)
+        (exit_code, output) = self.container.exec_run([str(self.exaslpm_info.exaslpm_path_in_container)] + param_list)
         if check_exit_code:
             assert exit_code == 0, output
         return exit_code, output.decode("utf-8")

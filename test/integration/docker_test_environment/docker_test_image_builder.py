@@ -7,7 +7,7 @@ import shutil
 import docker
 
 from test.integration.docker_test_environment.docker_test_image import DockerTestImage
-from test.integration.docker_test_environment.exaslcpm_info import ExaslcpmInfo
+from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 
 def _build_binary(target_path: Path, target_exec_bin_name: str):
@@ -24,7 +24,7 @@ class DockerTestImageBuilder:
         self.ubuntu_version = ubuntu_version
         self.uuid = str(uuid.uuid4())
         self.build_path = build_path
-        self.exaslpm_info = ExaslcpmInfo()
+        self.exaslpm_info = ExaslpmInfo()
         self.docker_client = docker.from_env()
 
     def _build_exaslpm_executable(self) -> None:
@@ -43,7 +43,7 @@ class DockerTestImageBuilder:
                 FROM ubuntu:{self.ubuntu_version}
                 ENV DEBIAN_FRONTEND=noninteractive
 
-                COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslcpm_path_in_container} 
+                COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslpm_path_in_container} 
             """
         )
 
