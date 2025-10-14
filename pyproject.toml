@@ -1,5 +1,5 @@
 [project]
-name = "script-languages-package-management"
+name = "exasol-script-languages-package-management"
 version = "0.1.0"
 requires-python = ">=3.10,<3.15"
 description = "This project provides a unified way of installing different packages from sources like coda, apt and PyPi"
