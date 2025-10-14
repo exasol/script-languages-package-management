@@ -3,8 +3,9 @@ import os
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-import PyInstaller.__main__
+
 import nox
+import PyInstaller.__main__
 
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
@@ -13,6 +14,7 @@ from exasol.toolbox.nox.tasks import *
 nox.options.sessions = ["project:fix"]
 
 ROOT = Path(__file__).parent
+
 
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
@@ -23,7 +25,7 @@ def build_standalone_binary(session: nox.Session):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--executable-name")
-    p.add_argument("--cleanup", action='store_true', help="Remove temporary files")
+    p.add_argument("--cleanup", action="store_true", help="Remove temporary files")
     args = p.parse_args(session.posargs)
     exe_name = args.executable_name
 
@@ -51,6 +53,8 @@ def build_standalone_binary(session: nox.Session):
                 if build_path.exists():
                     shutil.rmtree(str(build_path))
                 else:
-                    session.warn(f"Expected temporary build path '{build_path}' doesn't exist")
+                    session.warn(
+                        f"Expected temporary build path '{build_path}' doesn't exist"
+                    )
         finally:
             os.chdir(old_cwd)

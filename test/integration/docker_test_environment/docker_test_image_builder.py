@@ -1,23 +1,31 @@
+import shutil
+import subprocess
+import uuid
 from inspect import cleandoc
 from pathlib import Path
-
-import uuid
-import subprocess
-import shutil
-import docker
-
 from test.integration.docker_test_environment.docker_test_image import DockerTestImage
 from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
+
+import docker
 
 
 def _build_binary(target_path: Path, target_exec_bin_name: str):
     result = subprocess.run(
-        ["nox", "-s", "build-standalone-binary", "--", "--executable-name", target_exec_bin_name, "--cleanup"],
+        [
+            "nox",
+            "-s",
+            "build-standalone-binary",
+            "--",
+            "--executable-name",
+            target_exec_bin_name,
+            "--cleanup",
+        ],
         capture_output=True,
         text=True,
-        check=True
+        check=True,
     )
     shutil.move(Path("dist") / target_exec_bin_name, target_path)
+
 
 class DockerTestImageBuilder:
     def __init__(self, ubuntu_version: str, build_path: Path) -> None:
@@ -53,8 +61,8 @@ class DockerTestImageBuilder:
         self._build_exaslpm_executable()
 
         image, build_logs = self.docker_client.images.build(
-            path=str(self.build_path),
-            tag=self._docker_image_tag
+            path=str(self.build_path), tag=self._docker_image_tag
         )
-        return DockerTestImage(image, self._docker_image_tag, self.exaslpm_info, self.docker_client)
-
+        return DockerTestImage(
+            image, self._docker_image_tag, self.exaslpm_info, self.docker_client
+        )

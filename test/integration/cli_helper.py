@@ -1,5 +1,6 @@
 from pathlib import Path
 
+
 class InstallCmd:
     def __init__(self):
         self._args = ["install"]
@@ -31,7 +32,6 @@ class InstallCmd:
     def r_binary(self, r_binary: str) -> "InstallCmd":
         self._args += ["--r-binary", r_binary]
         return self
-
 
 
 class CliHelper:
