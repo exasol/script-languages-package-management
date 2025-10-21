@@ -29,7 +29,7 @@ This project provides a unified way of installing different packages from source
 ## 💾 Installation
 
 ```shell
-pip install script-languages-package-management
+pip install exasol-script-languages-package-management
 ```
 
 ## 📚 Documentation

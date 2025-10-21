@@ -19,3 +19,6 @@ def package_install(
         Conda Binary: {conda_binary}, \
         R Binary: {r_binary}",
     )
+
+    package_content = package_file.read_text()
+    click.echo(package_content)
