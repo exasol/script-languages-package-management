@@ -10,6 +10,10 @@ Preparation
 ===========
 Get the environment up and running.
 
+Requirements
+~~~~~~~~~~~~
+Supported OS: Ubuntu >= 22.04
+
 Install Poetry
 ~~~~~~~~~~~~~~
 
@@ -54,18 +58,9 @@ Triggering the Release
 ~~~~~~~~~~~~~~~~~~~~~~
 In order to trigger a release a new tag must be pushed to Github.
 
-
-#. Create a local tag with the appropriate version number
-
     .. code-block:: shell
 
-        git tag x.y.z
-
-#. Push the tag to Github
-
-    .. code-block:: shell
-
-        git push origin x.y.z
+        nox -s release:trigger
 
 What to do if the release failed?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -110,6 +105,3 @@ You can execute all tests in a single file with the following command:
   poetry run -- nox -s test:unit -- --coverage
   poetry run -- nox -s test:integration
 
-Some tests will use prebuilt Docker Containers.
-After changing the implementation you might need to rebuild the container in order to make
-your changes effective when executing the tests.
