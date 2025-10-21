@@ -12,7 +12,12 @@ Get the environment up and running.
 
 Requirements
 ~~~~~~~~~~~~
-Supported OS: Ubuntu >= 22.04
+Python >= 3.10
+Poetry >= 2.1.0
+click >= 8.3.0
+exasol-toolbox >= 1.6.0
+pyinstaller >= 6.15.0
+docker >= 7.1.0
 
 Install Poetry
 ~~~~~~~~~~~~~~
