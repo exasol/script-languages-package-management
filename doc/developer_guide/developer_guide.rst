@@ -52,7 +52,7 @@ Run the following nox task in order to prepare the changelog.
 
     .. code-block:: shell
 
-        nox -s release:prepare
+        poetry run -- nox -s release:prepare
 
 Triggering the Release
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -60,7 +60,7 @@ In order to trigger a release a new tag must be pushed to Github.
 
     .. code-block:: shell
 
-        nox -s release:trigger
+        poetry run -- nox -s release:trigger
 
 What to do if the release failed?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
