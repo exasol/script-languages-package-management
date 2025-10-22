@@ -21,7 +21,7 @@ def build_standalone_binary(session: nox.Session):
     script_path = str(ROOT / "exasol" / "exaslpm" / "main.py")
 
     p = ArgumentParser(
-        usage='nox -s build-standalone-binary -- --executable-name "itde_os_x86-64"',
+        usage='nox -s build-standalone-binary -- --executable-name "exaslpm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--executable-name")

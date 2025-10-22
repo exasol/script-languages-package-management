@@ -28,8 +28,8 @@ Documentation of  script-languages-package-management
    :maxdepth: 1
    :hidden:
 
-   user_guide
-   developer_guide
+   user_guide/user_guide
+   developer_guide/developer_guide
    api
    faq
    changes/changelog
