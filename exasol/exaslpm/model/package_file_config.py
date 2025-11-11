@@ -3,31 +3,58 @@ from enum import Enum
 from pathlib import Path
 from typing import List
 
-from pydantic import BaseModel, FilePath
+from pydantic import (
+    BaseModel,
+    FilePath,
+)
 
-class PhaseLevels(Enum):
-    Phase1 = 'Phase 1'
-    Phase2 = 'Phase 2'
 
-class Installer(Enum):
-    Pip = 'pip'
-    Apt = 'apt'
-    Conda = 'conda'
-
-class DependencyLevels(Enum):
-    UdfClient = 'udfclient_deps'
-    Language = 'language_dpes'
-    Build = 'build_deps'
-    BuildTest = 'build_test_deps'
-    Flavor = 'flavor_base_deps'
-
-class Packages(BaseModel):
+class Package(BaseModel):
     name: str
-    version: str
-    bin_path: FilePath
+    version: None | str
+    comment: (
+        None | str
+    )  # yaml comments don't survive deserialization when we programatically change this file
+
+
+class AptPackages(BaseModel):
+    # we need to add here later different package indexes
+    packages: None | list[Package]
+    comment: None | str
+
+
+class PipPackages(BaseModel):
+    # we need to add here later different package indexes
+    packages: None | list[Package]
+    comment: None | str
+
+
+class RPackages(BaseModel):
+    # we need to add here later different package indexes
+    packages: None | list[Package]
+    comment: None | str
+
+
+class CondaPackages(BaseModel):
+    # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
+    channels: None | list[str]
+    packages: None | list[Package]
+    comment: None | str
+
+
+class Phase(BaseModel):
+    apt: None | AptPackages
+    pip: None | PipPackages
+    r: None | RPackages
+    conda: None | CondaPackages
+    comment: None | str
+
+
+class BuildStep(BaseModel):
+    phases: dict[str, Phase]
+    comment: None | str
+
 
 class PackageFile(BaseModel):
-    phase: PhaseLevels
-    deps: DependencyLevels
-    installer: Installer
-    packages: List[Packages]
+    build_steps: dict[str, BuildStep]
+    comment: None | str
