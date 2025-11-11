@@ -50,12 +50,11 @@ class Phase(BaseModel):
     conda: None | CondaPackages
     comment: None | str
 
-    @field_validator("apt", "pip", "r", "conda")
-    @classmethod
-    def at_least_one_installer(cls, val):
-        if not val:
+    @model_validator(mode="after")
+    def at_least_one_installer(self):
+        if not any([self.apt, self.pip, self.conda, self.r]):
             raise ValueError("There shall be atleast one atleast one Package")
-        return val
+        return self
 
 
 class BuildStep(BaseModel):
