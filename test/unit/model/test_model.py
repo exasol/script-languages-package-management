@@ -1,101 +1,162 @@
 import pytest
+import yaml
 from pydantic import ValidationError
 
 from exasol.exaslpm.model.package_file_config import (
-    AptPackages,
     BuildStep,
-    CondaPackages,
     Package,
     PackageFile,
     Phase,
-    PipPackages,
-    RPackages,
 )
 
 
+def test_package_item_01():
+    yaml_file = """
+            name: numpy
+            version: 1.19.2
+        """
+    yaml_data = yaml.safe_load(yaml_file)
+    pkg = Package.model_validate(yaml_data)
+    assert pkg is not None
+
+
 def test_empty_package_file():
+    yaml_file = """
+        build_steps: {}
+        comment: null
     """
-    Atleast one Buildstep shall be there
-    """
+    yaml_data = yaml.safe_load(yaml_file)
     with pytest.raises(ValueError) as excinfo:
-        PackageFile(build_steps={})
-    assert "atleast one Buildstep" in str(excinfo.value)
+        PackageFile.model_validate(yaml_data)
+    assert "at least one Buildstep" in str(excinfo.value)
 
 
 def test_empty_build_step():
+    yaml_file = """
+        phases: {}
+        comment: null
     """
-    Atleast one Phase shall be there
-    """
+    yaml_data = yaml.safe_load(yaml_file)
     with pytest.raises(ValueError) as excinfo:
-        BuildStep(phases={})
-    assert "atleast one Phase" in str(excinfo.value)
+        BuildStep.model_validate(yaml_data)
+    assert "at least one Phase" in str(excinfo.value)
 
 
 def test_empty_package_installer():
+    yaml_file = """
+        apt: null
+        pip: null
+        r: null
+        conda: null
+        comment: null
     """
-    Atleast one Phase shall be there
-    """
+    yaml_data = yaml.safe_load(yaml_file)
     with pytest.raises(ValueError) as excinfo:
-        phase = Phase(apt=None, pip=None, r=None, conda=None, comment=None)
-    assert "atleast one Package" in str(excinfo.value)
+        Phase.model_validate(yaml_data)
+    assert "at least one Package installer" in str(excinfo.value)
 
 
 def test_valid_package_installer_apt():
+    yaml_file = """
+apt:
+    packages:
+    - name: curl
+      version: 7.68.0
+      comment: install curl
+pip: null
+r: null
+conda: null
+comment: null
     """
-    Create atleast one phase and see if works
-    """
-    pack = Package(name="curl", version="7.68.0", comment=None)
-    aptPack = AptPackages(packages=[pack], comment=None)
-    phase = Phase(apt=aptPack, pip=None, r=None, conda=None, comment=None)
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
     assert phase
 
 
 def test_valid_package_installer_pip():
+    yaml_file = """
+pip:
+    packages:
+    - name: requests
+      version: 2.25.1
+      comment: install requests
+apt: null
+r: null
+conda: null
+comment: null
     """
-    Create atleast one phase and see if works
-    """
-    pack = Package(name="requests", version="2.25.1", comment=None)
-    pipPack = PipPackages(packages=[pack], comment=None)
-    phase = Phase(apt=None, pip=pipPack, r=None, conda=None, comment=None)
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
     assert phase
 
 
 def test_valid_package_installer_conda():
+    yaml_file = """
+conda:
+    channels: null
+    comment: null
+    packages:
+    - name: numpy
+      version: 1.19.2
+      comment: install numpy
+      
+apt: null
+r: null
+pip: null
+comment: null
     """
-    Create atleast one phase and see if works
-    """
-    pack = Package(name="numpy", version="1.19.2", comment=None)
-    cndPack = CondaPackages(packages=[pack], channels=None, comment=None)
-    phase = Phase(apt=None, pip=None, r=None, conda=cndPack, comment=None)
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
     assert phase
 
 
 def test_valid_package_installer_r():
+    yaml_file = """
+r:
+    comment: null
+    packages:
+    - name: ggplot2
+      version: 3.3.5
+      comment: install ggplot
+      
+apt: null
+conda: null
+pip: null
+comment: null
     """
-    Create atleast one phase and see if works
-    """
-    pack = Package(name="ggplot2", version="3.3.5", comment=None)
-    rPack = RPackages(packages=[pack], channels=None, comment=None)
-    phase = Phase(apt=None, pip=None, r=rPack, conda=None, comment=None)
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
     assert phase
 
 
 def test_valid_package_all_installers():
+    yaml_file = """
+r:
+    comment: null
+    packages:
+    - name: ggplot2
+      version: 3.3.5
+      comment: install ggplot
+      
+apt:
+    packages:
+    - name: curl
+      version: 7.68.0
+      comment: install curl
+conda:
+    channels: null
+    comment: null
+    packages:
+    - name: numpy
+      version: 1.19.2
+      comment: install numpy
+pip:
+    packages:
+    - name: requests
+      version: 2.25.1
+      comment: install requests
+comment: null
     """
-    Create atleast one phase and see if works
-    """
-
-    pack_apt = Package(name="curl", version="7.68.0", comment=None)
-    aptPack = AptPackages(packages=[pack_apt], comment=None)
-
-    pack_pip = Package(name="requests", version="2.25.1", comment=None)
-    pipPack = PipPackages(packages=[pack_pip], comment=None)
-
-    pack_cnd = Package(name="numpy", version="1.19.2", comment=None)
-    cndPack = CondaPackages(packages=[pack_cnd], channels=None, comment=None)
-
-    pack_r = Package(name="ggplot2", version="3.3.5", comment=None)
-    rPack = RPackages(packages=[pack_r], channels=None, comment=None)
-
-    phase = Phase(apt=aptPack, pip=pipPack, r=rPack, conda=cndPack, comment=None)
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
     assert phase
