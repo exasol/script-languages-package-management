@@ -43,10 +43,10 @@ class CondaPackages(BaseModel):
 
 
 class Phase(BaseModel):
-    apt: None | AptPackages
-    pip: None | PipPackages
-    r: None | RPackages
-    conda: None | CondaPackages
+    apt: None | AptPackages = None
+    pip: None | PipPackages = None
+    r: None | RPackages = None
+    conda: None | CondaPackages = None
     comment: None | str = None
 
     @model_validator(mode="after")

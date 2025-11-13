@@ -20,10 +20,20 @@ def test_package_item_01():
     assert pkg is not None
 
 
-def test_empty_package_file():
+def test_empty_package_file_with_comment():
     yaml_file = """
         build_steps: {}
         comment: null
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    with pytest.raises(ValueError) as excinfo:
+        PackageFile.model_validate(yaml_data)
+    assert "at least one Buildstep" in str(excinfo.value)
+
+
+def test_empty_package_file_wo_comment():
+    yaml_file = """
+        build_steps: {}
     """
     yaml_data = yaml.safe_load(yaml_file)
     with pytest.raises(ValueError) as excinfo:
@@ -63,10 +73,18 @@ apt:
     - name: curl
       version: 7.68.0
       comment: install curl
-pip: null
-r: null
-conda: null
-comment: null
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
+    assert phase
+
+
+def test_valid_package_installer_apt_wo_comment():
+    yaml_file = """
+apt:
+    packages:
+    - name: curl
+      version: 7.68.0
     """
     yaml_data = yaml.safe_load(yaml_file)
     phase = Phase.model_validate(yaml_data)
@@ -80,10 +98,6 @@ pip:
     - name: requests
       version: 2.25.1
       comment: install requests
-apt: null
-r: null
-conda: null
-comment: null
     """
     yaml_data = yaml.safe_load(yaml_file)
     phase = Phase.model_validate(yaml_data)
@@ -99,11 +113,6 @@ conda:
     - name: numpy
       version: 1.19.2
       comment: install numpy
-      
-apt: null
-r: null
-pip: null
-comment: null
     """
     yaml_data = yaml.safe_load(yaml_file)
     phase = Phase.model_validate(yaml_data)
@@ -118,11 +127,19 @@ r:
     - name: ggplot2
       version: 3.3.5
       comment: install ggplot
-      
-apt: null
-conda: null
-pip: null
-comment: null
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    phase = Phase.model_validate(yaml_data)
+    assert phase
+
+
+def test_valid_package_installer_r_wo_comment():
+    yaml_file = """
+r:
+    comment: null
+    packages:
+    - name: ggplot2
+      version: 3.3.5
     """
     yaml_data = yaml.safe_load(yaml_file)
     phase = Phase.model_validate(yaml_data)
