@@ -10,7 +10,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 
 
-def test_package_item_01():
+def test_package_item():
     yaml_file = """
             name: numpy
             version: 1.19.2
@@ -31,7 +31,7 @@ def test_empty_package_file_with_comment():
     assert "at least one Buildstep" in str(excinfo.value)
 
 
-def test_empty_package_file_wo_comment():
+def test_empty_package_file_without_comment():
     yaml_file = """
         build_steps: {}
     """
@@ -79,7 +79,7 @@ apt:
     assert phase
 
 
-def test_valid_package_installer_apt_wo_comment():
+def test_valid_package_installer_apt_without_comment():
     yaml_file = """
 apt:
     packages:
@@ -133,7 +133,7 @@ r:
     assert phase
 
 
-def test_valid_package_installer_r_wo_comment():
+def test_valid_package_installer_r_without_comment():
     yaml_file = """
 r:
     comment: null
