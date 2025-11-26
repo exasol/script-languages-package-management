@@ -2,6 +2,7 @@ import pathlib
 
 import click
 import yaml
+from typing import List
 
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
@@ -14,7 +15,7 @@ from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
 
 def parse_package_file(
     package_file: PackageFile, phase_name: str, build_step_name: str
-) -> Phase:
+) -> List[Phase]:
     all_phases = []
     build_steps = package_file.build_steps
     for itr_step_name, itr_build_step in build_steps.items():
