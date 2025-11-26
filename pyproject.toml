@@ -31,6 +31,9 @@ pyinstaller = ">=6.15.0, <7.0.0"
 types-pyinstaller = ">=6.15.0.20250822, <7.0.0.0"
 docker = { version = ">=7.1.0,<8.0.0", markers = "sys_platform != 'win32'" }
 
+[tool.poetry.scripts]
+exaslpm = 'exasol.exaslpm.main:main'
+
 [build-system]
 requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
