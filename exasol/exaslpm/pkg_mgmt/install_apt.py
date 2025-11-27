@@ -4,32 +4,32 @@ from typing import List
 from exasol.exaslpm.model.package_file_config import AptPackages
 
 
-def prepare_update_command():
+def prepare_update_command() -> list[str]:
     update_cmd = ["apt-get", "-y", "update"]
     return update_cmd
 
 
-def prepare_clean_cmd():
+def prepare_clean_cmd() -> list[str]:
     clean_cmd = ["apt-get", "-y", "clean"]
     return clean_cmd
 
 
-def prepare_autoremove_cmd():
+def prepare_autoremove_cmd() -> list[str]:
     autoremove_cmd = ["apt-get", "-y", "autoremove"]
     return autoremove_cmd
 
 
-def prepare_ldconfig_cmd():
+def prepare_ldconfig_cmd() -> list[str]:
     ldconfig_cmd = ["ldconfig"]
     return ldconfig_cmd
 
 
-def prepare_locale_cmd():
+def prepare_locale_cmd() -> list[str]:
     locale_cmd = ["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]
     return locale_cmd
 
 
-def prepare_install_cmd(apt_packages: AptPackages):
+def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
     if apt_packages.packages is not None:
         for package in apt_packages.packages:
@@ -38,18 +38,18 @@ def prepare_install_cmd(apt_packages: AptPackages):
 
 
 class CommandExecutor:
-  def execute(command: list[str]):
-      print(f"Executing: {command}")
-      result = subprocess.run(command, capture_output=True)
-      print(
-          "Success"
-          if result.returncode == 0
-          else f"Failed with exit code {result.returncode}"
-      )
+    def execute(self, command: list[str]):
+        print(f"Executing: {command}")
+        result = subprocess.run(command, capture_output=True)
+        print(
+            "Success"
+            if result.returncode == 0
+            else f"Failed with exit code {result.returncode}"
+        )
 
 
 def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
-    if apt_packages is not None:
+    if len(apt_packages.packages) > 0:
         update_cmd = prepare_update_command()
         executor.execute(update_cmd)
 
