@@ -66,6 +66,6 @@ def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
         executor.execute(locale_cmd)
 
         ldconfig_cmd = prepare_ldconfig_cmd()
-        execute_cmd(ldconfig_cmd)
+        executor.execute(ldconfig_cmd)
     else:
         print("Invalid AptPackagaes")
