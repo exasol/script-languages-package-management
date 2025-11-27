@@ -60,7 +60,7 @@ def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
         executor.execute(clean_cmd)
 
         autoremove_cmd = prepare_autoremove_cmd()
-        execute_cmd(autoremove_cmd)
+        executor.execute(autoremove_cmd)
 
         locale_cmd = prepare_locale_cmd()
         execute_cmd(locale_cmd)
