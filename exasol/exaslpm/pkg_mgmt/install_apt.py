@@ -48,7 +48,7 @@ class CommandExecutor:
       )
 
 
-def install_via_apt(apt_packages: AptPackages):
+def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
     if apt_packages is not None:
         update_cmd = prepare_update_command()
         execute_cmd(update_cmd)
