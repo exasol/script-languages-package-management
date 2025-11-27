@@ -37,14 +37,15 @@ def prepare_install_cmd(apt_packages: AptPackages):
     return install_cmd
 
 
-def execute_cmd(command: list[str]):
-    print(f"Executing: {command}")
-    result = subprocess.run(command, capture_output=True)
-    print(
-        "Success"
-        if result.returncode == 0
-        else f"Failed with exit code {result.returncode}"
-    )
+class CommandExecutor:
+  def execute(command: list[str]):
+      print(f"Executing: {command}")
+      result = subprocess.run(command, capture_output=True)
+      print(
+          "Success"
+          if result.returncode == 0
+          else f"Failed with exit code {result.returncode}"
+      )
 
 
 def install_via_apt(apt_packages: AptPackages):
