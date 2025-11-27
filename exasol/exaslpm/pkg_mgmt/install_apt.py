@@ -57,7 +57,7 @@ def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
         executor.execute(install_cmd)
 
         clean_cmd = prepare_clean_cmd()
-        execute_cmd(clean_cmd)
+        executor.execute(clean_cmd)
 
         autoremove_cmd = prepare_autoremove_cmd()
         execute_cmd(autoremove_cmd)
