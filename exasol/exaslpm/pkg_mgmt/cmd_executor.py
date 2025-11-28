@@ -4,19 +4,25 @@ from collections.abc import Iterator
 
 
 class CommandResult:
-    def __init__(self, ret_code: int, out_vals: list[str], err_vals: list[str]):
+    def __init__(self, ret_code: int, stdout: Iterator[str], stderr: Iterator[str]):
         self._return_code = ret_code
-        self._stdout = out_vals
-        self._stderr = err_vals
+        self._stdout = stdout
+        self._stderr = stderr
 
     def return_code(self):
         return self._return_code
 
     def itr_stdout(self) -> Iterator[str]:
-        return iter(self._stdout)
+        return self._stdout
 
     def itr_stderr(self) -> Iterator[str]:
-        return iter(self._stderr)
+        return self._stderr
+
+    def print_result(self):
+        for out_line in self._stdout:
+            sys.stdout.write(out_line)
+        for err_line in self._stderr:
+            sys.stderr.write(err_line)
 
 
 class CommandExecutor:
@@ -25,14 +31,9 @@ class CommandExecutor:
         sub_process = subprocess.Popen(
             cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
-        out_vals, err_vals = sub_process.communicate()
 
-        out_lines = out_vals.splitlines() if out_vals else []
-        for out_line in out_lines:
-            sys.stdout.write(out_line)
-
-        err_lines = err_vals.splitlines() if err_vals else []
-        for err_line in err_lines:
-            sys.stdout.write(err_line)
-
-        return CommandResult(sub_process.returncode, out_lines, err_lines)
+        return CommandResult(
+            ret_code=sub_process.wait(),
+            stdout=iter(sub_process.stdout),
+            stderr=iter(sub_process.stderr),
+        )
