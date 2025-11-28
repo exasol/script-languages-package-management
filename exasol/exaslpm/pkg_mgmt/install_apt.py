@@ -1,7 +1,7 @@
 import subprocess
-from typing import List
 
 from exasol.exaslpm.model.package_file_config import AptPackages
+from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
 
 
 def prepare_update_command() -> list[str]:
@@ -35,17 +35,6 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
         for package in apt_packages.packages:
             install_cmd.append(f"{package.name}={package.version}")
     return install_cmd
-
-
-class CommandExecutor:
-    def execute(self, command: list[str]):
-        print(f"Executing: {command}")
-        result = subprocess.run(command, capture_output=True)
-        print(
-            "Success"
-            if result.returncode == 0
-            else f"Failed with exit code {result.returncode}"
-        )
 
 
 def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
