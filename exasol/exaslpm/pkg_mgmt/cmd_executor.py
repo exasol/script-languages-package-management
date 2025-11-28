@@ -1,6 +1,7 @@
 import subprocess
 import sys
-from typing import Iterator
+from collections.abc import Iterator
+
 
 class CommandResult:
     def __init__(self, ret_code: int, out_vals: list[str], err_vals: list[str]):
@@ -13,7 +14,7 @@ class CommandResult:
 
     def itr_stdout(self) -> Iterator[str]:
         return iter(self._stdout)
-    
+
     def itr_stderr(self) -> Iterator[str]:
         return iter(self._stderr)
 
@@ -22,10 +23,7 @@ class CommandExecutor:
     def execute(self, cmd_strs: list[str]) -> CommandResult:
         print(f"Executing: {cmd_strs}")
         sub_process = subprocess.Popen(
-            cmd_strs,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE,
-            text = True
+            cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         out_vals, err_vals = sub_process.communicate()
 

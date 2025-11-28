@@ -1,5 +1,3 @@
-import subprocess
-
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
 
