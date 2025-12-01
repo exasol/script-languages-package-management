@@ -21,19 +21,35 @@ class CommandResult:
         return self._fn_return_code()
 
     def itr_stdout(self) -> Iterator[str]:
-        self.return_code()  # wait until child process complete
         return self._stdout
 
     def itr_stderr(self) -> Iterator[str]:
-        self.return_code()  # wait until child process complete
         return self._stderr
 
-    def print_result(self):
-        self.return_code()  # wait until child process complete
-        for out_line in self._stdout:
-            sys.stdout.write(out_line + "\n")
-        for err_line in self._stderr:
-            sys.stderr.write(err_line + "\n")
+    def consume_results(self,
+                     consume_stdout: Callable[[str | bytes, int], None],
+                     consume_stderr: Callable[[str | bytes, int], None]):
+
+        def pick_next(out_stream, count, callable) -> bool:
+            try:
+                _val = next(out_stream)
+                callable(_val, count)
+            except StopIteration:
+                return -1
+            return (count + 1)
+        # Read from _stdout and _stderr simultaneously
+        stdout_count = 1
+        stderr_count = 1
+        while stdout_count > 0 or stderr_count > 0:
+            if stdout_count > 0:
+                stdout_count = pick_next(self._stdout, stdout_count, consume_stdout)
+            if stderr_count > 0:
+                stderr_count = pick_next(self._stderr, stderr_count, consume_stderr)
+        return self.return_code()
+    
+    def print_results(self):
+        ret_code = self.consume_results(sys.stdout.write, sys.stderr.write)
+        print(f"Return Code: {ret_code}")
 
 
 class CommandExecutor:
