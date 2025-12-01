@@ -26,9 +26,11 @@ class CommandResult:
     def itr_stderr(self) -> Iterator[str]:
         return self._stderr
 
-    def consume_results(self,
-                     consume_stdout: Callable[[str | bytes, int], None],
-                     consume_stderr: Callable[[str | bytes, int], None]):
+    def consume_results(
+        self,
+        consume_stdout: Callable[[str | bytes, int], None],
+        consume_stderr: Callable[[str | bytes, int], None],
+    ):
 
         def pick_next(out_stream, count, callable) -> bool:
             try:
@@ -36,7 +38,8 @@ class CommandResult:
                 callable(_val, count)
             except StopIteration:
                 return -1
-            return (count + 1)
+            return count + 1
+
         # Read from _stdout and _stderr simultaneously
         stdout_count = 1
         stderr_count = 1
@@ -46,7 +49,7 @@ class CommandResult:
             if stderr_count > 0:
                 stderr_count = pick_next(self._stderr, stderr_count, consume_stderr)
         return self.return_code()
-    
+
     def print_results(self):
         ret_code = self.consume_results(sys.stdout.write, sys.stderr.write)
         print(f"Return Code: {ret_code}")
