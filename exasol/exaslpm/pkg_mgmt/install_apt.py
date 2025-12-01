@@ -55,4 +55,4 @@ def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
         ldconfig_cmd = prepare_ldconfig_cmd()
         executor.execute(ldconfig_cmd)
     else:
-        print("Invalid AptPackagaes")
+        print("Got an empty list of AptPackages")
