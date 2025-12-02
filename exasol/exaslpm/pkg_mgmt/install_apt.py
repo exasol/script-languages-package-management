@@ -38,21 +38,27 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
 def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
     if len(apt_packages.packages) > 0:
         update_cmd = prepare_update_command()
-        executor.execute(update_cmd)
+        cmd_res = executor.execute(update_cmd)
+        cmd_res.print_results()
 
         install_cmd = prepare_install_cmd(apt_packages)
-        executor.execute(install_cmd)
+        cmd_res = executor.execute(install_cmd)
+        cmd_res.print_results()
 
         clean_cmd = prepare_clean_cmd()
-        executor.execute(clean_cmd)
+        cmd_res = executor.execute(clean_cmd)
+        cmd_res.print_results()
 
         autoremove_cmd = prepare_autoremove_cmd()
-        executor.execute(autoremove_cmd)
+        cmd_res = executor.execute(autoremove_cmd)
+        cmd_res.print_results()
 
         locale_cmd = prepare_locale_cmd()
-        executor.execute(locale_cmd)
+        cmd_res = executor.execute(locale_cmd)
+        cmd_res.print_results()
 
         ldconfig_cmd = prepare_ldconfig_cmd()
-        executor.execute(ldconfig_cmd)
+        cmd_res = executor.execute(ldconfig_cmd)
+        cmd_res.print_results()
     else:
         print("Got an empty list of AptPackages")

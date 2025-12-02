@@ -32,7 +32,7 @@ class CommandResult:
         consume_stderr: Callable[[str | bytes, int], None],
     ):
 
-        def pick_next(out_stream, count, callback) -> bool:
+        def pick_next(out_stream, count, callback) -> int:
             try:
                 _val = next(out_stream)
                 callback(_val, count)
@@ -51,13 +51,20 @@ class CommandResult:
         return self.return_code()
 
     def print_results(self):
-        ret_code = self.consume_results(sys.stdout.write, sys.stderr.write)
+        def print_stdout(res: str, count: int):
+            sys.stdout.write(res)
+
+        def print_stderr(res: str, count: int):
+            sys.stderr.write(res)
+
+        ret_code = self.consume_results(print_stdout, print_stderr)
         print(f"Return Code: {ret_code}")
 
 
 class CommandExecutor:
     def execute(self, cmd_strs: list[str]) -> CommandResult:
-        print(f"Executing: {cmd_strs}")
+        cmd_str = " ".join(cmd_strs)
+        print(f"Executing: {cmd_str}")
 
         sub_process = subprocess.Popen(
             cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True

@@ -4,7 +4,10 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackages,
     Package,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
+from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+    CommandExecutor,
+    CommandResult,
+)
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 order_of_exec = ["update", "install", "clean", "remove", "locale", "ldconfig"]
@@ -16,6 +19,7 @@ def mock_execute(_, cmd_strs):
     cmd_str = " ".join(cmd_strs)
     assert order_of_exec[call_count] in cmd_str
     call_count += 1
+    return CommandResult(fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([]))
 
 
 def test_install_via_apt_empty_packages(monkeypatch, capsys):

@@ -35,9 +35,18 @@ def stderr_results(result_str: str, count: int):
     assert expected == result_str
     call_counts["stderr"] += 1
 
+'''
+def test_command_executor_01():
+    cmd_exe = CommandExecutor()
+    cmd_strs = ["ls", "-la"]
+    cmd_res = cmd_exe.execute(cmd_strs)
+    cmd_res.print_results()
+'''
 
-def test_command_executor(monkeypatch, mock_command_result):
+
+def test_command_executor_02(monkeypatch, mock_command_result):
     global call_counts
+
     def mock_execute(_, cmd_strs):
         return mock_command_result
 
