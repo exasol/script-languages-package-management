@@ -22,26 +22,27 @@ def mock_command_result():
     )
 
 
-def stdout_results(result_str: str, count: int):
+def stdout_results(result_str: str):
     global call_counts
-    expected = "stdout line " + str(count)
-    assert expected == result_str
     call_counts["stdout"] += 1
-
-
-def stderr_results(result_str: str, count: int):
-    global call_counts
-    expected = "stderr line " + str(count)
+    expected = "stdout line " + str(call_counts["stdout"])
     assert expected == result_str
-    call_counts["stderr"] += 1
 
-'''
+
+def stderr_results(result_str: str):
+    global call_counts
+    call_counts["stderr"] += 1
+    expected = "stderr line " + str(call_counts["stderr"])
+    assert expected == result_str
+
+
+"""
 def test_command_executor_01():
     cmd_exe = CommandExecutor()
     cmd_strs = ["ls", "-la"]
     cmd_res = cmd_exe.execute(cmd_strs)
     cmd_res.print_results()
-'''
+"""
 
 
 def test_command_executor_02(monkeypatch, mock_command_result):
