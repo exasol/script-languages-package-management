@@ -32,10 +32,10 @@ class CommandResult:
         consume_stderr: Callable[[str | bytes, int], None],
     ):
 
-        def pick_next(out_stream, count, callable) -> bool:
+        def pick_next(out_stream, count, callback) -> bool:
             try:
                 _val = next(out_stream)
-                callable(_val, count)
+                callback(_val, count)
             except StopIteration:
                 return -1
             return count + 1
@@ -67,11 +67,3 @@ class CommandExecutor:
             stdout=iter(sub_process.stdout),
             stderr=iter(sub_process.stderr),
         )
-
-
-class CommandResultPrinter:
-    def __init__(self, cmd_res: CommandResult):
-        self._cmd_res = cmd_res
-
-    def print_result(self):
-        self._cmd_res.print_result()
