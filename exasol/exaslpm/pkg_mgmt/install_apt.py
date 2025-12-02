@@ -1,5 +1,8 @@
 from exasol.exaslpm.model.package_file_config import AptPackages
-from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
+from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+    CommandExecutor,
+    CommandLogger,
+)
 
 
 def prepare_update_command() -> list[str]:
@@ -35,7 +38,9 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
     return install_cmd
 
 
-def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
+def install_via_apt(
+    apt_packages: AptPackages, executor: CommandExecutor, log: CommandLogger
+):
     if len(apt_packages.packages) > 0:
         update_cmd = prepare_update_command()
         cmd_res = executor.execute(update_cmd)
@@ -61,4 +66,4 @@ def install_via_apt(apt_packages: AptPackages, executor: CommandExecutor):
         cmd_res = executor.execute(ldconfig_cmd)
         cmd_res.print_results()
     else:
-        print("Got an empty list of AptPackages")
+        log.error("Got an empty list of AptPackages")

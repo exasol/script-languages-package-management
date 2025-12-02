@@ -8,6 +8,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
+    StdLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
 
@@ -17,10 +18,8 @@ def parse_package_file(
 ) -> Phase:
     build_steps = package_file.build_steps
     build_step = build_steps[build_step_name]
-
     phases = build_step.phases
     phase = phases[phase_name]
-
     return phase
 
 
@@ -45,10 +44,11 @@ def package_install(
 
     package_content = package_file.read_text()
     try:
+        logger = StdLogger()
         yaml_data = yaml.safe_load(package_content)
         pkg_file = PackageFile.model_validate(yaml_data)
         single_phase = parse_package_file(pkg_file, phase, build_step)
         if single_phase.apt is not None:
-            install_via_apt(single_phase.apt, CommandExecutor())
+            install_via_apt(single_phase.apt, CommandExecutor(logger), logger)
     except ValueError:
         print("Error parsing package file")

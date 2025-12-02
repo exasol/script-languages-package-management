@@ -1,3 +1,9 @@
+from unittest.mock import (
+    MagicMock,
+    Mock,
+    call,
+)
+
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
@@ -7,6 +13,7 @@ from exasol.exaslpm.model.package_file_config import (
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandResult,
+    StdLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
@@ -19,31 +26,54 @@ def mock_execute(_, cmd_strs):
     cmd_str = " ".join(cmd_strs)
     assert order_of_exec[call_count] in cmd_str
     call_count += 1
-    return CommandResult(fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([]))
+    return CommandResult(
+        StdLogger(), fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([])
+    )
 
 
-def test_install_via_apt_empty_packages(monkeypatch, capsys):
+def test_install_via_apt_empty_packages(monkeypatch):
+    logger = StdLogger()
     monkeypatch.setattr(CommandExecutor, "execute", mock_execute)
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, CommandExecutor())
-    prints = capsys.readouterr()
-    assert "empty list" in prints.out
+    install_via_apt(aptPackages, CommandExecutor(logger), logger)
+    assert "empty list" in logger.get_last_msg()
 
 
-def test_install_via_apt(monkeypatch):
-    global call_count
-    monkeypatch.setattr(CommandExecutor, "execute", mock_execute)
-
+def test_install_via_apt_01():
+    mock_executor = MagicMock(spec=CommandExecutor)
     pkgs = [
         Package(name="curl", version="7.68.0"),
         Package(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, CommandExecutor())
-    assert call_count == len(order_of_exec)
-    call_count = 0
+    install_via_apt(aptPackages, mock_executor, StdLogger())
+    assert mock_executor.mock_calls == [
+        call.execute(["apt-get", "-y", "update"]),
+        call.execute().print_results(),
+        call.execute(
+            [
+                "apt-get",
+                "install",
+                "-V",
+                "-y",
+                "--no-install-recommends",
+                "curl=7.68.0",
+                "requests=2.25.1",
+            ]
+        ),
+        call.execute().print_results(),
+        call.execute(["apt-get", "-y", "clean"]),
+        call.execute().print_results(),
+        call.execute(["apt-get", "-y", "autoremove"]),
+        call.execute().print_results(),
+        call.execute(["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]),
+        call.execute().print_results(),
+        call.execute(["ldconfig"]),
+        call.execute().print_results(),
+    ]
 
 
+# For Sonar Cube Code Coverage - ToDo: Check once if it complains
 def test_prepare_update_command():
     cmd_strs = prepare_update_command()
     cmd_str = " ".join(cmd_strs)
