@@ -27,16 +27,23 @@ def mock_execute(_, cmd_strs):
     assert order_of_exec[call_count] in cmd_str
     call_count += 1
     return CommandResult(
-        StdLogger(), fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([])
+        fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([]), logger=StdLogger()
     )
 
 
-def test_install_via_apt_empty_packages(monkeypatch):
-    logger = StdLogger()
-    monkeypatch.setattr(CommandExecutor, "execute", mock_execute)
+def test_install_via_apt_empty_packages():
+    mock_logger = MagicMock()
+    mock_executor = MagicMock(spec=CommandExecutor)
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, CommandExecutor(logger), logger)
-    assert "empty list" in logger.get_last_msg()
+    install_via_apt(aptPackages, mock_executor, mock_logger)
+
+    found_log = False
+    for call in mock_logger.mock_calls:
+        args = call.args
+        if args and "empty list" in str(args[0]):
+            found_log = True
+            break
+    assert found_log
 
 
 def test_install_via_apt_01():

@@ -8,35 +8,29 @@ from typing import Protocol
 
 
 class CommandLogger(Protocol):
-    def info(self, msg: str) -> None: ...
-    def warn(self, msg: str) -> None: ...
-    def error(self, msg: str) -> None: ...
+    def info(self, msg: str, **kwargs) -> None: ...
+    def warn(self, msg: str, **kwargs) -> None: ...
+    def err(self, msg: str, **kwargs) -> None: ...
 
 
 class StdLogger:
-    def info(self, msg: str) -> None:
-        self._last_msg = msg
+    def info(self, msg: str, **kwargs) -> None:
         sys.stdout.write(msg)
 
-    def warn(self, msg: str) -> None:
-        self._last_msg = msg
+    def warn(self, msg: str, **kwargs) -> None:
         sys.stderr.write(msg)
 
-    def error(self, msg: str) -> None:
-        self._last_msg = msg
+    def err(self, msg: str, **kwargs) -> None:
         sys.stderr.write(msg)
-
-    def get_last_msg(self) -> str:
-        return self._last_msg
 
 
 class CommandResult:
     def __init__(
         self,
-        logger: CommandLogger,
         fn_ret_code: Callable[[], int],
         stdout: Iterator[str],
         stderr: Iterator[str],
+        logger: CommandLogger,
     ):
         self._log = logger
         self._fn_return_code = fn_ret_code  # a lambda to subprocess.open.wait
@@ -77,7 +71,7 @@ class CommandResult:
         return self.return_code()
 
     def print_results(self):
-        ret_code = self.consume_results(self._log.info, self._log.error)
+        ret_code = self.consume_results(self._log.info, self._log.err)
         self._log.info(f"Return Code: {ret_code}")
 
 
@@ -93,8 +87,8 @@ class CommandExecutor:
             cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
         return CommandResult(
-            self._log,
             fn_ret_code=lambda: sub_process.wait(),
             stdout=iter(sub_process.stdout),
             stderr=iter(sub_process.stderr),
+            logger=self._log,
         )
