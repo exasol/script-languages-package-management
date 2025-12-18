@@ -45,33 +45,37 @@ def install_via_apt(
         update_cmd = prepare_update_command()
         cmd_res = executor.execute(update_cmd)
         cmd_res.print_results()
-        #if cmd_res.return_code() != 0 :
-            #log.err("Failed while updating apt cmd")
+        if cmd_res.return_code() != 0:
+            log.err("Failed while updating apt cmd")
 
         install_cmd = prepare_install_cmd(apt_packages)
         cmd_res = executor.execute(install_cmd)
         cmd_res.print_results()
-        # if cmd_res.return_code() != 0 :
-        # log.err("Failed while installing apt cmd")
+        if cmd_res.return_code() != 0:
+            log.err("Failed while installing apt cmd")
 
         clean_cmd = prepare_clean_cmd()
         cmd_res = executor.execute(clean_cmd)
         cmd_res.print_results()
-        # if cmd_res.return_code() != 0 :
-        # log.err("Failed while cleaning apt cmd")
+        if cmd_res.return_code() != 0:
+            log.err("Failed while cleaning apt cmd")
 
         autoremove_cmd = prepare_autoremove_cmd()
         cmd_res = executor.execute(autoremove_cmd)
         cmd_res.print_results()
-        # if cmd_res.return_code() != 0 :
-        # log.err("Failed while autoremoving apt cmd")
+        if cmd_res.return_code() != 0:
+            log.err("Failed while autoremoving apt cmd")
 
         locale_cmd = prepare_locale_cmd()
         cmd_res = executor.execute(locale_cmd)
         cmd_res.print_results()
+        if cmd_res.return_code() != 0:
+            log.err("Failed while preparing locale cmd")
 
         ldconfig_cmd = prepare_ldconfig_cmd()
         cmd_res = executor.execute(ldconfig_cmd)
         cmd_res.print_results()
+        if cmd_res.return_code() != 0:
+            log.err("Failed while ldconfig apt cmd")
     else:
-        log.error("Got an empty list of AptPackages")
+        log.err("Got an empty list of AptPackages")

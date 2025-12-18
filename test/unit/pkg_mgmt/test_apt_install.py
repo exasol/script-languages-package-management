@@ -46,17 +46,20 @@ def test_install_via_apt_empty_packages():
     assert found_log
 
 
-def test_install_via_apt_01():
+def test_install_via_apt_with_pkgs():
     mock_executor = MagicMock(spec=CommandExecutor)
+    mock_logger = MagicMock(spec=CommandLogger)
     pkgs = [
         Package(name="curl", version="7.68.0"),
         Package(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, mock_executor, StdLogger())
+    install_via_apt(aptPackages, mock_executor, mock_logger)
     assert mock_executor.mock_calls == [
         call.execute(["apt-get", "-y", "update"]),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
         call.execute(
             [
                 "apt-get",
@@ -69,14 +72,24 @@ def test_install_via_apt_01():
             ]
         ),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
         call.execute(["apt-get", "-y", "clean"]),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
         call.execute(["apt-get", "-y", "autoremove"]),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
         call.execute(["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
         call.execute(["ldconfig"]),
         call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute().return_code().__ne__(0),
     ]
 
 
