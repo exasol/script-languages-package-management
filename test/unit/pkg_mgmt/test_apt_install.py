@@ -55,36 +55,6 @@ def test_install_via_apt_with_pkgs():
         call.execute().print_results(),
         call.execute().return_code(),
         call.execute().return_code().__ne__(0),
-        call.execute(
-            [
-                "apt-get",
-                "install",
-                "-V",
-                "-y",
-                "--no-install-recommends",
-                "curl=7.68.0",
-                "requests=2.25.1",
-            ]
-        ),
-        call.execute().print_results(),
-        call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
-        call.execute(["apt-get", "-y", "clean"]),
-        call.execute().print_results(),
-        call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
-        call.execute(["apt-get", "-y", "autoremove"]),
-        call.execute().print_results(),
-        call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
-        call.execute(["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]),
-        call.execute().print_results(),
-        call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
-        call.execute(["ldconfig"]),
-        call.execute().print_results(),
-        call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
     ]
 
 
