@@ -12,38 +12,33 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
-    CommandResult,
+    CommandLogger,
     StdLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
-order_of_exec = ["update", "install", "clean", "remove", "locale", "ldconfig"]
-call_count = 0
 
+class CaptureLogger:
+    def __init__(self):
+        self.messages = []
 
-def mock_execute(_, cmd_strs):
-    global call_count
-    cmd_str = " ".join(cmd_strs)
-    assert order_of_exec[call_count] in cmd_str
-    call_count += 1
-    return CommandResult(
-        fn_ret_code=lambda: 0, stdout=iter([]), stderr=iter([]), logger=StdLogger()
-    )
+    def info(self, msg: str, **kwargs):
+        self.messages.append(msg)
+
+    def warn(self, msg: str, **kwargs):
+        self.messages.append(msg)
+
+    def err(self, msg: str, **kwargs):
+        self.messages.append(msg)
 
 
 def test_install_via_apt_empty_packages():
-    mock_logger = MagicMock()
+    mock_logger = CaptureLogger()
     mock_executor = MagicMock(spec=CommandExecutor)
     aptPackages = AptPackages(packages=[])
     install_via_apt(aptPackages, mock_executor, mock_logger)
 
-    found_log = False
-    for call in mock_logger.mock_calls:
-        args = call.args
-        if args and "empty list" in str(args[0]):
-            found_log = True
-            break
-    assert found_log
+    assert any("empty list" in msg for msg in mock_logger.messages)
 
 
 def test_install_via_apt_with_pkgs():

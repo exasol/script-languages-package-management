@@ -2,6 +2,10 @@ import pathlib
 
 import click
 
+from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+    CommandExecutor,
+    StdLogger,
+)
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -64,6 +68,16 @@ def install(
     must be set accordingly.
     """
 
+    logger = StdLogger()
+    cmd_executor = CommandExecutor(logger)
+
     package_install(
-        phase, package_file, build_step, python_binary, conda_binary, r_binary
+        phase,
+        package_file,
+        build_step,
+        python_binary,
+        conda_binary,
+        r_binary,
+        cmd_executor,
+        logger,
     )

@@ -1,11 +1,9 @@
 import subprocess
 import sys
-from collections.abc import (
-    Callable,
-    Iterator,
-)
+from collections.abc import Callable
 from typing import (
     IO,
+    Any,
     Protocol,
 )
 
@@ -18,13 +16,13 @@ class CommandLogger(Protocol):
 
 class StdLogger:
     def info(self, msg: str, **kwargs) -> None:
-        sys.stdout.write(msg)
+        print(msg, file=sys.stdout)
 
     def warn(self, msg: str, **kwargs) -> None:
-        sys.stderr.write(msg)
+        print(msg, file=sys.stdout)
 
     def err(self, msg: str, **kwargs) -> None:
-        sys.stderr.write(msg)
+        print(msg, file=sys.stderr)
 
 
 class CommandResult:
@@ -51,8 +49,8 @@ class CommandResult:
 
     def consume_results(
         self,
-        consume_stdout: Callable[[str | bytes], None],
-        consume_stderr: Callable[[str | bytes], None],
+        consume_stdout: Callable[[str | bytes, Any], None],
+        consume_stderr: Callable[[str | bytes, Any], None],
     ):
 
         def pick_next(out_stream, callback) -> bool:

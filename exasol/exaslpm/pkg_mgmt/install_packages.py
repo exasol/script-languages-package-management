@@ -1,5 +1,6 @@
 import pathlib
 
+import click
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
@@ -8,7 +9,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
-    StdLogger,
+    CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
 
@@ -30,8 +31,9 @@ def package_install(
     python_binary: pathlib.Path,
     conda_binary: pathlib.Path,
     r_binary: pathlib.Path,
+    cmd_executor: CommandExecutor,
+    logger: CommandLogger,
 ):
-    """
     click.echo(
         f"Phase: {phase}, \
         Package File: {package_file}, \
@@ -40,15 +42,13 @@ def package_install(
         Conda Binary: {conda_binary}, \
         R Binary: {r_binary}",
     )
-    """
 
     package_content = package_file.read_text()
     try:
-        logger = StdLogger()
         yaml_data = yaml.safe_load(package_content)
         pkg_file = PackageFile.model_validate(yaml_data)
         single_phase = parse_package_file(pkg_file, phase, build_step)
         if single_phase.apt is not None:
-            install_via_apt(single_phase.apt, CommandExecutor(logger), logger)
+            install_via_apt(single_phase.apt, cmd_executor, logger)
     except ValueError:
         print("Error parsing package file")
