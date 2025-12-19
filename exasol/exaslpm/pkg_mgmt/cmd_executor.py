@@ -4,7 +4,10 @@ from collections.abc import (
     Callable,
     Iterator,
 )
-from typing import Protocol
+from typing import (
+    IO,
+    Protocol,
+)
 
 
 class CommandLogger(Protocol):
@@ -28,8 +31,8 @@ class CommandResult:
     def __init__(
         self,
         fn_ret_code: Callable[[], int],
-        stdout: Iterator[str],
-        stderr: Iterator[str],
+        stdout: IO[str] | None,
+        stderr: IO[str] | None,
         logger: CommandLogger,
     ):
         self._log = logger
@@ -40,10 +43,10 @@ class CommandResult:
     def return_code(self):
         return self._fn_return_code()
 
-    def itr_stdout(self) -> Iterator[str]:
+    def itr_stdout(self) -> IO[str] | None:
         return self._stdout
 
-    def itr_stderr(self) -> Iterator[str]:
+    def itr_stderr(self) -> IO[str] | None:
         return self._stderr
 
     def consume_results(
@@ -88,7 +91,7 @@ class CommandExecutor:
         )
         return CommandResult(
             fn_ret_code=lambda: sub_process.wait(),
-            stdout=iter(sub_process.stdout),
-            stderr=iter(sub_process.stderr),
+            stdout=sub_process.stdout,
+            stderr=sub_process.stderr,
             logger=self._log,
         )

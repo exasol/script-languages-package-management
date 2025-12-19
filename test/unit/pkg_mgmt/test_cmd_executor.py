@@ -35,8 +35,6 @@ def test_command_executor(monkeypatch):
     ret_code = result.return_code()
     assert mock_popen.mock_calls == [
         call(["cmd1", "cmd2"], stdout=-1, stderr=-1, text=True),
-        call().stdout.__iter__(),
-        call().stderr.__iter__(),
         call().wait(),
     ]
     assert ret_code == mock_popen.return_value.wait.return_value
