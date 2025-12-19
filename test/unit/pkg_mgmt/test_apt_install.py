@@ -13,7 +13,7 @@ from exasol.exaslpm.model.package_file_config import (
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
-    StdLogger,
+    StdLogger, CommandResult,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
@@ -43,6 +43,9 @@ def test_install_via_apt_empty_packages():
 
 def test_install_via_apt_with_pkgs():
     mock_executor = MagicMock(spec=CommandExecutor)
+    mock_command_result = MagicMock(spec=CommandResult)
+    mock_executor.execute.return_value = mock_command_result
+    mock_command_result.return_code.return_value = 0
     mock_logger = MagicMock(spec=CommandLogger)
     pkgs = [
         Package(name="curl", version="7.68.0"),
@@ -51,10 +54,24 @@ def test_install_via_apt_with_pkgs():
     aptPackages = AptPackages(packages=pkgs)
     install_via_apt(aptPackages, mock_executor, mock_logger)
     assert mock_executor.mock_calls == [
-        call.execute(["apt-get", "-y", "update"]),
+        call.execute(['apt-get', '-y', 'update']),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute().return_code().__ne__(0),
+        call.execute(['apt-get', 'install', '-V', '-y', '--no-install-recommends', 'curl=7.68.0', 'requests=2.25.1']),
+        call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute(['apt-get', '-y', 'clean']),
+        call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute(['apt-get', '-y', 'autoremove']),
+        call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute(['locale-gen', '&&', 'update-locale', 'LANG=en_US.UTF8']),
+        call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute(['ldconfig']),
+        call.execute().print_results(),
+        call.execute().return_code()
     ]
 
 
