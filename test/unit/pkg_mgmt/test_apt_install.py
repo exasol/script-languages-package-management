@@ -1,6 +1,6 @@
 from unittest.mock import (
     MagicMock,
-    Mock,
+    patch,
     call,
 )
 
@@ -73,6 +73,48 @@ def test_install_via_apt_with_pkgs():
         call.execute().print_results(),
         call.execute().return_code()
     ]
+
+class FailCommandResult:
+    def __init__(self, ret_code):
+        self._ret_code = ret_code
+    def print_results(self):
+        pass
+    def return_code(self):
+        return self._ret_code
+
+class FailCommandExecutor:
+    def __init__(self, fail_at_step):
+        self.fail_step = fail_at_step
+        self.count = 0
+    def execute(self, cmd):
+        self.count += 1
+        step_index = self.count - 1
+        if step_index == self.fail_step:
+            return FailCommandResult(1)
+        return FailCommandResult(0)
+
+@pytest.mark.parametrize(
+    "fail_step, expected_error",
+    [
+        (0, "Failed while updating apt cmd"),
+        (1, "Failed while installing apt cmd"),
+        (2, "Failed while cleaning apt cmd"),
+        (3, "Failed while autoremoving apt cmd"),
+        (4, "Failed while preparing apt cmd"),
+        (5, "Failed while ldconfig apt cmd"),
+    ]
+)
+def test_install_via_apt_negative_cases(fail_step, expected_error):
+    logger = CaptureLogger()
+    cmd_executor = FailCommandExecutor(fail_step)
+
+    pkgs = [
+        Package(name="curl", version="7.68.0"),
+        Package(name="requests", version="2.25.1"),
+    ]
+    aptPackages = AptPackages(packages=pkgs)
+    install_via_apt(aptPackages, cmd_executor, logger)
+    assert any(expected_error in msg for msg in logger.messages)
 
 
 # For Sonar Cube Code Coverage - ToDo: Check once if it complains

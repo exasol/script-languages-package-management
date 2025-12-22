@@ -43,7 +43,7 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
 
 def check_error(ret_val, msg, log):
     if ret_val != 0:
-        log(msg,"")
+        log(msg)
         return False
     return True
 
