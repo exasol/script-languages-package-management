@@ -1,7 +1,7 @@
 from unittest.mock import (
     MagicMock,
-    patch,
     call,
+    patch,
 )
 
 import pytest
@@ -13,7 +13,8 @@ from exasol.exaslpm.model.package_file_config import (
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
-    StdLogger, CommandResult,
+    CommandResult,
+    StdLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
@@ -54,44 +55,60 @@ def test_install_via_apt_with_pkgs():
     aptPackages = AptPackages(packages=pkgs)
     install_via_apt(aptPackages, mock_executor, mock_logger)
     assert mock_executor.mock_calls == [
-        call.execute(['apt-get', '-y', 'update']),
+        call.execute(["apt-get", "-y", "update"]),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(['apt-get', 'install', '-V', '-y', '--no-install-recommends', 'curl=7.68.0', 'requests=2.25.1']),
+        call.execute(
+            [
+                "apt-get",
+                "install",
+                "-V",
+                "-y",
+                "--no-install-recommends",
+                "curl=7.68.0",
+                "requests=2.25.1",
+            ]
+        ),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(['apt-get', '-y', 'clean']),
+        call.execute(["apt-get", "-y", "clean"]),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(['apt-get', '-y', 'autoremove']),
+        call.execute(["apt-get", "-y", "autoremove"]),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(['locale-gen', '&&', 'update-locale', 'LANG=en_US.UTF8']),
+        call.execute(["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(['ldconfig']),
+        call.execute(["ldconfig"]),
         call.execute().print_results(),
-        call.execute().return_code()
+        call.execute().return_code(),
     ]
+
 
 class FailCommandResult:
     def __init__(self, ret_code):
         self._ret_code = ret_code
+
     def print_results(self):
         pass
+
     def return_code(self):
         return self._ret_code
+
 
 class FailCommandExecutor:
     def __init__(self, fail_at_step):
         self.fail_step = fail_at_step
         self.count = 0
+
     def execute(self, cmd):
         self.count += 1
         step_index = self.count - 1
         if step_index == self.fail_step:
             return FailCommandResult(1)
         return FailCommandResult(0)
+
 
 @pytest.mark.parametrize(
     "fail_step, expected_error",
@@ -102,7 +119,7 @@ class FailCommandExecutor:
         (3, "Failed while autoremoving apt cmd"),
         (4, "Failed while preparing apt cmd"),
         (5, "Failed while ldconfig apt cmd"),
-    ]
+    ],
 )
 def test_install_via_apt_negative_cases(fail_step, expected_error):
     logger = CaptureLogger()
