@@ -6,6 +6,10 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
 )
+from exasol.exaslpm.pkg_mgmt.install_utils import (
+    prepare_ldconfig_cmd,
+    prepare_locale_cmd,
+)
 
 
 def prepare_update_command() -> list[str]:
@@ -21,16 +25,6 @@ def prepare_clean_cmd() -> list[str]:
 def prepare_autoremove_cmd() -> list[str]:
     autoremove_cmd = ["apt-get", "-y", "autoremove"]
     return autoremove_cmd
-
-
-def prepare_ldconfig_cmd() -> list[str]:
-    ldconfig_cmd = ["ldconfig"]
-    return ldconfig_cmd
-
-
-def prepare_locale_cmd() -> list[str]:
-    locale_cmd = ["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]
-    return locale_cmd
 
 
 def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
