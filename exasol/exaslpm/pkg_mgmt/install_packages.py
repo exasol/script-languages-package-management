@@ -1,6 +1,27 @@
 import pathlib
 
 import click
+import yaml
+
+from exasol.exaslpm.model.package_file_config import (
+    PackageFile,
+    Phase,
+)
+from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+    CommandExecutor,
+    CommandLogger,
+)
+from exasol.exaslpm.pkg_mgmt.install_conda import install_via_conda
+
+
+def parse_package_file(
+    package_file: PackageFile, phase_name: str, build_step_name: str
+) -> Phase:
+    build_steps = package_file.build_steps
+    build_step = build_steps[build_step_name]
+    phases = build_step.phases
+    phase = phases[phase_name]
+    return phase
 
 
 def package_install(
@@ -10,6 +31,8 @@ def package_install(
     python_binary: pathlib.Path,
     conda_binary: pathlib.Path,
     r_binary: pathlib.Path,
+    cmd_executor: CommandExecutor,
+    logger: CommandLogger,
 ):
     click.echo(
         f"Phase: {phase}, \
@@ -21,4 +44,12 @@ def package_install(
     )
 
     package_content = package_file.read_text()
-    click.echo(package_content)
+    try:
+        yaml_data = yaml.safe_load(package_content)
+        pkg_file = PackageFile.model_validate(yaml_data)
+        single_phase = parse_package_file(pkg_file, phase, build_step)
+        if single_phase.conda is not None:
+            install_via_conda(single_phase.conda, conda_binary, cmd_executor, logger)
+
+    except ValueError:
+        print("Error parsing package file")
