@@ -4,6 +4,7 @@ from typing import Any
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
+    CommandFailedException,
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_utils import (
@@ -35,7 +36,7 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
     return install_cmd
 
 
-def check_error(ret_val, msg, log):
+def check_error(ret_val: int, msg: str, log: Callable[[str, Any], None]) -> bool:
     if ret_val != 0:
         log(msg)
         return False
@@ -44,7 +45,7 @@ def check_error(ret_val, msg, log):
 
 def install_via_apt(
     apt_packages: AptPackages, executor: CommandExecutor, log: CommandLogger
-):
+) -> int:
     if len(apt_packages.packages) > 0:
         update_cmd = prepare_update_command()
         cmd_res = executor.execute(update_cmd)
@@ -52,7 +53,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while updating apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while updating apt cmd")
 
         install_cmd = prepare_install_cmd(apt_packages)
         cmd_res = executor.execute(install_cmd)
@@ -60,7 +61,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while installing apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while installing apt cmd")
 
         clean_cmd = prepare_clean_cmd()
         cmd_res = executor.execute(clean_cmd)
@@ -68,7 +69,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while cleaning apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while cleaning apt cmd")
 
         autoremove_cmd = prepare_autoremove_cmd()
         cmd_res = executor.execute(autoremove_cmd)
@@ -76,7 +77,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while autoremoving apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while autoremoving apt cmd")
 
         locale_cmd = prepare_locale_cmd()
         cmd_res = executor.execute(locale_cmd)
@@ -84,7 +85,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while preparing apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while preparing apt cmd")
 
         ldconfig_cmd = prepare_ldconfig_cmd()
         cmd_res = executor.execute(ldconfig_cmd)
@@ -92,6 +93,7 @@ def install_via_apt(
         if not check_error(
             cmd_res.return_code(), "Failed while ldconfig apt cmd", log.err
         ):
-            return
+            raise CommandFailedException("Failed while ldconfig apt cmd")
     else:
-        log.err("Got an empty list of AptPackages")
+        log.warn("Got an empty list of AptPackages")
+    return 0

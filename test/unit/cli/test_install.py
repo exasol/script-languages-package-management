@@ -13,10 +13,8 @@ from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
 from exasol.exaslpm.cli.cli import install
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
-    CommandExecutor,
-    StdLogger,
-)
+from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
+from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 
 
 @pytest.fixture

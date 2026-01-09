@@ -14,8 +14,8 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
     CommandResult,
-    StdLogger,
 )
+from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 
@@ -34,12 +34,13 @@ class CaptureLogger:
 
 
 def test_install_via_apt_empty_packages():
-    mock_logger = CaptureLogger()
+    mock_logger = MagicMock(spec=CommandLogger)
     mock_executor = MagicMock(spec=CommandExecutor)
     aptPackages = AptPackages(packages=[])
     install_via_apt(aptPackages, mock_executor, mock_logger)
 
-    assert any("empty list" in msg for msg in mock_logger.messages)
+    mock_logger.warn.assert_called_once()
+    mock_logger.warn.assert_called_with("Got an empty list of AptPackages")
 
 
 def test_install_via_apt_with_pkgs():
@@ -130,7 +131,10 @@ def test_install_via_apt_negative_cases(fail_step, expected_error):
         Package(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, cmd_executor, logger)
+    try:
+        install_via_apt(aptPackages, cmd_executor, logger)
+    except CommandFailedException:
+        pass
     assert any(expected_error in msg for msg in logger.messages)
 
 

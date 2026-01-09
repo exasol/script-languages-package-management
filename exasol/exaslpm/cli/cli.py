@@ -4,8 +4,8 @@ import click
 
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
-    StdLogger,
 )
+from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 

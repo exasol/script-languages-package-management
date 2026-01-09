@@ -41,11 +41,12 @@ def test_command_executor(monkeypatch):
 
 
 def test_command_results():
-    logger = MagicMock(spec=CommandLogger)
-    cmd_result = mock_command_result(logger)
-    ret_code = cmd_result.consume_results(logger.info, logger.err)
-    assert logger.info.call_count == 2
-    assert logger.err.call_count == 3
+    cmd_result = mock_command_result(MagicMock(spec=CommandLogger))
+    stdout_consumer = MagicMock()
+    stderr_consumer = MagicMock()
+    ret_code = cmd_result.consume_results(stdout_consumer, stderr_consumer)
+    assert stdout_consumer.call_count == 2
+    assert stderr_consumer.call_count == 3
     assert ret_code == 10
 
 

@@ -9,6 +9,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
+    CommandFailedException,
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
@@ -50,5 +51,5 @@ def package_install(
         single_phase = parse_package_file(pkg_file, phase, build_step)
         if single_phase.apt is not None:
             install_via_apt(single_phase.apt, cmd_executor, logger)
-    except ValueError:
+    except (ValueError, CommandFailedException) as e:
         print("Error parsing package file")

@@ -1,28 +1,20 @@
 import subprocess
-import sys
+import threading
 from collections.abc import Callable
 from typing import (
     IO,
     Any,
-    Protocol,
 )
 
-
-class CommandLogger(Protocol):
-    def info(self, msg: str, **kwargs) -> None: ...
-    def warn(self, msg: str, **kwargs) -> None: ...
-    def err(self, msg: str, **kwargs) -> None: ...
+from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
 
 
-class StdLogger:
-    def info(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
+class CommandFailedException(Exception):
+    """
+    Raised when commands faile
+    """
 
-    def warn(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
-
-    def err(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stderr)
+    pass
 
 
 class CommandResult:
@@ -33,8 +25,14 @@ class CommandResult:
         stderr: IO[str] | None,
         logger: CommandLogger,
     ):
+        """
+        :param fn_ret_code: a lambda to subprocess.open.wait
+        :param stdout: iterable stdout captures
+        :param stderr: iterable stderr captures
+        :param logger: a protocol that defines the log singatures
+        """
         self._log = logger
-        self._fn_return_code = fn_ret_code  # a lambda to subprocess.open.wait
+        self._fn_return_code = fn_ret_code
         self._stdout = stdout
         self._stderr = stderr
 
@@ -47,28 +45,35 @@ class CommandResult:
     def itr_stderr(self) -> IO[str] | None:
         return self._stderr
 
+    def stream_reader(
+        self,
+        pipe: IO[str] | None,
+        callback: Callable[[str | bytes, Any], None],
+    ):
+        while True:
+            try:
+                _val = next(pipe)
+                callback(_val)
+            except StopIteration:
+                return
+
     def consume_results(
         self,
         consume_stdout: Callable[[str | bytes, Any], None],
         consume_stderr: Callable[[str | bytes, Any], None],
     ):
 
-        def pick_next(out_stream, callback) -> bool:
-            try:
-                _val = next(out_stream)
-                callback(_val)
-            except StopIteration:
-                return False
-            return True
+        read_out = threading.Thread(
+            target=self.stream_reader, args=(self._stdout, consume_stdout)
+        )
+        read_err = threading.Thread(
+            target=self.stream_reader, args=(self._stderr, consume_stderr)
+        )
 
-        # Read from _stdout and _stderr simultaneously
-        stdout_continue = True
-        stderr_continue = True
-        while stdout_continue or stderr_continue:
-            if stdout_continue:
-                stdout_continue = pick_next(self._stdout, consume_stdout)
-            if stderr_continue:
-                stderr_continue = pick_next(self._stderr, consume_stderr)
+        read_out.start()
+        read_err.start()
+        read_out.join()
+        read_err.join()
         return self.return_code()
 
     def print_results(self):
@@ -81,6 +86,11 @@ class CommandExecutor:
         self._log = logger
 
     def execute(self, cmd_strs: list[str]) -> CommandResult:
+        """
+        :param cmd_strs: command with all its options as a list of individual str
+        :return: The result that can be used to access the results
+        :rtype: CommandResult
+        """
         cmd_str = " ".join(cmd_strs)
         self._log.info(f"Executing: {cmd_str}")
 
