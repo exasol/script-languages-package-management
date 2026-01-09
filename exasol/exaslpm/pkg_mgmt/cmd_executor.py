@@ -42,7 +42,7 @@ class CommandResult:
     def itr_stdout(self) -> Iterator[str]:
         return self._stdout
 
-    def itr_stderr(self) -> IO[str] | None:
+    def itr_stderr(self) -> Iterator[str]:
         return self._stderr
 
     def stream_reader(
