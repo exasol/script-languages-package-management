@@ -47,7 +47,7 @@ class CommandResult:
 
     def stream_reader(
         self,
-        pipe: IO[str] | None,
+        pipe: Iterator[str],
         callback: Callable[[str | bytes, Any], None],
     ):
         while True:
