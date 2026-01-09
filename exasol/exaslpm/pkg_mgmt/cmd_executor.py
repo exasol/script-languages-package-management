@@ -26,7 +26,7 @@ class CommandResult:
         logger: CommandLogger,
     ):
         """
-        :param fn_ret_code: a lambda to subprocess.open.wait
+        :param fn_ret_code: a function that waits untils the process has stopped and returns the return code. For example, subprocess.open.wait.
         :param stdout: iterable stdout captures
         :param stderr: iterable stderr captures
         :param logger: a protocol that defines the log singatures
