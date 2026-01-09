@@ -44,7 +44,11 @@ def package_install(
         R Binary: {r_binary}",
     )
 
-    package_content = package_file.read_text()
+    try:
+        package_content = package_file.read_text()
+    except Exception as e:
+        logger.err("Failed to read package file.", package_file=package_file, exception=e)
+        raise
     try:
         yaml_data = yaml.safe_load(package_content)
         pkg_file = PackageFile.model_validate(yaml_data)
