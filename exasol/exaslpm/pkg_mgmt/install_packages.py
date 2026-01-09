@@ -52,8 +52,17 @@ def package_install(
     try:
         yaml_data = yaml.safe_load(package_content)
         pkg_file = PackageFile.model_validate(yaml_data)
+    except Exception as e:
+        logger.err("Failed to parse package file.", package_file=package_file, exception=e)
+        raise
+    try:
         single_phase = parse_package_file(pkg_file, phase, build_step)
+    except Exception as e:
+        logger.err("Build step or phase not found.", package_file=package_file,  build_step=build_step, phase=phase, exception=e)
+        raise
+    try:        
         if single_phase.apt is not None:
             install_via_apt(single_phase.apt, cmd_executor, logger)
-    except (ValueError, CommandFailedException) as e:
-        print("Error parsing package file")
+    except Exception as e:
+        logger.err("Failed to install apt packages.", package_file=package_file, exception=e)
+        raise
