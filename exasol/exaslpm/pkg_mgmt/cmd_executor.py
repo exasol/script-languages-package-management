@@ -39,7 +39,7 @@ class CommandResult:
     def return_code(self):
         return self._fn_return_code()
 
-    def itr_stdout(self) -> IO[str] | None:
+    def itr_stdout(self) -> Iterator[str]:
         return self._stdout
 
     def itr_stderr(self) -> IO[str] | None:
