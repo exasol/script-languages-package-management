@@ -21,8 +21,8 @@ class CommandResult:
     def __init__(
         self,
         fn_ret_code: Callable[[], int],
-        stdout: IO[str] | None,
-        stderr: IO[str] | None,
+        stdout: Iterator[str],
+        stderr: Iterator[str],
         logger: CommandLogger,
     ):
         """
