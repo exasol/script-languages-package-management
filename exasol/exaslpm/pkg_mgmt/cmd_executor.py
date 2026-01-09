@@ -72,9 +72,10 @@ class CommandResult:
 
         read_out.start()
         read_err.start()
+        return_code = self.return_code()
         read_out.join()
         read_err.join()
-        return self.return_code()
+        return return_code
 
     def print_results(self):
         ret_code = self.consume_results(self._log.info, self._log.err)
