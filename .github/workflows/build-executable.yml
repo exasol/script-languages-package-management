@@ -1,7 +1,7 @@
 name: Build Executable
 
 on:
-  push:
+  push:  {}
 
   workflow_call:
     inputs:
@@ -14,8 +14,7 @@ jobs:
 
   standalone-executable:
     name: Create a standalone linux executable
-    runs-on:
-      labels: ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
