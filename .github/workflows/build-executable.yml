@@ -36,10 +36,12 @@ jobs:
         uses: exasol/python-toolbox/.github/actions/python-environment@v4
 
       - name: Build standalone executable
-        run: poetry run -- nox -s build-standalone-binary -- --executable-name $BINARY_NAME
+        run: poetry run -- nox -s build-standalone-binary -- --executable-name "$BINARY_NAME"
 
       - name: Check binary
-        run: dist/$BINARY_NAME --help
+        run: |
+          "$BINARY_NAME" --help
+        working-directory: ./dist
 
       - name: Upload to release
         if: ${{ inputs.release-tag != ''}}
