@@ -1,12 +1,7 @@
-name: Bulid Executable
+name: Build Executable
 
 on:
-  workflow_dispatch:
-    inputs:
-      release-tag:
-        type: string
-        description: 'Release tag'
-        required: true
+  push:
 
   workflow_call:
     inputs:
