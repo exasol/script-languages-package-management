@@ -39,7 +39,7 @@ jobs:
         run: poetry run -- nox -s build-standalone-binary -- --executable-name $BINARY_NAME
 
       - name: Check binary
-        run: "dist/$BINARY_NAME" --help
+        run: dist/$BINARY_NAME --help
 
       - name: Upload to release
         if: ${{ inputs.release-tag != ''}}
