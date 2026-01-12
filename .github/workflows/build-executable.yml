@@ -41,7 +41,7 @@ jobs:
       - name: Check binary
         run: |
           ls -la .
-          "$BINARY_NAME" --help
+          ./"$BINARY_NAME" --help
         working-directory: ./dist
 
       - name: Upload to release
