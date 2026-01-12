@@ -1,7 +1,7 @@
 name: Build Executable
 
 on:
-  push:  {}
+  push:
 
   workflow_call:
     inputs:
@@ -14,7 +14,8 @@ jobs:
 
   standalone-executable:
     name: Create a standalone linux executable
-    runs-on: ${{ matrix.runner }}
+    runs-on:
+      labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +36,7 @@ jobs:
         uses: exasol/python-toolbox/.github/actions/python-environment@v4
 
       - name: Build standalone executable
-        run: poetry run -- nox -s build-standalone-binary -- --executable-name "$BINARY_NAME"
+        run: poetry run -- nox -s build-standalone-binary -- --executable-name $BINARY_NAME
 
       - name: Check binary
         run: "dist/$BINARY_NAME" --help
