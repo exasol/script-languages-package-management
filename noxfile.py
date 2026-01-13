@@ -8,13 +8,12 @@ from pathlib import Path
 import nox
 import PyInstaller.__main__
 
-from noxconfig import (
-    PROJECT_CONFIG,
-)
-
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
 
+from noxconfig import (
+    PROJECT_CONFIG,
+)
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = ["project:fix"]
@@ -65,11 +64,12 @@ def build_standalone_binary(session: nox.Session):
         finally:
             os.chdir(old_cwd)
 
+
 @nox.session(name="matrix:python-platform", python=False)
 def matrix_python_platform(session: nox.Session):
     from exasol.toolbox.nox._ci import _python_matrix
+
     d = _python_matrix(PROJECT_CONFIG)
     platforms = ["ubuntu-24.04", "ubuntu-24.04-arm"]
     d["platforms"] = platforms
     print(json.dumps(d))
-
