@@ -41,6 +41,9 @@ def test_install_via_apt_empty_packages():
 
     mock_logger.warn.assert_called_once()
     mock_logger.warn.assert_called_with("Got an empty list of AptPackages")
+    assert mock_logger.mock_calls == [
+        call.warn("Got an empty list of AptPackages"),
+    ]
 
 
 def test_install_via_apt_with_pkgs():
@@ -123,7 +126,7 @@ class FailCommandExecutor:
     ],
 )
 def test_install_via_apt_negative_cases(fail_step, expected_error):
-    logger = CaptureLogger()
+    logger = MagicMock(spec=CommandLogger)
     cmd_executor = FailCommandExecutor(fail_step)
 
     pkgs = [
@@ -131,11 +134,11 @@ def test_install_via_apt_negative_cases(fail_step, expected_error):
         Package(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    try:
+
+    with pytest.raises(CommandFailedException):
         install_via_apt(aptPackages, cmd_executor, logger)
-    except CommandFailedException:
-        pass
-    assert any(expected_error in msg for msg in logger.messages)
+
+    logger.err.assert_any_call(expected_error)
 
 
 # For Sonar Cube Code Coverage - ToDo: Check once if it complains

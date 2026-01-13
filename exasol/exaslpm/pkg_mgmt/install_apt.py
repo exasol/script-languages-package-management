@@ -36,7 +36,7 @@ def prepare_install_cmd(apt_packages: AptPackages) -> list[str]:
     return install_cmd
 
 
-def check_error(ret_val: int, msg: str, log: Callable[[str, Any], None]) -> bool:
+def check_error(ret_val: int, msg: str, log: Callable[[str], None]) -> bool:
     if ret_val != 0:
         log(msg)
         return False
@@ -79,13 +79,21 @@ def install_via_apt(
         ):
             raise CommandFailedException("Failed while autoremoving apt cmd")
 
-        locale_cmd = prepare_locale_cmd()
+        locale_cmd = ["locale-gen", "en_US.UTF-8"]
         cmd_res = executor.execute(locale_cmd)
         cmd_res.print_results()
         if not check_error(
-            cmd_res.return_code(), "Failed while preparing apt cmd", log.err
+            cmd_res.return_code(), "Failed while preparing locale cmd", log.err
         ):
-            raise CommandFailedException("Failed while preparing apt cmd")
+            raise CommandFailedException("Failed while preparing locale apt cmd")
+
+        locale_cmd = ["update-locale", "LC_ALL=en_US.UTF-8"]
+        cmd_res = executor.execute(locale_cmd)
+        cmd_res.print_results()
+        if not check_error(
+            cmd_res.return_code(), "Failed while update locale apt cmd", log.err
+        ):
+            raise CommandFailedException("Failed while update locale apt cmd")
 
         ldconfig_cmd = prepare_ldconfig_cmd()
         cmd_res = executor.execute(ldconfig_cmd)

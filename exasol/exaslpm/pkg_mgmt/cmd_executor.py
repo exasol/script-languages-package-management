@@ -1,9 +1,15 @@
+import itertools
 import subprocess
 import threading
-from collections.abc import Callable
+from collections.abc import (
+    Callable,
+    Iterator,
+)
 from typing import (
     IO,
     Any,
+    TextIO,
+    cast,
 )
 
 from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
@@ -15,6 +21,18 @@ class CommandFailedException(Exception):
     """
 
     pass
+
+
+def stream_reader(
+    pipe: Iterator[str],
+    callback: Callable[[str | bytes, Any], None],
+):
+    while True:
+        try:
+            _val = next(pipe)
+            callback(_val)
+        except StopIteration:
+            return
 
 
 class CommandResult:
@@ -45,18 +63,6 @@ class CommandResult:
     def itr_stderr(self) -> Iterator[str]:
         return self._stderr
 
-    def stream_reader(
-        self,
-        pipe: Iterator[str],
-        callback: Callable[[str | bytes, Any], None],
-    ):
-        while True:
-            try:
-                _val = next(pipe)
-                callback(_val)
-            except StopIteration:
-                return
-
     def consume_results(
         self,
         consume_stdout: Callable[[str | bytes, Any], None],
@@ -64,10 +70,10 @@ class CommandResult:
     ):
 
         read_out = threading.Thread(
-            target=self.stream_reader, args=(self._stdout, consume_stdout)
+            target=stream_reader, args=(self._stdout, consume_stdout)
         )
         read_err = threading.Thread(
-            target=self.stream_reader, args=(self._stderr, consume_stderr)
+            target=stream_reader, args=(self._stderr, consume_stderr)
         )
 
         read_out.start()
@@ -98,9 +104,12 @@ class CommandExecutor:
         sub_process = subprocess.Popen(
             cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
+        std_out = cast(TextIO, sub_process.stdout)
+        std_err = cast(TextIO, sub_process.stderr)
+
         return CommandResult(
             fn_ret_code=lambda: sub_process.wait(),
-            stdout=sub_process.stdout,
-            stderr=sub_process.stderr,
+            stdout=iter(std_out),
+            stderr=iter(std_err),
             logger=self._log,
         )

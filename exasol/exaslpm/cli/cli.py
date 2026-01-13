@@ -71,13 +71,18 @@ def install(
     logger = StdLogger()
     cmd_executor = CommandExecutor(logger)
 
-    package_install(
-        phase,
-        package_file,
-        build_step,
-        python_binary,
-        conda_binary,
-        r_binary,
-        cmd_executor,
-        logger,
-    )
+    try:
+        package_install(
+            phase,
+            package_file,
+            build_step,
+            python_binary,
+            conda_binary,
+            r_binary,
+            cmd_executor,
+            logger,
+        )
+        print("-----Bookmark - 01----")
+    except Exception as e:
+        print("-----Bookmark - 02----")
+        raise e
