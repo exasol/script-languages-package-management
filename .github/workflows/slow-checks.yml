@@ -6,14 +6,14 @@ on:
 jobs:
   build-matrix:
     name: Generate Build Matrix
-    uses: ./.github/workflows/matrix-python-platform.yml
+    uses: ./.github/workflows/matrix-python-runner.yml
     permissions:
       contents: read
 
   tests:
-    name: Integration-Tests (Python-${{ matrix.python-version }} Platform-${{ matrix.platform }})
+    name: Integration-Tests (Python-${{ matrix.python-version }} ${{ matrix.runner }})
     needs: [ build-matrix ]
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
     env:
@@ -37,6 +37,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: coverage-python${{ matrix.python-version }}-slow
+          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-slow
           path: .coverage
           include-hidden-files: true

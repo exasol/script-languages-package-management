@@ -65,11 +65,11 @@ def build_standalone_binary(session: nox.Session):
             os.chdir(old_cwd)
 
 
-@nox.session(name="matrix:python-platform", python=False)
-def matrix_python_platform(session: nox.Session):
+@nox.session(name="matrix:python-runner", python=False)
+def matrix_python_runner(session: nox.Session):
     from exasol.toolbox.nox._ci import _python_matrix
 
     d = _python_matrix(PROJECT_CONFIG)
-    platforms = ["ubuntu-24.04", "ubuntu-24.04-arm"]
-    d["platform"] = platforms
+    runners = ["ubuntu-24.04", "ubuntu-24.04-arm"]
+    d["runner"] = runners
     print(json.dumps(d))
