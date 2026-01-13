@@ -71,5 +71,5 @@ def matrix_python_platform(session: nox.Session):
 
     d = _python_matrix(PROJECT_CONFIG)
     platforms = ["ubuntu-24.04", "ubuntu-24.04-arm"]
-    d["platforms"] = platforms
+    d["platform"] = platforms
     print(json.dumps(d))
