@@ -10,7 +10,34 @@ from pydantic import (
 )
 
 
-class Package(BaseModel):
+class AptPackage(BaseModel):
+    name: str
+    version: str
+    repository: str | None = None
+    comment: None | str = None
+
+    # yaml comments don't survive deserialization when we programatically change this file
+
+
+class CondaPackage(BaseModel):
+    name: str
+    version: str
+    build: None | str = None
+    channel: None | str = None
+    comment: None | str = None
+    # yaml comments don't survive deserialization when we programatically change this file
+
+
+class PipPackage(BaseModel):
+    name: str
+    version: str
+    extras: list[str] = []
+    url: None | str = None
+    comment: None | str = None
+    # yaml comments don't survive deserialization when we programatically change this file
+
+
+class RPackage(BaseModel):
     name: str
     version: str
     comment: None | str = None
@@ -19,30 +46,31 @@ class Package(BaseModel):
 
 class AptPackages(BaseModel):
     # we need to add here later different package indexes
-    packages: list[Package]
+    packages: list[AptPackage]
     comment: None | str = None
 
 
 class PipPackages(BaseModel):
     # we need to add here later different package indexes
-    packages: list[Package]
+    packages: list[PipPackage]
     comment: None | str = None
 
 
 class RPackages(BaseModel):
     # we need to add here later different package indexes
-    packages: list[Package]
+    packages: list[RPackage]
     comment: None | str = None
 
 
 class CondaPackages(BaseModel):
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
-    channels: None | list[str]
-    packages: list[Package]
+    channels: None | list[str] = None
+    packages: list[CondaPackage]
     comment: None | str = None
 
 
 class Phase(BaseModel):
+    name: str
     apt: None | AptPackages = None
     pip: None | PipPackages = None
     r: None | RPackages = None
@@ -57,7 +85,8 @@ class Phase(BaseModel):
 
 
 class BuildStep(BaseModel):
-    phases: dict[str, Phase]
+    phases: list[Phase]
+    name: str
     comment: None | str = None
 
     @field_validator("phases")
@@ -69,7 +98,7 @@ class BuildStep(BaseModel):
 
 
 class PackageFile(BaseModel):
-    build_steps: dict[str, BuildStep]
+    build_steps: list[BuildStep]
     comment: None | str = None
 
     @field_validator("build_steps")

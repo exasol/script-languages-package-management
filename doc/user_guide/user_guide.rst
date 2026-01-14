@@ -14,7 +14,7 @@ Supported OS: Ubuntu >= 22.04
 Getting Started
 ---------------
 
-Download the standalone executable ``exaslpm``, for linux, from `release-page <https://github.com/exasol/integration-test-docker-environment/releases>`_. Once downloaded, it can be run as follows
+Download the standalone executable ``exaslpm``, for linux, from `release-page <https://github.com/exasol/script-languages-package-management/releases>`_. Once downloaded, it can be run as follows
 
 ::
 
@@ -41,3 +41,7 @@ This tool comes up with a list of command line options for installing packages s
     --conda-binary
     --r-binary 
                                 These are used to point to channel sources to install from
+
+Package File Editor
+-------------------
+The package provides a Python API (only) to manipulate an existing package file. Check out class ``exasol.exaslpm.pkg_mgmt.pkg_file_editor.pkg_file_editor.PackageFileEditor`` in the API documentation.
