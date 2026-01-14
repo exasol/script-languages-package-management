@@ -65,5 +65,4 @@ def build_standalone_binary(session: nox.Session):
 
 @nox.session(name="matrix:runner", python=False)
 def matrix_runner(session: nox.Session):
-    d = {"runner": PROJECT_CONFIG.runners}
-    print(json.dumps(d))
+    print(json.dumps(PROJECT_CONFIG.runners))

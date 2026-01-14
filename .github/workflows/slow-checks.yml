@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.build-matrix-python.outputs.matrix).python-version }}
-        runner: ${{ fromJson(needs.build-matrix-runner.outputs.matrix).runner }}
+        runner: ${{ fromJson(needs.build-matrix-runner.outputs.matrix) }}
 
     steps:
       - name: SCM Checkout
