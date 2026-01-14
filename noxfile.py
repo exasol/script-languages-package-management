@@ -70,6 +70,5 @@ def matrix_python_runner(session: nox.Session):
     from exasol.toolbox.nox._ci import _python_matrix
 
     d = _python_matrix(PROJECT_CONFIG)
-    runners = ["ubuntu-24.04", "ubuntu-24.04-arm"]
-    d["runner"] = runners
+    d["runner"] = PROJECT_CONFIG.runners
     print(json.dumps(d))
