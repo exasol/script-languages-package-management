@@ -1,6 +1,5 @@
 import pytest
 import yaml
-from pydantic import ValidationError
 
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,

@@ -5,14 +5,12 @@ from unittest import mock
 # from click.testing import CliRunner
 from unittest.mock import (
     MagicMock,
-    call,
 )
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
-from exasol.exaslpm.cli.cli import install
 
 
 @pytest.fixture
