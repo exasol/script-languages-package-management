@@ -4,15 +4,21 @@ on:
   workflow_call:
 
 jobs:
-  build-matrix:
-    name: Generate Build Matrix
-    uses: ./.github/workflows/matrix-python-runner.yml
+  build-matrix-python:
+    name: Generate Build Matrix for runners
+    uses: matrix-python.yml
+    permissions:
+      contents: read
+
+  build-matrix-runner:
+    name: Generate Build Matrix for runners
+    uses: matrix-runner.yml
     permissions:
       contents: read
 
   tests:
     name: Integration-Tests (Python-${{ matrix.python-version }} ${{ matrix.runner }})
-    needs: [ build-matrix ]
+    needs: [ build-matrix-python, build-matrix-runner ]
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -20,7 +26,9 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix.outputs.matrix) }}
+      matrix:
+        python-version: ${{ fromJson(needs.build-matrix-python.outputs.matrix).python-version }}
+        runner: ${{ fromJson(needs.build-matrix-python.outputs.matrix).runner }}
 
     steps:
       - name: SCM Checkout

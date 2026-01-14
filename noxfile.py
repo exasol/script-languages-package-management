@@ -65,10 +65,7 @@ def build_standalone_binary(session: nox.Session):
             os.chdir(old_cwd)
 
 
-@nox.session(name="matrix:python-runner", python=False)
-def matrix_python_runner(session: nox.Session):
-    from exasol.toolbox.nox._ci import _python_matrix
-
-    d = _python_matrix(PROJECT_CONFIG)
-    d["runner"] = PROJECT_CONFIG.runners
+@nox.session(name="matrix:runner", python=False)
+def matrix_runner(session: nox.Session):
+    d = {"runner": PROJECT_CONFIG.runners}
     print(json.dumps(d))
