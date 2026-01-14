@@ -6,13 +6,13 @@ on:
 jobs:
   build-matrix-python:
     name: Generate Build Matrix for runners
-    uses: matrix-python.yml
+    uses: ./.github/workflows/matrix-python.yml
     permissions:
       contents: read
 
   build-matrix-runner:
     name: Generate Build Matrix for runners
-    uses: matrix-runner.yml
+    uses: ./.github/workflows/matrix-runner.yml
     permissions:
       contents: read
 
