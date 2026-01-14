@@ -10,7 +10,7 @@ from docker.models.images import Image
 
 
 def _build(target_path: Path, target_exec_bin_name: str):
-    result = subprocess.run(
+    subprocess.run(
         [
             "nox",
             "-s",
