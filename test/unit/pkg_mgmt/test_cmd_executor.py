@@ -48,13 +48,13 @@ def test_command_results():
     stderr_consumer = MagicMock()
     ret_code = cmd_result.consume_results(stdout_consumer, stderr_consumer)
     assert stdout_consumer.mock_calls == [
-        call("stdout line 1", ""),
-        call("stdout line 2", ""),
+        call("stdout line 1"),
+        call("stdout line 2"),
     ]
     assert stderr_consumer.mock_calls == [
-        call("stderr line 1", ""),
-        call("stderr line 2", ""),
-        call("stderr line 3", ""),
+        call("stderr line 1"),
+        call("stderr line 2"),
+        call("stderr line 3"),
     ]
     assert ret_code == 10
 
@@ -64,12 +64,12 @@ def test_protocol_logger():
     cmd_result = mock_command_result(logger)
     cmd_result.print_results()
     assert logger.info.mock_calls == [
-        call("stdout line 1", ""),
-        call("stdout line 2", ""),
+        call("stdout line 1"),
+        call("stdout line 2"),
         call("Return Code: 10"),
     ]
     assert logger.err.mock_calls == [
-        call("stderr line 1", ""),
-        call("stderr line 2", ""),
-        call("stderr line 3", ""),
+        call("stderr line 1"),
+        call("stderr line 2"),
+        call("stderr line 3"),
     ]

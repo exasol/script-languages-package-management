@@ -23,6 +23,22 @@ build_steps:
     )
 
 
+@pytest.fixture
+def apt_invalid_package_file():
+    return cleandoc(
+        """
+build_steps:
+  build_step_1:
+    phases:
+      phase_1:
+        apt:
+          packages:
+            - name: unknowsoftware
+              version: "1.21.4-1ubuntu4.1"
+    """
+    )
+
+
 def does_package_exist(installed_pkgs: list, pkgs_to_check: dict):
     pkgs_found = False
     for pkg_name, pkg_ver in pkgs_to_check.items():
@@ -39,7 +55,7 @@ def does_package_exist(installed_pkgs: list, pkgs_to_check: dict):
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     apt_package_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file", apt_package_file_content
+        Path("/"), "apt_file_01", apt_package_file_content
     )
 
     pkgs_to_check = {"wget": "1.21.4-1ubuntu4.1", "curl": "8.5.0-2ubuntu10.6"}
@@ -61,13 +77,17 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     pkgs_after_install = docker_container.list_apt()
     assert does_package_exist(pkgs_after_install, pkgs_to_check)
 
-    # for pkg_name, pkg_ver in expected_pkgs.items():
-    #     pkgs_found = next(
-    #         (
-    #             pkg
-    #             for pkg in apt_packages
-    #             if pkg["package"] == pkg_name and pkg["version"] == pkg_ver
-    #         ),
-    #         None,
-    #     )
-    #     assert pkgs_found
+
+def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helper):
+    apt_invalid_pkg_file = docker_container.make_and_upload_file(
+        Path("/"), "apt_file_02", apt_invalid_package_file
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(apt_invalid_pkg_file)
+        .phase("phase_1")
+        .build_step("build_step_1")
+        .args,
+        False,
+    )
+    assert ret != 0

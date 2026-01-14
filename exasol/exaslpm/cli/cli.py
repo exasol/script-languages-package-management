@@ -82,7 +82,5 @@ def install(
             cmd_executor,
             logger,
         )
-        print("-----Bookmark - 01----")
     except Exception as e:
-        print("-----Bookmark - 02----")
         raise e

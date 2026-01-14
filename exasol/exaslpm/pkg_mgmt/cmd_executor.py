@@ -25,7 +25,7 @@ class CommandFailedException(Exception):
 
 def stream_reader(
     pipe: Iterator[str],
-    callback: Callable[[str | bytes, Any], None],
+    callback: Callable[[str | bytes], None],
 ):
     while True:
         try:

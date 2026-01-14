@@ -81,7 +81,10 @@ def test_install_via_apt_with_pkgs():
         call.execute(["apt-get", "-y", "autoremove"]),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["locale-gen", "&&", "update-locale", "LANG=en_US.UTF8"]),
+        call.execute(["locale-gen", "en_US.UTF-8"]),
+        call.execute().print_results(),
+        call.execute().return_code(),
+        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"]),
         call.execute().print_results(),
         call.execute().return_code(),
         call.execute(["ldconfig"]),
@@ -121,8 +124,9 @@ class FailCommandExecutor:
         (1, "Failed while installing apt cmd"),
         (2, "Failed while cleaning apt cmd"),
         (3, "Failed while autoremoving apt cmd"),
-        (4, "Failed while preparing apt cmd"),
-        (5, "Failed while ldconfig apt cmd"),
+        (4, "Failed while preparing locale-gen cmd"),
+        (5, "Failed while update-locale apt cmd"),
+        (6, "Failed while ldconfig apt cmd"),
     ],
 )
 def test_install_via_apt_negative_cases(fail_step, expected_error):
@@ -139,37 +143,3 @@ def test_install_via_apt_negative_cases(fail_step, expected_error):
         install_via_apt(aptPackages, cmd_executor, logger)
 
     logger.err.assert_any_call(expected_error)
-
-
-# For Sonar Cube Code Coverage - ToDo: Check once if it complains
-def test_prepare_update_command():
-    cmd_strs = prepare_update_command()
-    cmd_str = " ".join(cmd_strs)
-    assert "apt-get" in cmd_str
-    assert "update" in cmd_str
-
-
-def test_prepare_clean_cmd():
-    cmd_strs = prepare_clean_cmd()
-    cmd_str = " ".join(cmd_strs)
-    assert "apt-get" in cmd_str
-    assert "clean" in cmd_str
-
-
-def test_prepare_autoremove_cmd():
-    cmd_strs = prepare_autoremove_cmd()
-    cmd_str = " ".join(cmd_strs)
-    assert "apt-get" in cmd_str
-    assert "remove" in cmd_str
-
-
-def test_prepare_locale_cmd():
-    cmd_strs = prepare_locale_cmd()
-    cmd_str = " ".join(cmd_strs)
-    assert "locale" in cmd_str
-
-
-def test_prepare_ldconfig_cmd():
-    cmd_strs = prepare_ldconfig_cmd()
-    cmd_str = " ".join(cmd_strs)
-    assert "ldconfig" in cmd_str
