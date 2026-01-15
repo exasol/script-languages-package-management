@@ -1,8 +1,6 @@
 import pathlib
 from test.unit.cli.cli_runner import CliRunner
 from unittest import mock
-
-# from click.testing import CliRunner
 from unittest.mock import (
     MagicMock,
 )
@@ -11,8 +9,6 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
-from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
-from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 
 
 @pytest.fixture
