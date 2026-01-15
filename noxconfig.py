@@ -6,9 +6,7 @@ from exasol.toolbox.config import BaseConfig
 
 
 class Config(BaseConfig):
-    @property
-    def runners(self):
-        return ["ubuntu-24.04", "ubuntu-24.04-arm"]
+    runners: list[str] = ["ubuntu-24.04", "ubuntu-24.04-arm"]
 
 
 PROJECT_CONFIG = Config(

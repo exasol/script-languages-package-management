@@ -1,4 +1,4 @@
-name: Build Matrix (Python and Runners)
+name: Build Matrix (Runners)
 
 on:
   workflow_call:
