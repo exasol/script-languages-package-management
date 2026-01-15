@@ -19,20 +19,6 @@ from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 
-class CaptureLogger:
-    def __init__(self):
-        self.messages = []
-
-    def info(self, msg: str, **kwargs):
-        self.messages.append(msg)
-
-    def warn(self, msg: str, **kwargs):
-        self.messages.append(msg)
-
-    def err(self, msg: str, **kwargs):
-        self.messages.append(msg)
-
-
 def test_install_via_apt_empty_packages():
     mock_logger = MagicMock(spec=CommandLogger)
     mock_executor = MagicMock(spec=CommandExecutor)
