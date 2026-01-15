@@ -11,6 +11,8 @@ import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
+from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
+from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 
 
 @pytest.fixture
@@ -72,5 +74,7 @@ def test_mock_all_options(
             pathlib.PosixPath(python_binary),
             pathlib.PosixPath(conda_binary),
             pathlib.PosixPath(r_binary),
+            mock.ANY,
+            mock.ANY,
         )
     ]
