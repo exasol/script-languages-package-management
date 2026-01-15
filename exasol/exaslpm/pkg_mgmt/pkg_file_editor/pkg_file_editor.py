@@ -14,7 +14,7 @@ class PackageFileEditor:
 
     def __init__(self, package_file: pathlib.Path):
         self.package_file = package_file
-        with open(self.package_file) as f:
+        with open(self.package_file, "r", encoding="utf-8") as f:
             yaml_data = yaml.safe_load(f)
         self.package_content = PackageFile.model_validate(yaml_data)
         self._package_graph_pointer = PackageGraphPointer(self.package_file)
@@ -22,7 +22,7 @@ class PackageFileEditor:
     def commit(self):
         data_dict = self.package_content.model_dump()
 
-        with open(self.package_file, "w") as f:
+        with open(self.package_file, "w", encoding="utf-8") as f:
             yaml.dump(data_dict, f, sort_keys=False)
 
     def update_comment(self, comment: str) -> "PackageFileEditor":

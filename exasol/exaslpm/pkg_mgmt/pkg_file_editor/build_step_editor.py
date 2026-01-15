@@ -1,6 +1,5 @@
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
-    Phase,
 )
 from exasol.exaslpm.pkg_mgmt.pkg_file_editor.errors import PhaseNotFoundError
 from exasol.exaslpm.pkg_mgmt.pkg_file_editor.phase_editor import PhaseEditor

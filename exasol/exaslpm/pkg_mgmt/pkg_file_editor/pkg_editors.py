@@ -5,7 +5,6 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackages,
     CondaPackage,
     CondaPackages,
-    Phase,
     PipPackage,
     PipPackages,
     RPackage,
@@ -136,10 +135,8 @@ class CondaPackageEditor:
 
         try:
             self.conda_packages.channels.remove(channel)
-        except ValueError:
-            raise ChannelNotFoundError(
-                self._package_graph_pointer, f"{channel} not found."
-            )
+        except ValueError as exc:
+            raise ChannelNotFoundError(self._package_graph_pointer, f'{channel} not found.') from exc
         return self
 
 
