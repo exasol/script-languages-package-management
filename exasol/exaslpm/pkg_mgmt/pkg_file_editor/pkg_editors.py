@@ -1,3 +1,5 @@
+from typing import TypeVar
+
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
@@ -18,12 +20,14 @@ from exasol.exaslpm.pkg_mgmt.pkg_file_editor.pkg_graph_pointer import (
     PackageGraphPointer,
 )
 
-AnyPackage = AptPackage | CondaPackage | PipPackage | RPackage
+PackageType = TypeVar("PackageType", AptPackage, CondaPackage, PipPackage, RPackage)
+
+AnyPackageList = list[PackageType]
 
 
 def _add_package(
-    pkg: AnyPackage,
-    packages: list[AnyPackage],
+    pkg: PackageType,
+    packages: AnyPackageList,
     package_graph_pointer: PackageGraphPointer,
 ):
     matched_pkgs = [package for package in packages if pkg.name == package.name]
@@ -37,7 +41,7 @@ def _add_package(
 
 def _remove_package(
     pkg_name: str,
-    packages: list[AnyPackage],
+    packages: AnyPackageList,
     package_graph_pointer: PackageGraphPointer,
 ):
     matched_pkgs = [package for package in packages if pkg_name == package.name]
@@ -114,6 +118,8 @@ class CondaPackageEditor:
         return self
 
     def add_channel(self, channel: str) -> "CondaPackageEditor":
+        if self.conda_packages.channels is None:
+            self.conda_packages.channels = []
         _add_string(
             channel,
             self.conda_packages.channels,
@@ -123,6 +129,11 @@ class CondaPackageEditor:
         return self
 
     def remove_channel(self, channel: str) -> "CondaPackageEditor":
+        if self.conda_packages.channels is None:
+            raise ChannelNotFoundError(
+                self._package_graph_pointer, f"{channel} not found."
+            )
+
         try:
             self.conda_packages.channels.remove(channel)
         except ValueError:
