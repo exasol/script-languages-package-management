@@ -1,6 +1,5 @@
 import pathlib
 
-import click
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
@@ -9,7 +8,6 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
-    CommandFailedException,
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt

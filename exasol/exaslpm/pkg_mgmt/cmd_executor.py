@@ -1,4 +1,3 @@
-import itertools
 import subprocess
 import threading
 from collections.abc import (
@@ -6,7 +5,6 @@ from collections.abc import (
     Iterator,
 )
 from typing import (
-    IO,
     Any,
     TextIO,
     cast,
@@ -17,10 +15,8 @@ from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
 
 class CommandFailedException(Exception):
     """
-    Raised when commands faile
+    Raised when command fails
     """
-
-    pass
 
 
 def stream_reader(
@@ -54,7 +50,7 @@ class CommandResult:
         self._stdout = stdout
         self._stderr = stderr
 
-    def return_code(self):
+    def return_code(self) -> int:
         return self._fn_return_code()
 
     def itr_stdout(self) -> Iterator[str]:

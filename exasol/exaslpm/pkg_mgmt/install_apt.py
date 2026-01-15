@@ -1,10 +1,7 @@
 # sgn
 
 from collections.abc import Callable
-from typing import (
-    Any,
-    TypedDict,
-)
+from dataclasses import dataclass
 
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
@@ -14,53 +11,54 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
 )
 
 
-class CmdNErr(TypedDict):
+@dataclass
+class CommandExecInfo:
     cmd: list[str]
     err: str
 
 
-def prepare_all_cmds(apt_packages: AptPackages) -> list[dict]:
+def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
     all_cmds = []
 
-    cmd_n_err: dict[str, list[str] | str] = {}
-    cmd_n_err["cmd"] = ["apt-get", "-y", "update"]
-    cmd_n_err["err"] = "Failed while updating apt cmd"
-    all_cmds.append(cmd_n_err)
+    all_cmds.append(
+        CommandExecInfo(
+            cmd=["apt-get", "-y", "update"], err="Failed while updating apt cmd"
+        )
+    )
 
-    cmd_n_err = {}
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
-    if apt_packages.packages is not None:
-        for package in apt_packages.packages:
-            install_cmd.append(f"{package.name}={package.version}")
-    cmd_n_err["cmd"] = install_cmd
-    cmd_n_err["err"] = "Failed while installing apt cmd"
-    all_cmds.append(cmd_n_err)
-
-    cmd_n_err = {}
-    cmd_n_err["cmd"] = ["apt-get", "-y", "clean"]
-    cmd_n_err["err"] = "Failed while cleaning apt cmd"
-    all_cmds.append(cmd_n_err)
-
-    cmd_n_err = {}
-    cmd_n_err["cmd"] = ["apt-get", "-y", "autoremove"]
-    cmd_n_err["err"] = "Failed while autoremoving apt cmd"
-    all_cmds.append(cmd_n_err)
-
-    cmd_n_err = {}
-    cmd_n_err["cmd"] = ["locale-gen", "en_US.UTF-8"]
-    cmd_n_err["err"] = "Failed while preparing locale-gen cmd"
-    all_cmds.append(cmd_n_err)
-
-    cmd_n_err = {}
-    cmd_n_err["cmd"] = ["update-locale", "LC_ALL=en_US.UTF-8"]
-    cmd_n_err["err"] = "Failed while update-locale apt cmd"
-    all_cmds.append(cmd_n_err)
-
-    cmd_n_err = {}
-    cmd_n_err["cmd"] = ["ldconfig"]
-    cmd_n_err["err"] = "Failed while ldconfig apt cmd"
-    all_cmds.append(cmd_n_err)
-
+    if apt_packages.packages is None:
+        raise ValueError("no apt packages defined")
+    for package in apt_packages.packages:
+        install_cmd.append(f"{package.name}={package.version}")
+    all_cmds.append(
+        CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")
+    )
+    all_cmds.append(
+        CommandExecInfo(
+            cmd=["apt-get", "-y", "clean"], err="Failed while running apt clean"
+        )
+    )
+    all_cmds.append(
+        CommandExecInfo(
+            cmd=["apt-get", "-y", "autoremove"],
+            err="Failed while running apt autoremove",
+        )
+    )
+    all_cmds.append(
+        CommandExecInfo(
+            cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen cmd"
+        )
+    )
+    all_cmds.append(
+        CommandExecInfo(
+            cmd=["update-locale", "LC_ALL=en_US.UTF-8"],
+            err="Failed while running update-locale cmd",
+        )
+    )
+    all_cmds.append(
+        CommandExecInfo(cmd=["ldconfig"], err="Failed while running ldconfig")
+    )
     return all_cmds
 
 
@@ -77,10 +75,10 @@ def install_via_apt(
     if len(apt_packages.packages) > 0:
         cmd_n_errs = prepare_all_cmds(apt_packages)
         for cmd_n_err in cmd_n_errs:
-            cmd_res = executor.execute(cmd_n_err["cmd"])
+            cmd_res = executor.execute(cmd_n_err.cmd)
             cmd_res.print_results()
-            if not check_error(cmd_res.return_code(), cmd_n_err["err"], log.err):
-                raise CommandFailedException(cmd_n_err["err"])
+            if not check_error(cmd_res.return_code(), cmd_n_err.err, log.err):
+                raise CommandFailedException(cmd_n_err.err)
     else:
         log.warn("Got an empty list of AptPackages")
     return 0

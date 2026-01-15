@@ -71,16 +71,13 @@ def install(
     logger = StdLogger()
     cmd_executor = CommandExecutor(logger)
 
-    try:
-        package_install(
-            phase,
-            package_file,
-            build_step,
-            python_binary,
-            conda_binary,
-            r_binary,
-            cmd_executor,
-            logger,
-        )
-    except Exception as e:
-        raise e
+    package_install(
+        phase,
+        package_file,
+        build_step,
+        python_binary,
+        conda_binary,
+        r_binary,
+        cmd_executor,
+        logger,
+    )

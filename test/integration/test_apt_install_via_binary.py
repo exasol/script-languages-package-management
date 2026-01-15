@@ -60,11 +60,8 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
 
     pkgs_to_check = {"wget": "1.21.4-1ubuntu4.1", "curl": "8.5.0-2ubuntu10.6"}
 
-    try:
-        pkgs_before_install = docker_container.list_apt()
-        assert not does_package_exist(pkgs_before_install, pkgs_to_check)
-    except JSONDecodeError as jde:
-        pass
+    pkgs_before_install = docker_container.list_apt()
+    assert not does_package_exist(pkgs_before_install, pkgs_to_check)
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(apt_package_file)
@@ -91,3 +88,4 @@ def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helpe
         False,
     )
     assert ret != 0
+    assert "Unable to locate package unknowsoftware" in out

@@ -53,7 +53,7 @@ class DockerTestImageBuilder:
                 ENV LANG en_US.UTF-8
                 ENV LANGUAGE en_US:en
                 ENV LC_ALL en_US.UTF-8
-                RUN apt-get update && apt-get install locales
+                RUN apt-get update && apt-get install locales && locale-gen en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8
 
                 COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslpm_path_in_container} 
             """
