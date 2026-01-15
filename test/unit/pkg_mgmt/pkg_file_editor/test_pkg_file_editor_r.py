@@ -82,7 +82,7 @@ def test_add_r_package_fails_same_pkg(package_file_context, base_r_package_file)
     Test that trying to add an r package which already exists raises expected DuplicateEntryError.
     """
     with package_file_context(base_r_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'dplyr' already exists with version '1.2.3' at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',R]"
+        expected_err_msg = f"Package 'dplyr' already exists with version '1.2.3' at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> R]"
         with pytest.raises(DuplicateEntryError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME
@@ -125,7 +125,7 @@ def test_remove_r_package_fails_invalid_package(
     """
     TIDYR_PACKAGE = RPackage(name="tidyr", version="1.0.0")
     with package_file_context(base_r_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'tidyr' not found. at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',R]"
+        expected_err_msg = f"Package 'tidyr' not found. at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> R]"
         with pytest.raises(PackageNotFoundError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME

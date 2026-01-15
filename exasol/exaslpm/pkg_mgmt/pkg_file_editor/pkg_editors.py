@@ -136,7 +136,9 @@ class CondaPackageEditor:
         try:
             self.conda_packages.channels.remove(channel)
         except ValueError as exc:
-            raise ChannelNotFoundError(self._package_graph_pointer, f'{channel} not found.') from exc
+            raise ChannelNotFoundError(
+                self._package_graph_pointer, f"{channel} not found."
+            ) from exc
         return self
 
 

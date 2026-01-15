@@ -14,7 +14,7 @@ class PackageFileEditor:
 
     def __init__(self, package_file: pathlib.Path):
         self.package_file = package_file
-        with open(self.package_file, "r", encoding="utf-8") as f:
+        with open(self.package_file, encoding="utf-8") as f:
             yaml_data = yaml.safe_load(f)
         self.package_content = PackageFile.model_validate(yaml_data)
         self._package_graph_pointer = PackageGraphPointer(self.package_file)

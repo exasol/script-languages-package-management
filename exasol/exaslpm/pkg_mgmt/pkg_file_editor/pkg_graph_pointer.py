@@ -9,17 +9,17 @@ class PackageGraphPointer:
     Depending on position of occurred error creates a string of type:
     [Package-file = '...']
     or
-    [Package-file = '...', Build-Step = '...']
+    [Package-file = '...' -> Build-Step = '...']
     or
-    [Package-file = '...', Build-Step = '...',Phase = '...']
+    [Package-file = '...' -> Build-Step = '...' -> Phase = '...']
     or
-    [Package-file = '...', Build-Step = '...',Phase = '...', Pip]
+    [Package-file = '...' -> Build-Step = '...' -> Phase = '...' -> Pip]
     or
-    [Package-file = '...', Build-Step = '...',Phase = '...', Apt]
+    [Package-file = '...' -> Build-Step = '...' -> Phase = '...' -> Apt]
     or
-    [Package-file = '...', Build-Step = '...',Phase = '...', Conda]
+    [Package-file = '...' -> Build-Step = '...' -> Phase = '...' -> Conda]
     or
-    [Package-file = '...', Build-Step = '...',Phase = '...', R]
+    [Package-file = '...' -> Build-Step = '...' -> Phase = '...' -> R]
 
     """
 
@@ -89,4 +89,4 @@ class PackageGraphPointer:
                 if self.package_mgr_name:
                     items.append(f"{self.package_mgr_name}")
 
-        return "[{}]".format(",".join(items))
+        return "[{}]".format(" -> ".join(items))

@@ -82,7 +82,7 @@ def test_build_step_editor_fail_on_wrong_phase_name(
     Test that trying to access an invalid phase name raises expected PhaseNotFoundError.
     """
     with package_file_context(base_apt_package_file) as pkg_file_editor:
-        expected_err_msg = f"'Invalid phase name' phase not found at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step']"
+        expected_err_msg = f"'Invalid phase name' phase not found at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step']"
         with pytest.raises(PhaseNotFoundError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 "Invalid phase name"

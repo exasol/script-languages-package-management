@@ -82,7 +82,7 @@ def test_add_pip_package_fails_same_pkg(package_file_context, base_pip_package_f
     Test that trying to add a pip package which already exists raises expected DuplicateEntryError.
     """
     with package_file_context(base_pip_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'numpy' already exists with version '1.2.3' at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',Pip]"
+        expected_err_msg = f"Package 'numpy' already exists with version '1.2.3' at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> Pip]"
         with pytest.raises(DuplicateEntryError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME
@@ -124,7 +124,7 @@ def test_remove_pip_package_fails_invalid_package(
     """
     PANDAS_PACKAGE = PipPackage(name="pandas", version="1.0.0")
     with package_file_context(base_pip_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'pandas' not found. at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',Pip]"
+        expected_err_msg = f"Package 'pandas' not found. at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> Pip]"
         with pytest.raises(PackageNotFoundError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME

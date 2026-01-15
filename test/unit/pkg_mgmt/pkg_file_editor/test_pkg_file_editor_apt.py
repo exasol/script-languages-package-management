@@ -62,7 +62,7 @@ def test_add_apt_package_fails_same_pkg(package_file_context, base_apt_package_f
     Test that trying to add an apt package which already exists raises expected DuplicateEntryError.
     """
     with package_file_context(base_apt_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'test apt pkg' already exists with version '1.0.0' at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',Apt]"
+        expected_err_msg = f"Package 'test apt pkg' already exists with version '1.0.0' at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> Apt]"
         with pytest.raises(DuplicateEntryError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME
@@ -105,7 +105,7 @@ def test_remove_apt_package_fails_invalid_package(
     """
     CURL_PACKAGE = AptPackage(name="curl", version="1.0.0")
     with package_file_context(base_apt_package_file) as pkg_file_editor:
-        expected_err_msg = f"Package 'curl' not found. at [Package-file = '{pkg_file_editor.package_file}',Build-Step = 'test build step',Phase = 'test phase',Apt]"
+        expected_err_msg = f"Package 'curl' not found. at [Package-file = '{pkg_file_editor.package_file}' -> Build-Step = 'test build step' -> Phase = 'test phase' -> Apt]"
         with pytest.raises(PackageNotFoundError, match=re.escape(expected_err_msg)):
             pkg_file_editor.update_build_step(TEST_BUILD_STEP_NAME).update_phase(
                 TEST_PHASE_NAME
