@@ -122,11 +122,11 @@ class FailCommandExecutor:
     [
         (0, "Failed while updating apt cmd"),
         (1, "Failed while installing apt cmd"),
-        (2, "Failed while cleaning apt cmd"),
-        (3, "Failed while autoremoving apt cmd"),
-        (4, "Failed while preparing locale-gen cmd"),
-        (5, "Failed while update-locale apt cmd"),
-        (6, "Failed while ldconfig apt cmd"),
+        (2, "Failed while running apt clean"),
+        (3, "Failed while running apt autoremove"),
+        (4, "Failed while running locale-gen cmd"),
+        (5, "Failed while running update-locale cmd"),
+        (6, "Failed while running ldconfig"),
     ],
 )
 def test_install_via_apt_negative_cases(fail_step, expected_error):
