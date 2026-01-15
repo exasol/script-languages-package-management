@@ -104,7 +104,7 @@ class CommandExecutor:
         std_err = cast(TextIO, sub_process.stderr)
 
         return CommandResult(
-            fn_ret_code=lambda: sub_process.wait(),
+            fn_ret_code=sub_process.wait,
             stdout=iter(std_out),
             stderr=iter(std_err),
             logger=self._log,

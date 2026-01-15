@@ -10,10 +10,10 @@ class CommandLogger(Protocol):
 
 class StdLogger:
     def info(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
+        print(msg + str(kwargs), file=sys.stdout)
 
     def warn(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
+        print(msg + str(kwargs), file=sys.stdout)
 
     def err(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stderr)
+        print(msg + str(kwargs), file=sys.stderr)
