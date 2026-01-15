@@ -1,30 +1,9 @@
-import shutil
-import subprocess
-from pathlib import Path
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
 from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 from docker.models.images import Image
-
-
-def _build(target_path: Path, target_exec_bin_name: str):
-    result = subprocess.run(
-        [
-            "nox",
-            "-s",
-            "build-standalone-binary",
-            "--",
-            "--executable-name",
-            target_exec_bin_name,
-            "--cleanup",
-        ],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    shutil.move(Path("dist") / target_exec_bin_name, target_path)
 
 
 class DockerTestImage:

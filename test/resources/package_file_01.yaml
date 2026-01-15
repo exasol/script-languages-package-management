@@ -1,0 +1,71 @@
+# Top-level comment about the package file
+comment: "Main package file for build steps"
+
+build_steps:
+  build_step_1:
+    comment: "First build step, e.g., system dependencies"
+    phases:
+      phase_1:
+        comment: "APT packages for base system"
+        apt:
+          comment: "Comment for APT section"
+          packages:
+            - name: "curl"
+              version: "7.68.0"
+              comment: "For downloading"
+            - name: "git"
+              version: "2.25.1"
+              comment: "VCS support"
+        pip:
+          comment: "Python packages"
+          packages:
+            - name: "requests"
+              version: "2.31.0"
+              comment: "HTTP package"
+            - name: "click"
+              version: "8.1.7"
+              comment: "CLI utilities"
+        r:
+          comment: "Optional R packages"
+          packages:
+            - name: "ggplot2"
+              version: "3.4.0"
+              comment: "Plotting library"
+        conda:
+          comment: "Optional conda packages"
+          channels:
+            - "defaults"
+            - "conda-forge"
+          packages:
+            - name: "numpy"
+              version: "1.26.0"
+              comment: "NumPy for Python"
+            - name: "pandas"
+              version: "2.1.2"
+              comment: "Data manipulation"
+      phase_2:
+        comment: "Dev tools for CI/CD"
+        apt:
+          comment: "Additional apt packages"
+          packages:
+            - name: "python3"
+              version: "3.8.10"
+              comment: "System python"
+        # You can leave out pip/r/conda if not needed in this phase
+
+  build_step_2:
+    comment: "Second build step, e.g., App build"
+    phases:
+      phase_install:
+        comment: "Install app dependencies"
+        pip:
+          packages:
+            - name: "flask"
+              version: "3.0.0"
+              comment: "Web framework"
+            - name: "sqlalchemy"
+              version: "2.0.22"
+              comment: "ORM"
+        # APT/R/Conda can be omitted if not needed here
+
+# You can add further build_steps and phases as needed.

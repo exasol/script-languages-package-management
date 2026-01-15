@@ -6,4 +6,5 @@
  - #3: Created CLI for install commands
  - #12: Integration Test FW
  - #27: Added executables to release
+ - #29: Changed Github workflows to run tests on ARM
  - #31: Added new Add/Remove package API 

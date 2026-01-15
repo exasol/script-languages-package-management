@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import shutil
 from argparse import ArgumentParser
@@ -10,15 +11,17 @@ import PyInstaller.__main__
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
 
-# default actions to be run if nothing is explicitly specified with the -s option
-nox.options.sessions = ["project:fix"]
+from noxconfig import (
+    PROJECT_CONFIG,
+)
 
-ROOT = Path(__file__).parent
+# default actions to be run if nothing is explicitly specified with the -s option
+nox.options.sessions = ["format:fix"]
 
 
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
-    script_path = str(ROOT / "exasol" / "exaslpm" / "main.py")
+    script_path = str(PROJECT_CONFIG.source_code_path / "main.py")
 
     p = ArgumentParser(
         usage='nox -s build-standalone-binary -- --executable-name "exaslpm"',
@@ -34,7 +37,7 @@ def build_standalone_binary(session: nox.Session):
     else:
         old_cwd = os.getcwd()
         try:
-            os.chdir(ROOT)
+            os.chdir(PROJECT_CONFIG.root_path)
             options = [
                 script_path,
                 "--onefile",  # As a single exe file
@@ -49,7 +52,7 @@ def build_standalone_binary(session: nox.Session):
                     spec_file_path.unlink()
                 else:
                     session.warn(f"Expected spec file '{spec_file_path}' doesn't exist")
-                build_path = ROOT / "build" / exe_name
+                build_path = PROJECT_CONFIG.root_path / "build" / exe_name
                 if build_path.exists():
                     shutil.rmtree(str(build_path))
                 else:
@@ -58,3 +61,8 @@ def build_standalone_binary(session: nox.Session):
                     )
         finally:
             os.chdir(old_cwd)
+
+
+@nox.session(name="matrix:runner", python=False)
+def matrix_runner(session: nox.Session):
+    print(json.dumps(PROJECT_CONFIG.runners))

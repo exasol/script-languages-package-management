@@ -7,6 +7,8 @@ from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 from docker.models.containers import Container
 
+from exasol.exaslpm.model.package_file_config import Package
+
 
 class DockerTestContainer:
     def __init__(self, container: Container, exaslpm_info: ExaslpmInfo) -> None:
@@ -18,7 +20,7 @@ class DockerTestContainer:
     ) -> tuple[int, str]:
         (exit_code, output) = self.container.exec_run(param_list)
         if check_exit_code:
-            assert exit_code == 0, output
+            assert exit_code == 0, output.decode("utf-8")
         return exit_code, output.decode("utf-8")
 
     def run_exaslpm(
@@ -28,7 +30,7 @@ class DockerTestContainer:
             [str(self.exaslpm_info.exaslpm_path_in_container)] + param_list
         )
         if check_exit_code:
-            assert exit_code == 0, output
+            assert exit_code == 0, output.decode("utf-8")
         return exit_code, output.decode("utf-8")
 
     def remove(self) -> None:
@@ -50,7 +52,7 @@ class DockerTestContainer:
         assert res
         return Path(target_path_in_container) / file_name
 
-    def list_apt(self):
+    def list_apt(self) -> list[Package]:
         _, out = self.run(
             [
                 "bash",
@@ -62,4 +64,6 @@ class DockerTestContainer:
         for line in out.strip().splitlines():
             if line.strip():  # avoid empty lines
                 packages.append(json.loads(line))
-        return packages
+        return [
+            Package(name=pkg["package"], version=pkg["version"]) for pkg in packages
+        ]

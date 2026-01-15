@@ -1,18 +1,14 @@
 import pathlib
 from test.unit.cli.cli_runner import CliRunner
 from unittest import mock
-
-# from click.testing import CliRunner
 from unittest.mock import (
     MagicMock,
-    call,
 )
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from exasol.exaslpm.cli import cli
-from exasol.exaslpm.cli.cli import install
 
 
 @pytest.fixture
@@ -74,5 +70,7 @@ def test_mock_all_options(
             pathlib.PosixPath(python_binary),
             pathlib.PosixPath(conda_binary),
             pathlib.PosixPath(r_binary),
+            mock.ANY,
+            mock.ANY,
         )
     ]
