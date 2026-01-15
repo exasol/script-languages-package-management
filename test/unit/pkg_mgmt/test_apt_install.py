@@ -1,21 +1,16 @@
 from unittest.mock import (
     MagicMock,
     call,
-    patch,
 )
 
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
-    AptPackages,
     Package,
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
-    CommandExecutor,
-    CommandLogger,
     CommandResult,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 

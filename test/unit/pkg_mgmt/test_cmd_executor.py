@@ -4,8 +4,6 @@ from unittest.mock import (
     call,
 )
 
-import pytest
-
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,

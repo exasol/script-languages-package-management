@@ -10,7 +10,7 @@ import docker
 
 
 def _build_binary(target_path: Path, target_exec_bin_name: str):
-    result = subprocess.run(
+    subprocess.run(
         [
             "nox",
             "-s",

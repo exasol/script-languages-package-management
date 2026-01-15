@@ -1,5 +1,3 @@
-import pytest
-
 from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
 from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
 
