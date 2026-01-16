@@ -11,6 +11,7 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
+from exasol.exaslpm.pkg_mgmt.install_conda import install_via_conda
 
 
 def parse_package_file(
@@ -68,11 +69,19 @@ def package_install(
             exception=e,
         )
         raise
-    try:
-        if single_phase.apt is not None:
+    if single_phase.apt is not None:
+        try:
             install_via_apt(single_phase.apt, cmd_executor, logger)
-    except Exception as e:
-        logger.err(
-            "Failed to install apt packages.", package_file=package_file, exception=e
-        )
-        raise
+        except Exception as e:
+            logger.err(
+                "Failed to install apt packages", package_file=package_file, exception=e
+            )
+            raise
+    elif single_phase.conda is not None:
+        try:
+            install_via_conda(single_phase.conda, conda_binary, cmd_executor, logger)
+        except Exception as e:
+            logger.err(
+                "Failed to install conda packages.", package_file=package_file, exception=e
+            )
+            raise
