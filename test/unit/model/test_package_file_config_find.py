@@ -3,6 +3,10 @@ from test.unit.model.build_test_matrix import (
     build_test_matrix,
     package_without_version,
 )
+from test.unit.test_data import (
+    TEST_BUILD_STEP,
+    TEST_BUILD_STEP_2,
+)
 
 import pytest
 
@@ -17,49 +21,19 @@ from exasol.exaslpm.model.package_file_config import (
     Phase,
 )
 
-TEST_BUILD_STEP = BuildStep(
-    name="build_step_one",
-    phases=[
-        Phase(
-            name="phase 1",
-            apt=AptPackages(
-                packages=[
-                    AptPackage(name="curl", version="7.68.0", comment="For downloading")
-                ]
-            ),
-        )
-    ],
-)
-
 
 def test_find_in_single_build_step_model():
     model = PackageFile(build_steps=[TEST_BUILD_STEP])
-    found_build_step = model.find_build_step("build_step_one")
+    found_build_step = model.find_build_step("build_step_1")
     assert found_build_step == TEST_BUILD_STEP
 
 
 def test_find_build_step_in_multi_build_step_model():
-    test_build_step_one = TEST_BUILD_STEP
-    test_build_step_two = BuildStep(
-        name="build_step_two",
-        phases=[
-            Phase(
-                name="phase 1",
-                conda=CondaPackages(
-                    packages=[
-                        CondaPackage(
-                            name="curl", version="7.68.0", comment="For downloading"
-                        )
-                    ]
-                ),
-            )
-        ],
-    )
-    model = PackageFile(build_steps=[test_build_step_one, test_build_step_two])
-    found_build_step = model.find_build_step("build_step_one")
-    assert found_build_step == test_build_step_one
-    found_build_step = model.find_build_step("build_step_two")
-    assert found_build_step == test_build_step_two
+    model = PackageFile(build_steps=[TEST_BUILD_STEP, TEST_BUILD_STEP_2])
+    found_build_step = model.find_build_step("build_step_1")
+    assert found_build_step == TEST_BUILD_STEP
+    found_build_step = model.find_build_step("build_step_2")
+    assert found_build_step == TEST_BUILD_STEP_2
 
 
 def test_duplicated_buildstep_raises():
@@ -68,9 +42,9 @@ def test_duplicated_buildstep_raises():
 
     with pytest.raises(
         ValueError,
-        match=r"More than on build step for build step name 'build_step_one'",
+        match=r"More than on build step for build step name 'build_step_1'",
     ):
-        model.find_build_step("build_step_one")
+        model.find_build_step("build_step_1")
 
 
 def test_invalid_buildstep_raises():
@@ -92,7 +66,7 @@ def test_find_phase_in_single_build_step_model():
 
 def test_find_phase_in_multi_phase_model():
     test_build_step_one = BuildStep(
-        name="build_step_one",
+        name="build_step_1",
         phases=[
             Phase(
                 name="phase 1",
@@ -124,7 +98,7 @@ def test_find_phase_in_multi_phase_model():
 
 def test_find_phase_duplicate_phase_raises():
     test_build_step = BuildStep(
-        name="build_step_one",
+        name="build_step_1",
         phases=[
             Phase(
                 name="phase 1",

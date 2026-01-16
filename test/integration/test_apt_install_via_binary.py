@@ -108,6 +108,25 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
 
+def test_history(docker_container, apt_package_file_content, cli_helper):
+    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+
+    apt_package_file = docker_container.make_and_upload_file(
+        Path("/"), "apt_file_01", apt_package_file_yaml
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(apt_package_file)
+        .phase("phase_1")
+        .build_step("build_step_1")
+        .args
+    )
+    assert ret == 0
+    _, out = docker_container.run(["ls", "/build_info/packages/history"])
+    history_files = [line.strip() for line in out.splitlines()]
+    assert history_files == ["build_step_1"]
+
+
 def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helper):
     apt_invalid_package_file_yaml = yaml.dump(apt_invalid_package_file.model_dump())
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
