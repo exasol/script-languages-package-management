@@ -94,7 +94,7 @@ class BuildStep(BaseModel):
     @field_validator("phases")
     @classmethod
     def unique_phase_names(cls, val):
-        phase_names = set(v.name for v in val)
+        phase_names = {v.name for v in val}
         if len(phase_names) != len(val):
             raise ValueError("Phase names must be unique")
         return val
@@ -114,7 +114,7 @@ class PackageFile(BaseModel):
     @field_validator("build_steps")
     @classmethod
     def unique_build_step_names(cls, val):
-        build_step_names = set(v.name for v in val)
+        build_step_names = {v.name for v in val}
         if len(build_step_names) != len(val):
             raise ValueError("Buildstep names must be unique")
         return val
