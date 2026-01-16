@@ -82,6 +82,8 @@ def package_install(
             install_via_conda(single_phase.conda, conda_binary, cmd_executor, logger)
         except Exception as e:
             logger.err(
-                "Failed to install conda packages.", package_file=package_file, exception=e
+                "Failed to install conda packages.",
+                package_file=package_file,
+                exception=e,
             )
             raise

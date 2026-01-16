@@ -35,7 +35,6 @@ class CommandResult:
     def __init__(
         self,
         fn_ret_code: Callable[[], int],
-
         stdout: Iterator[str],
         stderr: Iterator[str],
         logger: CommandLogger,

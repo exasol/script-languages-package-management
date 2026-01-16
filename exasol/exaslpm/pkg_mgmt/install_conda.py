@@ -1,24 +1,33 @@
 import pathlib
 
-from collections.abc import Callable
 from exasol.exaslpm.model.package_file_config import CondaPackages
-from exasol.exaslpm.pkg_mgmt.install_common import (
-    CommandExecInfo,
-    check_error,
-)
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandFailedException,
     CommandLogger,
 )
+from exasol.exaslpm.pkg_mgmt.install_common import (
+    CommandExecInfo,
+    check_error,
+)
 
-def prepare_all_cmds(conda_packages: CondaPackages, conda_binary: pathlib.Path) -> list[CommandExecInfo]:
+
+def prepare_all_cmds(
+    conda_packages: CondaPackages, conda_binary: pathlib.Path
+) -> list[CommandExecInfo]:
     all_cmds = []
 
     all_cmds.append(
         CommandExecInfo(
-            cmd = [str(conda_binary), "clean", "--all", "--yes", "--index-cache", "-tarballs"],
-            err="Failed while clearing cache - conda cmd"
+            cmd=[
+                str(conda_binary),
+                "clean",
+                "--all",
+                "--yes",
+                "--index-cache",
+                "-tarballs",
+            ],
+            err="Failed while clearing cache - conda cmd",
         )
     )
 
@@ -31,9 +40,8 @@ def prepare_all_cmds(conda_packages: CondaPackages, conda_binary: pathlib.Path) 
         for package in conda_packages.packages:
             install_cmd.append(f"{package.name}={package.version}")
     all_cmds.append(
-        CommandExecInfo(
-            cmd=install_cmd, err="Failed while installing conda cmd")
-        )
+        CommandExecInfo(cmd=install_cmd, err="Failed while installing conda cmd")
+    )
     all_cmds.append(
         CommandExecInfo(
             cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen cmd"
@@ -49,7 +57,6 @@ def prepare_all_cmds(conda_packages: CondaPackages, conda_binary: pathlib.Path) 
         CommandExecInfo(cmd=["ldconfig"], err="Failed while running ldconfig")
     )
     return all_cmds
-
 
 
 def install_via_conda(

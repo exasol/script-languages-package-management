@@ -1,15 +1,12 @@
-
-from collections.abc import Callable
-from exasol.exaslpm.pkg_mgmt.install_common import (
-    CommandExecInfo,
-    check_error,
-)
-
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandFailedException,
     CommandLogger,
+)
+from exasol.exaslpm.pkg_mgmt.install_common import (
+    CommandExecInfo,
+    check_error,
 )
 
 
