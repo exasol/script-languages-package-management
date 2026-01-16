@@ -80,8 +80,8 @@ class Phase(BaseModel):
 
 
 class BuildStep(BaseModel):
-    phases: list[Phase]
     name: str
+    phases: list[Phase]
     comment: None | str = None
 
     @field_validator("phases")
