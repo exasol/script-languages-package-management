@@ -13,14 +13,24 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
 
 
-def parse_package_file(
+def find_phase(
     package_file: PackageFile, phase_name: str, build_step_name: str
 ) -> Phase:
-    build_steps = package_file.build_steps
-    build_step = build_steps[build_step_name]
-    phases = build_step.phases
-    phase = phases[phase_name]
-    return phase
+    matched_build_steps = [
+        b for b in package_file.build_steps if b.name == build_step_name
+    ]
+    if len(matched_build_steps) != 1:
+        raise ValueError(f"Build step name {build_step_name} does not match any build.")
+
+    build_step = matched_build_steps[0]
+
+    matched_phases = [phase for phase in build_step.phases if phase.name == phase_name]
+    if len(matched_phases) != 1:
+        raise ValueError(
+            f"Phase name {phase_name} does not match any phase in build step {build_step_name}."
+        )
+
+    return matched_phases[0]
 
 
 def package_install(
@@ -58,7 +68,7 @@ def package_install(
         )
         raise
     try:
-        single_phase = parse_package_file(pkg_file, phase, build_step)
+        single_phase = find_phase(pkg_file, phase, build_step)
     except Exception as e:
         logger.err(
             "Build step or phase not found.",

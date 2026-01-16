@@ -14,7 +14,7 @@ Supported OS: Ubuntu >= 22.04
 Getting Started
 ---------------
 
-Download the standalone executable ``exaslpm``, for linux, from `release-page <https://github.com/exasol/integration-test-docker-environment/releases>`_. Once downloaded, it can be run as follows
+Download the standalone executable ``exaslpm``, for linux, from `release-page <https://github.com/exasol/script-languages-package-management/releases>`_. Once downloaded, it can be run as follows
 
 ::
 

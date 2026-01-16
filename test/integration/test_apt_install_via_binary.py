@@ -5,9 +5,9 @@ import pytest
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
+    AptPackage,
     AptPackages,
     BuildStep,
-    Package,
     PackageFile,
     Phase,
 )
@@ -16,41 +16,43 @@ from exasol.exaslpm.model.package_file_config import (
 @pytest.fixture
 def apt_package_file_content() -> PackageFile:
     return PackageFile(
-        build_steps={
-            "build_step_1": BuildStep(
-                phases={
-                    "phase_1": Phase(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                Package(name="wget", version="1.21.4-1ubuntu4.1"),
-                                Package(name="curl", version="8.5.0-2ubuntu10.6"),
+                                AptPackage(name="wget", version="1.21.4-1ubuntu4.1"),
+                                AptPackage(name="curl", version="8.5.0-2ubuntu10.6"),
                             ]
-                        )
+                        ),
                     )
-                }
+                ],
             )
-        }
+        ]
     )
 
 
 @pytest.fixture
 def apt_invalid_package_file() -> PackageFile:
     return PackageFile(
-        build_steps={
-            "build_step_1": BuildStep(
-                phases={
-                    "phase_1": Phase(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                Package(
-                                    name="unknowsoftware", version="1.21.4-1ubuntu4.1"
-                                ),
+                                AptPackage(name="unknowsoftware", version="1.2.3"),
                             ]
-                        )
+                        ),
                     )
-                }
+                ],
             )
-        }
+        ]
     )
 
 
@@ -60,11 +62,11 @@ class ContainsPackages:
     all expected packages (matching name and version).
     """
 
-    def __init__(self, expected_packages: list[Package]):
+    def __init__(self, expected_packages: list[AptPackage]):
         self.expected_packages = expected_packages
 
     @staticmethod
-    def _compare_package(expected: Package, installed: Package) -> bool:
+    def _compare_package(expected: AptPackage, installed: AptPackage) -> bool:
         return expected.name == installed.name and expected.version == installed.version
 
     def __eq__(self, installed_packages: Any) -> bool:
@@ -89,11 +91,7 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
         Path("/"), "apt_file_01", apt_package_file_yaml
     )
 
-    expected_packages = (
-        apt_package_file_content.build_steps["build_step_1"]
-        .phases["phase_1"]
-        .apt.packages
-    )
+    expected_packages = apt_package_file_content.build_steps[0].phases[0].apt.packages
 
     pkgs_before_install = docker_container.list_apt()
     assert pkgs_before_install != ContainsPackages(expected_packages)

@@ -2,4 +2,3 @@
 
 :octicon:`cpu` API Reference
 =============================
-
