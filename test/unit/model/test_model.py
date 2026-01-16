@@ -1,11 +1,12 @@
+import re
+
 import pytest
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
-    BuildStep,
     PackageFile,
-    Phase,
+    PackageFileValidationError,
 )
 
 
@@ -25,9 +26,40 @@ def test_empty_package_file_with_comment():
         comment: null
     """
     yaml_data = yaml.safe_load(yaml_file)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape("at least one Buildstep at [<PackageFile root>]"),
+    ):
         PackageFile.model_validate(yaml_data)
-    assert "at least one Buildstep" in str(excinfo.value)
+
+
+def test_unique_build_step_names():
+    yaml_file = """
+        build_steps:
+            - name: build_step_one
+              phases:
+                - name: phase 1
+                  apt:
+                    packages:
+                      - name: "curl"
+                        version: "7.68.0"
+                        comment: "For downloading"
+            - name: build_step_one
+              phases:
+                - name: phase 1
+                  apt:
+                    packages:
+                      - name: "curl"
+                        version: "7.68.0"
+                        comment: "For downloading"
+        comment: null
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape("Buildstep names must be unique at [<PackageFile root>]"),
+    ):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_empty_package_file_without_comment():
@@ -35,155 +67,217 @@ def test_empty_package_file_without_comment():
         build_steps: []
     """
     yaml_data = yaml.safe_load(yaml_file)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PackageFileValidationError, match=re.escape("There shall be at least one Buildstep at [<PackageFile root>]")):
         PackageFile.model_validate(yaml_data)
-    assert "at least one Buildstep" in str(excinfo.value)
 
 
 def test_empty_build_step():
     yaml_file = """
-        name: build_step_one
-        phases: []
+        build_steps:
+            - name: build_step_one
+              phases: []
+              comment: null
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape(
+            "There shall be at least one Phase at [<PackageFile root> -> <Build-Step 'build_step_one'>]"
+        ),
+    ):
+        PackageFile.model_validate(yaml_data)
+
+
+def test_unique_phase_names():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase 1
+            apt:
+              packages:
+                - name: "curl"
+                  version: "7.68.0"
+                  comment: "For downloading"
+          - name: phase 1
+            apt:
+              packages:
+                - name: "curl"
+                  version: "7.68.0"
+                  comment: "For downloading"
         comment: null
     """
     yaml_data = yaml.safe_load(yaml_file)
-    with pytest.raises(ValueError) as excinfo:
-        BuildStep.model_validate(yaml_data)
-    assert "at least one Phase" in str(excinfo.value)
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape(
+            "Phase names must be unique at [<PackageFile root> -> <Build-Step 'build_step_one'>]"
+        ),
+    ):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_empty_package_installer():
     yaml_file = """
-        name: phase_one
-        apt: null
-        pip: null
-        r: null
-        conda: null
-        comment: null
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt: null
+            pip: null
+            r: null
+            conda: null
+            comment: null
     """
     yaml_data = yaml.safe_load(yaml_file)
-    with pytest.raises(ValueError) as excinfo:
-        Phase.model_validate(yaml_data)
-    assert "at least one Package installer" in str(excinfo.value)
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape(
+            "There shall be at least one Package installer at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'>]"
+        ),
+    ):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_installer_apt():
     yaml_file = """
-    name: phase_one
-    apt:
-        packages:
-        - name: curl
-          version: 7.68.0
-          comment: install curl
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
+                  comment: install curl
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_installer_apt_without_comment():
     yaml_file = """
-    name: phase_one
-    apt:
-        packages:
-        - name: curl
-          version: 7.68.0
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_installer_pip():
     yaml_file = """
-    name: phase_one
-    pip:
-        packages:
-        - name: requests
-          version: 2.25.1
-          comment: install requests
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            pip:
+                packages:
+                - name: requests
+                  version: 2.25.1
+                  comment: install requests
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_installer_conda():
     yaml_file = """
-    name: phase_one
-    
-    conda:
-        channels: null
-        comment: null
-        packages:
-        - name: numpy
-          version: 1.19.2
-          comment: install numpy
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            
+            conda:
+                channels: null
+                comment: null
+                packages:
+                - name: numpy
+                  version: 1.19.2
+                  comment: install numpy
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_installer_r():
     yaml_file = """
-    name: phase_one
-    
-    r:
-        comment: null
-        packages:
-        - name: ggplot2
-          version: 3.3.5
-          comment: install ggplot
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  version: 3.3.5
+                  comment: install ggplot
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_installer_r_without_comment():
     yaml_file = """
-    name: phase_one
-    r:
-        comment: null
-        packages:
-        - name: ggplot2
-          version: 3.3.5
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  version: 3.3.5
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_all_installers():
     yaml_file = """
-    name: phase_one
-    comment: null
-    r:
-        comment: null
-        packages:
-        - name: ggplot2
-          version: 3.3.5
-          comment: install ggplot
-          
-    apt:
-        packages:
-        - name: curl
-          version: 7.68.0
-          comment: install curl
-    conda:
-        channels: null
-        comment: null
-        packages:
-        - name: numpy
-          version: 1.19.2
-          comment: install numpy
-    pip:
-        packages:
-        - name: requests
-          version: 2.25.1
-          comment: install requests
+    build_steps:
+      - name: build_step_one
+        phases:
+        
+          - name: phase_one
+            comment: null
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  version: 3.3.5
+                  comment: install ggplot
+                  
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
+                  comment: install curl
+            conda:
+                channels: null
+                comment: null
+                packages:
+                - name: numpy
+                  version: 1.19.2
+                  comment: install numpy
+            pip:
+                packages:
+                - name: requests
+                  version: 2.25.1
+                  comment: install requests
     """
     yaml_data = yaml.safe_load(yaml_file)
-    phase = Phase.model_validate(yaml_data)
-    assert phase
+    model = PackageFile.model_validate(yaml_data)
+    assert model

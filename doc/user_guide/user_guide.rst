@@ -41,7 +41,3 @@ This tool comes up with a list of command line options for installing packages s
     --conda-binary
     --r-binary 
                                 These are used to point to channel sources to install from
-
-Package File Editor
--------------------
-The package provides a Python API (only) to manipulate an existing package file. Check out class ``exasol.exaslpm.pkg_mgmt.pkg_file_editor.pkg_file_editor.PackageFileEditor`` in the API documentation.
