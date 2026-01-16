@@ -1,6 +1,5 @@
 import pathlib
 
-import click
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
@@ -11,7 +10,7 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
 )
-from exasol.exaslpm.pkg_mgmt.install_conda import install_via_conda
+from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
 
 
 def parse_package_file(
@@ -34,7 +33,7 @@ def package_install(
     cmd_executor: CommandExecutor,
     logger: CommandLogger,
 ):
-    click.echo(
+    logger.info(
         f"Phase: {phase}, \
         Package File: {package_file}, \
         Build Step: {build_step}, \
@@ -43,13 +42,37 @@ def package_install(
         R Binary: {r_binary}",
     )
 
-    package_content = package_file.read_text()
+    try:
+        package_content = package_file.read_text()
+    except Exception as e:
+        logger.err(
+            "Failed to read package file.", package_file=package_file, exception=e
+        )
+        raise
     try:
         yaml_data = yaml.safe_load(package_content)
         pkg_file = PackageFile.model_validate(yaml_data)
+    except Exception as e:
+        logger.err(
+            "Failed to parse package file.", package_file=package_file, exception=e
+        )
+        raise
+    try:
         single_phase = parse_package_file(pkg_file, phase, build_step)
-        if single_phase.conda is not None:
-            install_via_conda(single_phase.conda, conda_binary, cmd_executor, logger)
-
-    except ValueError:
-        print("Error parsing package file")
+    except Exception as e:
+        logger.err(
+            "Build step or phase not found.",
+            package_file=package_file,
+            build_step=build_step,
+            phase=phase,
+            exception=e,
+        )
+        raise
+    try:
+        if single_phase.apt is not None:
+            install_via_apt(single_phase.apt, cmd_executor, logger)
+    except Exception as e:
+        logger.err(
+            "Failed to install apt packages.", package_file=package_file, exception=e
+        )
+        raise

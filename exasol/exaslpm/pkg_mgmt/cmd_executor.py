@@ -1,50 +1,63 @@
 import subprocess
-import sys
-from collections.abc import Callable
+import threading
+from collections.abc import (
+    Callable,
+    Iterator,
+)
 from typing import (
-    IO,
     Any,
-    Protocol,
+    TextIO,
+    cast,
 )
 
-
-class CommandLogger(Protocol):
-    def info(self, msg: str, **kwargs) -> None: ...
-    def warn(self, msg: str, **kwargs) -> None: ...
-    def err(self, msg: str, **kwargs) -> None: ...
+from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
 
 
-class StdLogger:
-    def info(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
+class CommandFailedException(Exception):
+    """
+    Raised when command fails
+    """
 
-    def warn(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stdout)
 
-    def err(self, msg: str, **kwargs) -> None:
-        print(msg, file=sys.stderr)
+def stream_reader(
+    pipe: Iterator[str],
+    callback: Callable[[str | bytes], None],
+):
+    while True:
+        try:
+            _val = next(pipe)
+            callback(_val)
+        except StopIteration:
+            return
 
 
 class CommandResult:
     def __init__(
         self,
         fn_ret_code: Callable[[], int],
-        stdout: IO[str] | None,
-        stderr: IO[str] | None,
+
+        stdout: Iterator[str],
+        stderr: Iterator[str],
         logger: CommandLogger,
     ):
+        """
+        :param fn_ret_code: a function that waits untils the process has stopped and returns the return code. For example, subprocess.open.wait.
+        :param stdout: iterable stdout captures
+        :param stderr: iterable stderr captures
+        :param logger: a protocol that defines the log singatures
+        """
         self._log = logger
-        self._fn_return_code = fn_ret_code  # a lambda to subprocess.open.wait
+        self._fn_return_code = fn_ret_code
         self._stdout = stdout
         self._stderr = stderr
 
-    def return_code(self):
+    def return_code(self) -> int:
         return self._fn_return_code()
 
-    def itr_stdout(self) -> IO[str] | None:
+    def itr_stdout(self) -> Iterator[str]:
         return self._stdout
 
-    def itr_stderr(self) -> IO[str] | None:
+    def itr_stderr(self) -> Iterator[str]:
         return self._stderr
 
     def consume_results(
@@ -52,24 +65,19 @@ class CommandResult:
         consume_stdout: Callable[[str | bytes, Any], None],
         consume_stderr: Callable[[str | bytes, Any], None],
     ):
+        read_out = threading.Thread(
+            target=stream_reader, args=(self._stdout, consume_stdout)
+        )
+        read_err = threading.Thread(
+            target=stream_reader, args=(self._stderr, consume_stderr)
+        )
 
-        def pick_next(out_stream, callback) -> bool:
-            try:
-                _val = next(out_stream)
-                callback(_val)
-            except StopIteration:
-                return False
-            return True
-
-        # Read from _stdout and _stderr simultaneously
-        stdout_continue = True
-        stderr_continue = True
-        while stdout_continue or stderr_continue:
-            if stdout_continue:
-                stdout_continue = pick_next(self._stdout, consume_stdout)
-            if stderr_continue:
-                stderr_continue = pick_next(self._stderr, consume_stderr)
-        return self.return_code()
+        read_out.start()
+        read_err.start()
+        return_code = self.return_code()
+        read_out.join()
+        read_err.join()
+        return return_code
 
     def print_results(self):
         ret_code = self.consume_results(self._log.info, self._log.err)
@@ -81,15 +89,23 @@ class CommandExecutor:
         self._log = logger
 
     def execute(self, cmd_strs: list[str]) -> CommandResult:
+        """
+        :param cmd_strs: command with all its options as a list of individual str
+        :return: The result that can be used to access the results
+        :rtype: CommandResult
+        """
         cmd_str = " ".join(cmd_strs)
         self._log.info(f"Executing: {cmd_str}")
 
         sub_process = subprocess.Popen(
             cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
+        std_out = cast(TextIO, sub_process.stdout)
+        std_err = cast(TextIO, sub_process.stderr)
+
         return CommandResult(
-            fn_ret_code=lambda: sub_process.wait(),
-            stdout=sub_process.stdout,
-            stderr=sub_process.stderr,
+            fn_ret_code=sub_process.wait,
+            stdout=iter(std_out),
+            stderr=iter(std_err),
             logger=self._log,
         )
