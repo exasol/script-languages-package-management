@@ -1,20 +1,13 @@
-# sgn
-
-from collections.abc import Callable
-from dataclasses import dataclass
-
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandFailedException,
     CommandLogger,
 )
-
-
-@dataclass
-class CommandExecInfo:
-    cmd: list[str]
-    err: str
+from exasol.exaslpm.pkg_mgmt.install_common import (
+    CommandExecInfo,
+    check_error,
+)
 
 
 def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
@@ -60,13 +53,6 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
         CommandExecInfo(cmd=["ldconfig"], err="Failed while running ldconfig")
     )
     return all_cmds
-
-
-def check_error(ret_val: int, msg: str, log: Callable[[str], None]) -> bool:
-    if ret_val != 0:
-        log(msg)
-        return False
-    return True
 
 
 def install_via_apt(
