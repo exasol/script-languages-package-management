@@ -6,7 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackages,
     BuildStep,
     PackageFile,
-    Phase, CondaPackage, CondaPackages, PipPackages, PipPackage, RPackage,
+    Phase, CondaPackage, CondaPackages, PipPackages, PipPackage, RPackage, RPackages,
 )
 from exasol.exaslpm.pkg_mgmt.pkg_navigation import find_build_step, find_phase, find_package
 
@@ -161,78 +161,115 @@ def test_raises_error_invalid_phase():
     )
     with pytest.raises(ValueError, match=r"Phase 'phase invalid' not found"):
         find_phase(test_build_step, "phase invalid")
+
+
 @pytest.mark.parametrize(
-    "field, packages, name_to_find, expected_index",
+    "packages_model, package_model, pkgs, name_to_find, expected_index",
     [
+        # apt
         (
-            "apt",
-            [AptPackage(name="curl", version="7.68.0", comment="For downloading")],
+            AptPackages,
+            AptPackage,
+            [("curl", "7.68.0", "For downloading")],
             "curl",
             0,
         ),
         (
-            "apt",
-            [
-                AptPackage(name="curl", version="7.68.0", comment="For downloading"),
-                AptPackage(name="wget", version="1.21.4", comment="For downloading"),
-            ],
+            AptPackages,
+            AptPackage,
+            [("curl", "7.68.0", "For downloading"), ("wget", "1.21.4", "For downloading")],
             "wget",
             1,
         ),
+        # conda
         (
-            "conda",
-            [CondaPackage(name="numpy", version="1.2.3", comment="Something")],
+            CondaPackages,
+            CondaPackage,
+            [("numpy", "1.2.3", "Something")],
             "numpy",
             0,
         ),
         (
-            "conda",
-            [
-                CondaPackage(name="numpy", version="1.2.3", comment="Something"),
-                CondaPackage(name="pandas", version="3.4.5", comment="Something"),
-            ],
+            CondaPackages,
+            CondaPackage,
+            [("numpy", "1.2.3", "Something"), ("pandas", "3.4.5", "Something")],
             "pandas",
             1,
         ),
+        # pip
         (
-            "pip",
-            [PipPackage(name="numpy", version="1.2.3", comment="Something")],
+            PipPackages,
+            PipPackage,
+            [("numpy", "1.2.3", "Something")],
             "numpy",
             0,
         ),
         (
-            "pip",
-            [
-                PipPackage(name="numpy", version="1.2.3", comment="Something"),
-                PipPackage(name="pandas", version="3.4.5", comment="Something"),
-            ],
+            PipPackages,
+            PipPackage,
+            [("numpy", "1.2.3", "Something"), ("pandas", "3.4.5", "Something")],
             "pandas",
             1,
         ),
+        # R
         (
-                "r",
-                [RPackage(name="dplyr", version="1.2.3", comment="Something")],
+                RPackages,
+                RPackage,
+                [("dplyr", "1.2.3", "Something")],
                 "dplyr",
                 0,
         ),
         (
-                "r",
-                [
-                    RPackage(name="dplyr", version="1.2.3", comment="Something"),
-                    RPackage(name="tidyr", version="3.4.5", comment="Something"),
-                ],
+                RPackages,
+                RPackage,
+                [("dplyr", "1.2.3", "Something"), ("tidyr", "3.4.5", "Something")],
                 "tidyr",
                 1,
         ),
     ],
 )
-def test_find_package(field, packages, name_to_find, expected_index):
-    test_phase = Phase(
-        name="phase 1",
-        **{field: {"packages": packages}},  # works if Phase is pydantic/dataclass accepting nested dicts
+def test_find_pkg_in_model(packages_model, package_model, pkgs, name_to_find, expected_index):
+    packages = packages_model(
+        packages=[package_model(name=n, version=v, comment=c) for n, v, c in pkgs]
     )
 
-    pkg_list = getattr(test_phase, field).packages
-    found = find_package(pkg_list, name_to_find)
+    found = find_package(packages.packages, name_to_find)
 
-    assert found == pkg_list[expected_index]
+    assert found == packages.packages[expected_index]
+
+@pytest.mark.parametrize(
+    "packages_model, package_model, pkgs",
+    [
+        # apt
+        (
+            AptPackages,
+            AptPackage,
+            [("curl", "7.68.0", "For downloading")],
+        ),
+        # conda
+        (
+            CondaPackages,
+            CondaPackage,
+            [("numpy", "1.2.3", "Something")],
+        ),
+        # pip
+        (
+            PipPackages,
+            PipPackage,
+            [("numpy", "1.2.3", "Something")],
+        ),
+        # R
+        (
+            RPackages,
+            RPackage,
+            [("dplyr", "1.2.3", "Something")],
+        ),
+    ],
+)
+def test_find_invalid_pkg_in_model_returns_none(packages_model, package_model, pkgs):
+    packages = packages_model(
+        packages=[package_model(name=n, version=v, comment=c) for n, v, c in pkgs]
+    )
+
+    found = find_package(packages.packages, "invalid package")
+    assert found is None
