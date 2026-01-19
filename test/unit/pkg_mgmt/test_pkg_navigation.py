@@ -1,14 +1,23 @@
 import pytest
-import yaml
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
+    CondaPackage,
+    CondaPackages,
     PackageFile,
-    Phase, CondaPackage, CondaPackages, PipPackages, PipPackage, RPackage, RPackages,
+    Phase,
+    PipPackage,
+    PipPackages,
+    RPackage,
+    RPackages,
 )
-from exasol.exaslpm.pkg_mgmt.pkg_navigation import find_build_step, find_phase, find_package
+from exasol.exaslpm.pkg_mgmt.pkg_navigation import (
+    find_build_step,
+    find_package,
+    find_phase,
+)
 
 
 def test_find_in_single_build_step_model():
@@ -109,8 +118,9 @@ def test_find_phase_in_single_build_step_model():
             )
         ],
     )
-    found_phase =find_phase( test_build_step, "phase 1")
+    found_phase = find_phase(test_build_step, "phase 1")
     assert found_phase == test_build_step.phases[0]
+
 
 def test_find_phase_in_multi_phase_model():
     test_build_step_one = BuildStep(
@@ -135,13 +145,14 @@ def test_find_phase_in_multi_phase_model():
                         )
                     ]
                 ),
-            )
+            ),
         ],
     )
     found_phase = find_phase(test_build_step_one, "phase 1")
     assert found_phase == test_build_step_one.phases[0]
     found_phase = find_phase(test_build_step_one, "phase 2")
     assert found_phase == test_build_step_one.phases[1]
+
 
 def test_raises_error_invalid_phase():
     test_build_step = BuildStep(
@@ -177,7 +188,10 @@ def test_raises_error_invalid_phase():
         (
             AptPackages,
             AptPackage,
-            [("curl", "7.68.0", "For downloading"), ("wget", "1.21.4", "For downloading")],
+            [
+                ("curl", "7.68.0", "For downloading"),
+                ("wget", "1.21.4", "For downloading"),
+            ],
             "wget",
             1,
         ),
@@ -213,22 +227,24 @@ def test_raises_error_invalid_phase():
         ),
         # R
         (
-                RPackages,
-                RPackage,
-                [("dplyr", "1.2.3", "Something")],
-                "dplyr",
-                0,
+            RPackages,
+            RPackage,
+            [("dplyr", "1.2.3", "Something")],
+            "dplyr",
+            0,
         ),
         (
-                RPackages,
-                RPackage,
-                [("dplyr", "1.2.3", "Something"), ("tidyr", "3.4.5", "Something")],
-                "tidyr",
-                1,
+            RPackages,
+            RPackage,
+            [("dplyr", "1.2.3", "Something"), ("tidyr", "3.4.5", "Something")],
+            "tidyr",
+            1,
         ),
     ],
 )
-def test_find_pkg_in_model(packages_model, package_model, pkgs, name_to_find, expected_index):
+def test_find_pkg_in_model(
+    packages_model, package_model, pkgs, name_to_find, expected_index
+):
     packages = packages_model(
         packages=[package_model(name=n, version=v, comment=c) for n, v, c in pkgs]
     )
@@ -236,6 +252,7 @@ def test_find_pkg_in_model(packages_model, package_model, pkgs, name_to_find, ex
     found = find_package(packages.packages, name_to_find)
 
     assert found == packages.packages[expected_index]
+
 
 @pytest.mark.parametrize(
     "packages_model, package_model, pkgs",

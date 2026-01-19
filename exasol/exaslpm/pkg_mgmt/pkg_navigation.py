@@ -1,4 +1,10 @@
-from exasol.exaslpm.model.package_file_config import AnyPackageList, PackageType, BuildStep, Phase, PackageFile
+from exasol.exaslpm.model.package_file_config import (
+    AnyPackageList,
+    BuildStep,
+    PackageFile,
+    PackageType,
+    Phase,
+)
 
 
 def find_package(
@@ -11,17 +17,12 @@ def find_package(
     return matched_pkgs[0]
 
 
-
 def find_phase(build_step: BuildStep, phase_name: str) -> Phase:
-    found_phases = [
-        phase for phase in build_step.phases if phase.name == phase_name
-    ]
+    found_phases = [phase for phase in build_step.phases if phase.name == phase_name]
     if len(found_phases) == 0:
         raise ValueError(f"Phase '{phase_name}' not found")
     if len(found_phases) > 1:
-        raise ValueError(
-            f"More than one phases found for phase name '{phase_name}'"
-        )
+        raise ValueError(f"More than one phases found for phase name '{phase_name}'")
     return found_phases[0]
 
 

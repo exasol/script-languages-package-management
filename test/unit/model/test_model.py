@@ -67,7 +67,12 @@ def test_empty_package_file_without_comment():
         build_steps: []
     """
     yaml_data = yaml.safe_load(yaml_file)
-    with pytest.raises(PackageFileValidationError, match=re.escape("There shall be at least one Buildstep at [<PackageFile root>]")):
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape(
+            "There shall be at least one Buildstep at [<PackageFile root>]"
+        ),
+    ):
         PackageFile.model_validate(yaml_data)
 
 
