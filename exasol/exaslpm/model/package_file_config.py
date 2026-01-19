@@ -70,16 +70,6 @@ def _remove_package(
         packages.remove(package)
 
 
-def _find_package(
-    pkg_name: str,
-    packages: AnyPackageList,
-) -> None | PackageType:
-    matched_pkgs = [package for package in packages if pkg_name == package.name]
-    if not matched_pkgs:
-        return None
-    return matched_pkgs[0]
-
-
 class AptPackages(BaseModel):
     model_config = ConfigDict(validate_assignment=True)
     # we need to add here later different package indexes
@@ -88,9 +78,6 @@ class AptPackages(BaseModel):
 
     def remove_package(self, package: AptPackage):
         _remove_package(package.name, self.packages)
-
-    def find_package(self, name: str) -> AptPackage | None:
-        return _find_package(name, self.packages)
 
     def add_package(self, package: AptPackage):
         if self.find_package(package.name) is not None:
@@ -113,9 +100,6 @@ class PipPackages(BaseModel):
     def remove_package(self, package: PipPackage):
         _remove_package(package.name, self.packages)
 
-    def find_package(self, name: str) -> PipPackage | None:
-        return _find_package(name, self.packages)
-
     def add_package(self, package: PipPackage):
         if self.find_package(package.name) is not None:
             self.packages.append(package)
@@ -136,9 +120,6 @@ class RPackages(BaseModel):
 
     def remove_package(self, package: RPackage):
         _remove_package(package.name, self.packages)
-
-    def find_package(self, name: str) -> RPackage | None:
-        return _find_package(name, self.packages)
 
     def add_package(self, package: RPackage):
         if self.find_package(package.name) is not None:
@@ -161,9 +142,6 @@ class CondaPackages(BaseModel):
 
     def remove_package(self, package: CondaPackage):
         _remove_package(package.name, self.packages)
-
-    def find_package(self, name: str) -> CondaPackage | None:
-        return _find_package(name, self.packages)
 
     def add_package(self, package: CondaPackage):
         if self.find_package(package.name) is not None:
@@ -229,18 +207,6 @@ class BuildStep(BaseModel):
     phases: list[Phase]
     comment: None | str = None
 
-    def find_phase(self, phase_name: str) -> Phase:
-        found_phases = [
-            phase for phase in self.phases if phase.name == phase_name
-        ]
-        if len(found_phases) == 0:
-            raise ValueError(f"Phase '{phase_name}' not found")
-        if len(found_phases) > 1:
-            raise ValueError(
-                f"More than one phases found for phase name '{phase_name}'"
-            )
-        return found_phases[0]
-
     def validate_model_graph(self, model_path: list[str]) -> None:
         _model_path = copy(model_path)
         _model_path.append(f"<Build-Step '{self.name}'>")
@@ -258,18 +224,6 @@ class BuildStep(BaseModel):
 class PackageFile(BaseModel):
     build_steps: list[BuildStep]
     comment: None | str = None
-
-    def find_build_step(self, build_step_name: str) -> BuildStep:
-        found_build_steps = [
-            bs for bs in self.build_steps if bs.name == build_step_name
-        ]
-        if len(found_build_steps) == 0:
-            raise ValueError(f"Build step '{build_step_name}' not found")
-        if len(found_build_steps) > 1:
-            raise ValueError(
-                f"More than on build step for build step name '{build_step_name}'"
-            )
-        return found_build_steps[0]
 
     @model_validator(mode="after")
     def validate_root(self):
