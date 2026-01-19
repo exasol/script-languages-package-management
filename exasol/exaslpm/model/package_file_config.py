@@ -1,73 +1,52 @@
-from copy import copy
-from typing import TypeVar
-
 from pydantic import (
     BaseModel,
     ConfigDict,
     model_validator,
 )
 
-
-class PackageFileValidationError(Exception):
-    def __init__(self, package_file_graph: list[str], message: str) -> None:
-        msg = message + " at " + "[{}]".format(" -> ".join(package_file_graph))
-        super().__init__(msg)
+import exasol.exaslpm.model.package_edit as package_edit
+import exasol.exaslpm.model.package_file_config_find as package_file_config_find
+import exasol.exaslpm.model.package_file_config_validation as package_file_config_validation
 
 
-class AptPackage(BaseModel):
+class GenericPackage(BaseModel):
     name: str
     version: str
-    repository: str | None = None
     comment: None | str = None
-
     # yaml comments don't survive deserialization when we programatically change this file
 
 
-class CondaPackage(BaseModel):
-    name: str
-    version: str
+class AptPackage(GenericPackage):
+    """
+    Apt package
+    """
+
+    repository: str | None = None
+
+
+class CondaPackage(GenericPackage):
+    """
+    Conda package
+    """
+
     build: None | str = None
     channel: None | str = None
-    comment: None | str = None
-    # yaml comments don't survive deserialization when we programatically change this file
 
 
-class PipPackage(BaseModel):
-    name: str
-    version: str
+class PipPackage(GenericPackage):
+    """
+    Pip package
+    """
+
     extras: list[str] = []
     url: None | str = None
     comment: None | str = None
-    # yaml comments don't survive deserialization when we programatically change this file
 
 
-class RPackage(BaseModel):
-    name: str
-    version: str
-    comment: None | str = None
-    # yaml comments don't survive deserialization when we programatically change this file
-
-
-PackageType = TypeVar("PackageType", AptPackage, CondaPackage, PipPackage, RPackage)
-
-AnyPackageList = list[PackageType]
-
-
-def _check_unique_packages(packages: AnyPackageList, model_path: list[str]) -> None:
-    phase_names = {p.name for p in packages}
-    if len(phase_names) != len(packages):
-        raise PackageFileValidationError(model_path, "Packages must be unique")
-
-
-def _remove_package(
-    pkg_name: str,
-    packages: AnyPackageList,
-):
-    matched_pkgs = [package for package in packages if pkg_name == package.name]
-    if not matched_pkgs:
-        raise ValueError(f"Package {pkg_name} not found")
-    for package in matched_pkgs:
-        packages.remove(package)
+class RPackage(GenericPackage):
+    """
+    R package
+    """
 
 
 class AptPackages(BaseModel):
@@ -76,19 +55,17 @@ class AptPackages(BaseModel):
     packages: list[AptPackage]
     comment: None | str = None
 
+    def find_package(self, package_name: str) -> AptPackage | None:
+        return package_file_config_find.find_package(self.packages, package_name)
+
     def remove_package(self, package: AptPackage):
-        _remove_package(package.name, self.packages)
+        package_edit.remove_package(package.name, self.packages)
 
     def add_package(self, package: AptPackage):
-        if self.find_package(package.name) is not None:
-            self.packages.append(package)
-        else:
-            raise ValueError(f"Apt Package {package.name} already exists")
+        package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append("<AptPackages>")
-        _check_unique_packages(self.packages, _model_path)
+        package_file_config_validation.validate_apt_packages(self, model_path)
 
 
 class PipPackages(BaseModel):
@@ -97,19 +74,17 @@ class PipPackages(BaseModel):
     packages: list[PipPackage]
     comment: None | str = None
 
-    def remove_package(self, package: PipPackage):
-        _remove_package(package.name, self.packages)
+    def find_package(self, package_name: str) -> PipPackage | None:
+        return package_file_config_find.find_package(self.packages, package_name)
 
-    def add_package(self, package: PipPackage):
-        if self.find_package(package.name) is not None:
-            self.packages.append(package)
-        else:
-            raise ValueError(f"Pip Package {package.name} already exists")
+    def remove_package(self, package: AptPackage):
+        package_edit.remove_package(package.name, self.packages)
+
+    def add_package(self, package: AptPackage):
+        package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append("<PipPackages>")
-        _check_unique_packages(self.packages, _model_path)
+        package_file_config_validation.validate_pip_packages(self, model_path)
 
 
 class RPackages(BaseModel):
@@ -118,19 +93,17 @@ class RPackages(BaseModel):
     packages: list[RPackage]
     comment: None | str = None
 
-    def remove_package(self, package: RPackage):
-        _remove_package(package.name, self.packages)
+    def find_package(self, package_name: str) -> RPackage | None:
+        return package_file_config_find.find_package(self.packages, package_name)
 
-    def add_package(self, package: RPackage):
-        if self.find_package(package.name) is not None:
-            self.packages.append(package)
-        else:
-            raise ValueError(f"R Package {package.name} already exists")
+    def remove_package(self, package: AptPackage):
+        package_edit.remove_package(package.name, self.packages)
+
+    def add_package(self, package: AptPackage):
+        package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append("<RPackages>")
-        _check_unique_packages(self.packages, _model_path)
+        package_file_config_validation.validate_r_packages(self, model_path)
 
 
 class CondaPackages(BaseModel):
@@ -140,19 +113,17 @@ class CondaPackages(BaseModel):
     packages: list[CondaPackage]
     comment: None | str = None
 
-    def remove_package(self, package: CondaPackage):
-        _remove_package(package.name, self.packages)
+    def find_package(self, package_name: str) -> CondaPackage | None:
+        return package_file_config_find.find_package(self.packages, package_name)
 
-    def add_package(self, package: CondaPackage):
-        if self.find_package(package.name) is not None:
-            self.packages.append(package)
-        else:
-            raise ValueError(f"Conde Package {package.name} already exists")
+    def remove_package(self, package: AptPackage):
+        package_edit.remove_package(package.name, self.packages)
+
+    def add_package(self, package: AptPackage):
+        package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append("<CondaPackages>")
-        _check_unique_packages(self.packages, _model_path)
+        package_file_config_validation.validate_conda_packages(self, model_path)
 
 
 class Phase(BaseModel):
@@ -164,41 +135,8 @@ class Phase(BaseModel):
     conda: None | CondaPackages = None
     comment: None | str = None
 
-    def get_or_create_apt(self) -> AptPackages:
-        if self.apt is None:
-            self.apt = AptPackages(packages=[])
-        return self.apt
-
-    def get_or_create_conda(self) -> CondaPackages:
-        if self.conda is None:
-            self.conda = CondaPackages(packages=[])
-        return self.conda
-
-    def get_or_create_pip(self):
-        if self.pip is None:
-            self.pip = PipPackages(packages=[])
-        return self.pip
-
-    def get_or_create_r(self):
-        if self.r is None:
-            self.r = RPackages(packages=[])
-        return self.r
-
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append(f"<Phase '{self.name}'>")
-        if not any([self.apt, self.pip, self.conda, self.r]):
-            raise PackageFileValidationError(
-                _model_path, "There shall be at least one Package installer"
-            )
-        if self.apt is not None:
-            self.apt.validate_model_graph(_model_path)
-        if self.conda is not None:
-            self.conda.validate_model_graph(_model_path)
-        if self.pip is not None:
-            self.pip.validate_model_graph(_model_path)
-        if self.r is not None:
-            self.r.validate_model_graph(_model_path)
+        package_file_config_validation.validate_phase(self, model_path)
 
 
 class BuildStep(BaseModel):
@@ -207,23 +145,19 @@ class BuildStep(BaseModel):
     phases: list[Phase]
     comment: None | str = None
 
+    def find_phase(self, phase_name: str) -> Phase:
+        return package_file_config_find.find_phase(self, phase_name)
+
     def validate_model_graph(self, model_path: list[str]) -> None:
-        _model_path = copy(model_path)
-        _model_path.append(f"<Build-Step '{self.name}'>")
-        if not self.phases or not len(self.phases):
-            raise PackageFileValidationError(
-                _model_path, "There shall be at least one Phase"
-            )
-        phase_names = {v.name for v in self.phases}
-        if len(phase_names) != len(self.phases):
-            raise PackageFileValidationError(_model_path, "Phase names must be unique")
-        for phase in self.phases:
-            phase.validate_model_graph(_model_path)
+        package_file_config_validation.validate_build_step(self, model_path)
 
 
 class PackageFile(BaseModel):
     build_steps: list[BuildStep]
     comment: None | str = None
+
+    def find_build_step(self, build_step_name: str) -> BuildStep:
+        return package_file_config_find.find_build_step(self, build_step_name)
 
     @model_validator(mode="after")
     def validate_root(self):
@@ -231,15 +165,4 @@ class PackageFile(BaseModel):
         return self
 
     def validate_model_graph(self) -> None:
-        model_path = ["<PackageFile root>"]
-        if not self.build_steps:
-            raise PackageFileValidationError(
-                model_path, "There shall be at least one Buildstep"
-            )
-        build_step_names = {v.name for v in self.build_steps}
-        if len(build_step_names) != len(self.build_steps):
-            raise PackageFileValidationError(
-                model_path, "Buildstep names must be unique"
-            )
-        for build_step in self.build_steps:
-            build_step.validate_model_graph(model_path)
+        package_file_config_validation.validate_package_file_config(self)

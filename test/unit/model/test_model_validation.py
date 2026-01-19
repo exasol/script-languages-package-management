@@ -6,8 +6,8 @@ import yaml
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     PackageFile,
-    PackageFileValidationError,
 )
+from exasol.exaslpm.model.package_validation_error import PackageFileValidationError
 
 
 def test_package_item():
