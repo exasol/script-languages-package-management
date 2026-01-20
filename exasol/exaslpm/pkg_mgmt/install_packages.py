@@ -1,36 +1,11 @@
 import pathlib
 
-import yaml
-
-from exasol.exaslpm.model.package_file_config import (
-    PackageFile,
-    Phase,
-)
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
-
-
-def find_phase(
-    package_file: PackageFile, phase_name: str, build_step_name: str
-) -> Phase:
-    matched_build_steps = [
-        b for b in package_file.build_steps if b.name == build_step_name
-    ]
-    if len(matched_build_steps) != 1:
-        raise ValueError(f"Build step name {build_step_name} does not match any build.")
-
-    build_step = matched_build_steps[0]
-
-    matched_phases = [phase for phase in build_step.phases if phase.name == phase_name]
-    if len(matched_phases) != 1:
-        raise ValueError(
-            f"Phase name {phase_name} does not match any phase in build step {build_step_name}."
-        )
-
-    return matched_phases[0]
+from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
 
 
 def package_install(
@@ -53,22 +28,24 @@ def package_install(
     )
 
     try:
-        package_content = package_file.read_text()
+        package_file_session = PackageFileSession(package_file=package_file)
     except Exception as e:
         logger.err(
             "Failed to read package file.", package_file=package_file, exception=e
         )
         raise
     try:
-        yaml_data = yaml.safe_load(package_content)
-        pkg_file = PackageFile.model_validate(yaml_data)
-    except Exception as e:
-        logger.err(
-            "Failed to parse package file.", package_file=package_file, exception=e
+        found_build_step = package_file_session.package_file_config.find_build_step(
+            build_step
         )
-        raise
-    try:
-        single_phase = find_phase(pkg_file, phase, build_step)
+        assert (
+            found_build_step is not None
+        )  # Cannot happen as find_build_step must raise an exception if not found
+        single_phase = found_build_step.find_phase(phase)
+        assert (
+            single_phase is not None
+        )  # Cannot happen as find_phase must raise an exception if not found
+
     except Exception as e:
         logger.err(
             "Build step or phase not found.",
