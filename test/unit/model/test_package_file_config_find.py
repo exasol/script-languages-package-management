@@ -226,9 +226,31 @@ def test_find_pkg_in_model(packages_model, package_to_find, expected_index):
     assert found == packages_model.packages[expected_index]
 
 
+def build_test_matrix_with_raise_if_not_found(input_matrix: list[MatrixTestSetItem]):
+    result = []
+    for matrix_item in input_matrix:
+        result.append(
+            MatrixTestSetItem(
+                existing_packages=matrix_item.existing_packages,
+                new_package=matrix_item.new_package,
+                comment=f"{matrix_item.comment} - with exception",
+                additional_info=[True],
+            )
+        )
+        result.append(
+            MatrixTestSetItem(
+                existing_packages=matrix_item.existing_packages,
+                new_package=matrix_item.new_package,
+                comment=f"{matrix_item.comment} - no exception",
+                additional_info=[False],
+            )
+        )
+    return build_test_matrix(result)
+
+
 @pytest.mark.parametrize(
-    "packages_model, new_package",
-    build_test_matrix(
+    "packages_model, new_package, raise_if_not_found",
+    build_test_matrix_with_raise_if_not_found(
         [
             MatrixTestSetItem(
                 existing_packages=[],
@@ -255,8 +277,12 @@ def test_find_pkg_in_model(packages_model, package_to_find, expected_index):
         ],
     ),
 )
-def test_find_invalid_pkg_in_model(packages_model, new_package):
-    found = packages_model.find_package("invalid package", raise_if_not_found=False)
-    assert found is None
-    with pytest.raises(ValueError, match=r"Package 'invalid package' not found"):
-        packages_model.find_package("invalid package")
+def test_find_invalid_pkg_in_model(packages_model, new_package, raise_if_not_found):
+    if raise_if_not_found:
+        with pytest.raises(ValueError, match=r"Package 'invalid package' not found"):
+            packages_model.find_package("invalid package")
+    else:
+        assert (
+            packages_model.find_package("invalid package", raise_if_not_found=False)
+            is None
+        )
