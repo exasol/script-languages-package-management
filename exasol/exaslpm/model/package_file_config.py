@@ -154,7 +154,7 @@ class BuildStep(BaseModel):
     phases: list[Phase]
     comment: None | str = None
 
-    def find_phase(self, phase_name: str, raise_if_not_found=True) -> Phase:
+    def find_phase(self, phase_name: str, raise_if_not_found=True) -> Phase | None:
         return package_file_config_find.find_phase(self, phase_name, raise_if_not_found)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
@@ -167,7 +167,7 @@ class PackageFile(BaseModel):
 
     def find_build_step(
         self, build_step_name: str, raise_if_not_found=True
-    ) -> BuildStep:
+    ) -> BuildStep | None:
         return package_file_config_find.find_build_step(
             self, build_step_name, raise_if_not_found
         )
