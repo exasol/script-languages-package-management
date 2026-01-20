@@ -1,3 +1,8 @@
+from typing import (
+    Literal,
+    overload,
+)
+
 from pydantic import (
     BaseModel,
     model_validator,
@@ -53,6 +58,16 @@ class AptPackages(BaseModel):
     packages: list[AptPackage]
     comment: None | str = None
 
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[True] = True
+    ) -> AptPackage: ...
+
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[False]
+    ) -> AptPackage | None: ...
+
     def find_package(
         self, package_name: str, raise_if_not_found=True
     ) -> AptPackage | None:
@@ -75,6 +90,16 @@ class PipPackages(BaseModel):
     packages: list[PipPackage]
     comment: None | str = None
 
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[True] = True
+    ) -> PipPackage: ...
+
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[False]
+    ) -> PipPackage | None: ...
+
     def find_package(
         self, package_name: str, raise_if_not_found=True
     ) -> PipPackage | None:
@@ -82,10 +107,10 @@ class PipPackages(BaseModel):
             self.packages, package_name, raise_if_not_found
         )
 
-    def remove_package(self, package: AptPackage):
+    def remove_package(self, package: PipPackage):
         package_edit.remove_package(package.name, self.packages)
 
-    def add_package(self, package: AptPackage):
+    def add_package(self, package: PipPackage):
         package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
@@ -97,6 +122,16 @@ class RPackages(BaseModel):
     packages: list[RPackage]
     comment: None | str = None
 
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[True] = True
+    ) -> RPackage: ...
+
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[False]
+    ) -> RPackage | None: ...
+
     def find_package(
         self, package_name: str, raise_if_not_found=True
     ) -> RPackage | None:
@@ -104,10 +139,10 @@ class RPackages(BaseModel):
             self.packages, package_name, raise_if_not_found
         )
 
-    def remove_package(self, package: AptPackage):
+    def remove_package(self, package: RPackage):
         package_edit.remove_package(package.name, self.packages)
 
-    def add_package(self, package: AptPackage):
+    def add_package(self, package: RPackage):
         package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
@@ -120,6 +155,16 @@ class CondaPackages(BaseModel):
     packages: list[CondaPackage]
     comment: None | str = None
 
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[True] = True
+    ) -> CondaPackage: ...
+
+    @overload
+    def find_package(
+        self, package_name: str, raise_if_not_found: Literal[False]
+    ) -> CondaPackage | None: ...
+
     def find_package(
         self, package_name: str, raise_if_not_found=True
     ) -> CondaPackage | None:
@@ -127,10 +172,10 @@ class CondaPackages(BaseModel):
             self.packages, package_name, raise_if_not_found
         )
 
-    def remove_package(self, package: AptPackage):
+    def remove_package(self, package: CondaPackage):
         package_edit.remove_package(package.name, self.packages)
 
-    def add_package(self, package: AptPackage):
+    def add_package(self, package: CondaPackage):
         package_edit.add_package(self.packages, package)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
@@ -154,6 +199,16 @@ class BuildStep(BaseModel):
     phases: list[Phase]
     comment: None | str = None
 
+    @overload
+    def find_phase(
+        self, phase_name: str, raise_if_not_found: Literal[True] = True
+    ) -> Phase: ...
+
+    @overload
+    def find_phase(
+        self, phase_name: str, raise_if_not_found: Literal[False] = False
+    ) -> Phase | None: ...
+
     def find_phase(self, phase_name: str, raise_if_not_found=True) -> Phase | None:
         return package_file_config_find.find_phase(self, phase_name, raise_if_not_found)
 
@@ -164,6 +219,16 @@ class BuildStep(BaseModel):
 class PackageFile(BaseModel):
     build_steps: list[BuildStep]
     comment: None | str = None
+
+    @overload
+    def find_build_step(
+        self, build_step_name: str, raise_if_not_found: Literal[True] = True
+    ) -> BuildStep: ...
+
+    @overload
+    def find_build_step(
+        self, build_step_name: str, raise_if_not_found: Literal[False]
+    ) -> BuildStep | None: ...
 
     def find_build_step(
         self, build_step_name: str, raise_if_not_found=True

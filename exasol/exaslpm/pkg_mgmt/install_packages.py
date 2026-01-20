@@ -35,17 +35,9 @@ def package_install(
         )
         raise
     try:
-        found_build_step = package_file_session.package_file_config.find_build_step(
+        single_phase = package_file_session.package_file_config.find_build_step(
             build_step
-        )
-        assert (
-            found_build_step is not None
-        )  # Cannot happen as find_build_step must raise an exception if not found
-        single_phase = found_build_step.find_phase(phase)
-        assert (
-            single_phase is not None
-        )  # Cannot happen as find_phase must raise an exception if not found
-
+        ).find_phase(phase)
     except Exception as e:
         logger.err(
             "Build step or phase not found.",

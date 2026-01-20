@@ -5,7 +5,7 @@ from exasol.exaslpm.model.package_validation_error import PackageFileValidationE
 
 if TYPE_CHECKING:
     from exasol.exaslpm.model.any_package import (
-        AnyPackageList,
+        PackageType,
     )
     from exasol.exaslpm.model.package_file_config import (
         AptPackages,
@@ -18,7 +18,9 @@ if TYPE_CHECKING:
     )
 
 
-def _check_unique_packages(packages: "AnyPackageList", model_path: list[str]) -> None:
+def _check_unique_packages(
+    packages: list["PackageType"], model_path: list[str]
+) -> None:
     package_name_counter = Counter(p.name for p in packages)
     multiple_packages = [
         name for name, count in package_name_counter.items() if count > 1
