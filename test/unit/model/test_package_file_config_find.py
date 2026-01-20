@@ -77,7 +77,10 @@ def test_find_build_step_in_multi_build_step_model():
     assert found_build_step == test_build_step_two
 
 
-def test_find_raises_error_invalid_buildstep():
+@pytest.mark.parametrize(
+    "raise_if_not_found", [True, False], ids=["with exception", "without exception"]
+)
+def test_invalid_buildstep(raise_if_not_found):
     test_build_step_one = BuildStep(
         name="build_step_one",
         phases=[
@@ -96,8 +99,18 @@ def test_find_raises_error_invalid_buildstep():
 
     model = PackageFile(build_steps=[test_build_step_one])
 
-    with pytest.raises(ValueError, match=r"Build step 'build_step_invalid' not found"):
-        model.find_build_step("build_step_invalid")
+    if raise_if_not_found:
+        with pytest.raises(
+            ValueError, match=r"Build step 'build_step_invalid' not found"
+        ):
+            model.find_build_step("build_step_invalid")
+    else:
+        assert (
+            model.find_build_step(
+                "build_step_invalid", raise_if_not_found=raise_if_not_found
+            )
+            is None
+        )
 
 
 def test_find_phase_in_single_build_step_model():
@@ -152,7 +165,10 @@ def test_find_phase_in_multi_phase_model():
     assert found_phase == test_build_step_one.phases[1]
 
 
-def test_raises_error_invalid_phase():
+@pytest.mark.parametrize(
+    "raise_if_not_found", [True, False], ids=["with exception", "without exception"]
+)
+def test_invalid_phase(raise_if_not_found):
     test_build_step = BuildStep(
         name="build_step_one",
         phases=[
@@ -168,8 +184,14 @@ def test_raises_error_invalid_phase():
             )
         ],
     )
-    with pytest.raises(ValueError, match=r"Phase 'phase invalid' not found"):
-        test_build_step.find_phase("phase invalid")
+    if raise_if_not_found:
+        with pytest.raises(ValueError, match=r"Phase 'phase invalid' not found"):
+            test_build_step.find_phase("phase invalid")
+    else:
+        assert (
+            test_build_step.find_phase("phase invalid", raise_if_not_found=False)
+            is None
+        )
 
 
 @pytest.mark.parametrize(
@@ -233,6 +255,8 @@ def test_find_pkg_in_model(packages_model, package_to_find, expected_index):
         ],
     ),
 )
-def test_find_invalid_pkg_in_model_returns_none(packages_model, new_package):
-    found = packages_model.find_package("invalid package")
+def test_find_invalid_pkg_in_model(packages_model, new_package):
+    found = packages_model.find_package("invalid package", raise_if_not_found=False)
     assert found is None
+    with pytest.raises(ValueError, match=r"Package 'invalid package' not found"):
+        packages_model.find_package("invalid package")

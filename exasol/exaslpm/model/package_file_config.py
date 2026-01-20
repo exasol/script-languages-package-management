@@ -53,8 +53,12 @@ class AptPackages(BaseModel):
     packages: list[AptPackage]
     comment: None | str = None
 
-    def find_package(self, package_name: str) -> AptPackage | None:
-        return package_file_config_find.find_package(self.packages, package_name)
+    def find_package(
+        self, package_name: str, raise_if_not_found=True
+    ) -> AptPackage | None:
+        return package_file_config_find.find_package(
+            self.packages, package_name, raise_if_not_found
+        )
 
     def remove_package(self, package: AptPackage):
         package_edit.remove_package(package.name, self.packages)
@@ -71,8 +75,12 @@ class PipPackages(BaseModel):
     packages: list[PipPackage]
     comment: None | str = None
 
-    def find_package(self, package_name: str) -> PipPackage | None:
-        return package_file_config_find.find_package(self.packages, package_name)
+    def find_package(
+        self, package_name: str, raise_if_not_found=True
+    ) -> PipPackage | None:
+        return package_file_config_find.find_package(
+            self.packages, package_name, raise_if_not_found
+        )
 
     def remove_package(self, package: AptPackage):
         package_edit.remove_package(package.name, self.packages)
@@ -89,8 +97,12 @@ class RPackages(BaseModel):
     packages: list[RPackage]
     comment: None | str = None
 
-    def find_package(self, package_name: str) -> RPackage | None:
-        return package_file_config_find.find_package(self.packages, package_name)
+    def find_package(
+        self, package_name: str, raise_if_not_found=True
+    ) -> RPackage | None:
+        return package_file_config_find.find_package(
+            self.packages, package_name, raise_if_not_found
+        )
 
     def remove_package(self, package: AptPackage):
         package_edit.remove_package(package.name, self.packages)
@@ -108,8 +120,12 @@ class CondaPackages(BaseModel):
     packages: list[CondaPackage]
     comment: None | str = None
 
-    def find_package(self, package_name: str) -> CondaPackage | None:
-        return package_file_config_find.find_package(self.packages, package_name)
+    def find_package(
+        self, package_name: str, raise_if_not_found=True
+    ) -> CondaPackage | None:
+        return package_file_config_find.find_package(
+            self.packages, package_name, raise_if_not_found
+        )
 
     def remove_package(self, package: AptPackage):
         package_edit.remove_package(package.name, self.packages)
@@ -138,8 +154,8 @@ class BuildStep(BaseModel):
     phases: list[Phase]
     comment: None | str = None
 
-    def find_phase(self, phase_name: str) -> Phase:
-        return package_file_config_find.find_phase(self, phase_name)
+    def find_phase(self, phase_name: str, raise_if_not_found=True) -> Phase:
+        return package_file_config_find.find_phase(self, phase_name, raise_if_not_found)
 
     def validate_model_graph(self, model_path: list[str]) -> None:
         package_file_config_validation.validate_build_step(self, model_path)
@@ -149,8 +165,12 @@ class PackageFile(BaseModel):
     build_steps: list[BuildStep]
     comment: None | str = None
 
-    def find_build_step(self, build_step_name: str) -> BuildStep:
-        return package_file_config_find.find_build_step(self, build_step_name)
+    def find_build_step(
+        self, build_step_name: str, raise_if_not_found=True
+    ) -> BuildStep:
+        return package_file_config_find.find_build_step(
+            self, build_step_name, raise_if_not_found
+        )
 
     @model_validator(mode="after")
     def validate_root(self):

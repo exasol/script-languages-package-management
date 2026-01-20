@@ -21,7 +21,10 @@ def remove_package(
 
 
 def add_package(packages: "AnyPackageList", package: "PackageType") -> None:
-    if find_package(packages, package.name) is None:
+    if (
+        find_package(packages=packages, pkg_name=package.name, raise_if_not_found=False)
+        is None
+    ):
         packages.append(package)
     else:
         raise ValueError(f"Package '{package.name}' already exists")
