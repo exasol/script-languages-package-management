@@ -1,7 +1,7 @@
 from test.unit.model.build_test_matrix import (
-    GenericTestPackage,
-    TestSetItem,
+    MatrixTestSetItem,
     build_test_matrix,
+    package_without_version,
 )
 
 import pytest
@@ -12,6 +12,7 @@ from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     CondaPackage,
     CondaPackages,
+    Package,
     PackageFile,
     Phase,
 )
@@ -175,20 +176,24 @@ def test_raises_error_invalid_phase():
     "packages_model, package_to_find, expected_index",
     build_test_matrix(
         [
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_package"),
-                "single_package",
-                [0],
-            ),
-            TestSetItem(
-                [
-                    GenericTestPackage("curl", "7.68.0", "For downloading"),
-                    GenericTestPackage("wget", "1.21.4", "For downloading"),
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
                 ],
-                GenericTestPackage("wget"),
-                "multiple_package",
-                [1],
+                new_package=package_without_version(name="some_package"),
+                comment="single_package",
+                additional_info=[0],
+            ),
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(name="curl", version="7.68.0", comment="For downloading"),
+                    Package(name="wget", version="1.21.4", comment="For downloading"),
+                ],
+                new_package=package_without_version(name="wget"),
+                comment="multiple_package",
+                additional_info=[1],
             ),
         ],
     ),
@@ -203,23 +208,27 @@ def test_find_pkg_in_model(packages_model, package_to_find, expected_index):
     "packages_model, new_package",
     build_test_matrix(
         [
-            TestSetItem(
-                [],
-                GenericTestPackage("invalid package"),
-                "empy_package_list",
+            MatrixTestSetItem(
+                existing_packages=[],
+                new_package=package_without_version("invalid package"),
+                comment="empy_package_list",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("invalid package"),
-                "single_package_list",
-            ),
-            TestSetItem(
-                [
-                    GenericTestPackage("curl", "7.68.0", "For downloading"),
-                    GenericTestPackage("wget", "1.21.4", "For downloading"),
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
                 ],
-                GenericTestPackage("invalid package"),
-                "multiple_package_list",
+                new_package=package_without_version("invalid package"),
+                comment="single_package_list",
+            ),
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(name="curl", version="7.68.0", comment="For downloading"),
+                    Package(name="wget", version="1.21.4", comment="For downloading"),
+                ],
+                new_package=package_without_version("invalid package"),
+                comment="multiple_package_list",
             ),
         ],
     ),

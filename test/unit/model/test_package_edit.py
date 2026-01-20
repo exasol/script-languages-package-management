@@ -1,31 +1,44 @@
 import copy
 from test.unit.model.build_test_matrix import (
-    GenericTestPackage,
-    TestSetItem,
+    MatrixTestSetItem,
     build_test_matrix,
 )
 
 import pytest
+
+from exasol.exaslpm.model.package_file_config import Package
 
 
 @pytest.mark.parametrize(
     "packages_model, new_package",
     build_test_matrix(
         [
-            TestSetItem(
-                [],
-                GenericTestPackage("some_package", "7.68.0", "For downloading"),
-                "existing_empty",
+            MatrixTestSetItem(
+                existing_packages=[],
+                new_package=Package(
+                    name="some_package", version="7.68.0", comment="For downloading"
+                ),
+                comment="existing_empty",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_new_package", "3.4.5", "For downloading"),
-                "existing_one",
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
+                ],
+                new_package=Package(
+                    name="some_new_package", version="3.4.5", comment="For downloading"
+                ),
+                comment="existing_one",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_new_package", "3.4.5", None),
-                "existing_one_new_has_no_comment",
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
+                ],
+                new_package=Package(name="some_new_package", version="3.4.5"),
+                comment="existing_one_new_has_no_comment",
             ),
         ]
     ),
@@ -41,35 +54,59 @@ def test_add_pkg(packages_model, new_package):
     "packages_model, new_package",
     build_test_matrix(
         [
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_package", "1.2.3", "For downloading"),
-                "same",
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
+                ],
+                new_package=Package(
+                    name="some_package", version="1.2.3", comment="For downloading"
+                ),
+                comment="same",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_package", "2.3.4", "For downloading"),
-                "different_version",
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
+                ],
+                new_package=Package(
+                    name="some_package", version="2.3.4", comment="For downloading"
+                ),
+                comment="different_version",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", "For downloading")],
-                GenericTestPackage("some_package", "3.4.5", None),
-                "different_version_no_comment",
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    )
+                ],
+                new_package=Package(name="some_package", version="3.4.5", comment=None),
+                comment="different_version_no_comment",
             ),
-            TestSetItem(
-                [GenericTestPackage("some_package", "1.2.3", None)],
-                GenericTestPackage("some_package", "3.4.5", "For downloading"),
-                "different_version_existing_no_comment",
+            MatrixTestSetItem(
+                existing_packages=[Package(name="some_package", version="1.2.3")],
+                new_package=Package(
+                    name="some_package", version="3.4.5", comment="For downloading"
+                ),
+                comment="different_version_existing_no_comment",
             ),
-            TestSetItem(
-                [
-                    GenericTestPackage("some_package", "1.2.3", "For downloading"),
-                    GenericTestPackage(
-                        "some_other_package", "1.2.3", "For downloading"
+            MatrixTestSetItem(
+                existing_packages=[
+                    Package(
+                        name="some_package", version="1.2.3", comment="For downloading"
+                    ),
+                    Package(
+                        name="some_other_package",
+                        version="1.2.3",
+                        comment="For downloading",
                     ),
                 ],
-                GenericTestPackage("some_package", "1.2.3", "For downloading"),
-                "existing_multiple",
+                new_package=Package(
+                    name="some_package", version="1.2.3", comment="For downloading"
+                ),
+                comment="existing_multiple",
             ),
         ]
     ),

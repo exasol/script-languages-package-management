@@ -8,6 +8,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackages,
     CondaPackage,
     CondaPackages,
+    Package,
     PipPackage,
     PipPackages,
     RPackage,
@@ -16,22 +17,15 @@ from exasol.exaslpm.model.package_file_config import (
 
 
 @dataclass
-class GenericTestPackage:
-    name: str
-    version: str = "1.2.3"
-    comment: str | None = None
-
-
-@dataclass
-class TestSetItem:
-    existing_packages: list[GenericTestPackage]
-    new_package: GenericTestPackage
+class MatrixTestSetItem:
+    existing_packages: list[Package]
+    new_package: Package
     comment: str
 
     additional_info: list[Any] = None
 
 
-def build_test_matrix(input_matrix: list[TestSetItem]):
+def build_test_matrix(input_matrix: list[MatrixTestSetItem]):
     """
     Returns a list of kind:
     [
@@ -89,3 +83,7 @@ def build_test_matrix(input_matrix: list[TestSetItem]):
                     )
                 )
     return result
+
+
+def package_without_version(name: str) -> Package:
+    return Package(name=name, version="Invalid")

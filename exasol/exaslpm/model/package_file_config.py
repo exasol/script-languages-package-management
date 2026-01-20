@@ -1,6 +1,5 @@
 from pydantic import (
     BaseModel,
-    ConfigDict,
     model_validator,
 )
 
@@ -9,14 +8,14 @@ import exasol.exaslpm.model.package_file_config_find as package_file_config_find
 import exasol.exaslpm.model.package_file_config_validation as package_file_config_validation
 
 
-class GenericPackage(BaseModel):
+class Package(BaseModel):
     name: str
     version: str
     comment: None | str = None
     # yaml comments don't survive deserialization when we programatically change this file
 
 
-class AptPackage(GenericPackage):
+class AptPackage(Package):
     """
     Apt package
     """
@@ -24,7 +23,7 @@ class AptPackage(GenericPackage):
     repository: str | None = None
 
 
-class CondaPackage(GenericPackage):
+class CondaPackage(Package):
     """
     Conda package
     """
@@ -33,7 +32,7 @@ class CondaPackage(GenericPackage):
     channel: None | str = None
 
 
-class PipPackage(GenericPackage):
+class PipPackage(Package):
     """
     Pip package
     """
@@ -43,14 +42,13 @@ class PipPackage(GenericPackage):
     comment: None | str = None
 
 
-class RPackage(GenericPackage):
+class RPackage(Package):
     """
     R package
     """
 
 
 class AptPackages(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     # we need to add here later different package indexes
     packages: list[AptPackage]
     comment: None | str = None
@@ -69,7 +67,6 @@ class AptPackages(BaseModel):
 
 
 class PipPackages(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     # we need to add here later different package indexes
     packages: list[PipPackage]
     comment: None | str = None
@@ -88,7 +85,6 @@ class PipPackages(BaseModel):
 
 
 class RPackages(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     # we need to add here later different package indexes
     packages: list[RPackage]
     comment: None | str = None
@@ -107,7 +103,6 @@ class RPackages(BaseModel):
 
 
 class CondaPackages(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
     channels: None | set[str] = None
     packages: list[CondaPackage]
@@ -127,7 +122,6 @@ class CondaPackages(BaseModel):
 
 
 class Phase(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     name: str
     apt: None | AptPackages = None
     pip: None | PipPackages = None
@@ -140,7 +134,6 @@ class Phase(BaseModel):
 
 
 class BuildStep(BaseModel):
-    model_config = ConfigDict(validate_assignment=True)
     name: str
     phases: list[Phase]
     comment: None | str = None

@@ -4,10 +4,8 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from exasol.exaslpm.model.package_file_config import (
-        GenericPackage,
-    )
+    from exasol.exaslpm.model.package_file_config import Package
 
-PackageType = TypeVar("PackageType", bound="GenericPackage")
+PackageType = TypeVar("PackageType", bound="Package")
 
 AnyPackageList = list["PackageType"]

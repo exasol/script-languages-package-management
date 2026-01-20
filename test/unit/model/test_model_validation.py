@@ -57,7 +57,9 @@ def test_unique_build_step_names():
     yaml_data = yaml.safe_load(yaml_file)
     with pytest.raises(
         PackageFileValidationError,
-        match=re.escape("Buildstep names must be unique at [<PackageFile root>]"),
+        match=re.escape(
+            "Buildstep names must be unique. Multiple Buildsteps were detected: (['build_step_one']) at [<PackageFile root>]"
+        ),
     ):
         PackageFile.model_validate(yaml_data)
 
@@ -116,7 +118,7 @@ def test_unique_phase_names():
     with pytest.raises(
         PackageFileValidationError,
         match=re.escape(
-            "Phase names must be unique at [<PackageFile root> -> <Build-Step 'build_step_one'>]"
+            "Phase names must be unique. Multiple phases were detected: (['phase 1']) at [<PackageFile root> -> <Build-Step 'build_step_one'>]"
         ),
     ):
         PackageFile.model_validate(yaml_data)
@@ -219,8 +221,7 @@ def test_valid_package_installer_r():
     build_steps:
       - name: build_step_one
         phases:
-          - name: phase_one
-            
+          - name: phase_one            
             r:
                 comment: null
                 packages:
