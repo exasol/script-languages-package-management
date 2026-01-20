@@ -32,45 +32,45 @@ def _check_unique_packages(packages: "AnyPackageList", model_path: list[str]) ->
 
 
 def validate_apt_packages(apt_packages: "AptPackages", model_path: list[str]) -> None:
-    _model_path = list((*model_path, "<AptPackages>"))
+    _model_path = [*model_path, "<AptPackages>"]
     _check_unique_packages(apt_packages.packages, _model_path)
 
 
 def validate_conda_packages(
     conda_packages: "CondaPackages", model_path: list[str]
 ) -> None:
-    _model_path = list((*model_path, "<CondaPackages>"))
+    _model_path = [*model_path, "<CondaPackages>"]
     _check_unique_packages(conda_packages.packages, _model_path)
 
 
 def validate_pip_packages(pip_packages: "PipPackages", model_path: list[str]) -> None:
-    _model_path = list((*model_path, "<PipPackages>"))
+    _model_path = [*model_path, "<PipPackages>"]
     _check_unique_packages(pip_packages.packages, _model_path)
 
 
 def validate_r_packages(r_packages: "RPackages", model_path: list[str]) -> None:
-    _model_path = list((*model_path, "<RPackages>"))
+    _model_path = [*model_path, "<RPackages>"]
     _check_unique_packages(r_packages.packages, _model_path)
 
 
 def validate_phase(phase: "Phase", model_path: list[str]) -> None:
-    _model_path = list((*model_path, f"<Phase '{phase.name}'>"))
+    _model_path = [*model_path, f"<Phase '{phase.name}'>"]
     if not any([phase.apt, phase.pip, phase.conda, phase.r]):
         raise PackageFileValidationError(
             _model_path, "There shall be at least one Package installer"
         )
     if phase.apt is not None:
-        validate_apt_packages(phase.apt, _model_path)
+        phase.apt.validate_model_graph(_model_path)
     if phase.conda is not None:
-        validate_conda_packages(phase.conda, _model_path)
+        phase.conda.validate_model_graph(_model_path)
     if phase.pip is not None:
-        validate_pip_packages(phase.pip, _model_path)
+        phase.pip.validate_model_graph(_model_path)
     if phase.r is not None:
-        validate_r_packages(phase.r, _model_path)
+        phase.r.validate_model_graph(_model_path)
 
 
 def validate_build_step(build_step: "BuildStep", model_path: list[str]) -> None:
-    _model_path = list((*model_path, f"<Build-Step '{build_step.name}'>"))
+    _model_path = [*model_path, f"<Build-Step '{build_step.name}'>"]
     if not build_step.phases or not len(build_step.phases):
         raise PackageFileValidationError(
             _model_path, "There shall be at least one Phase"
@@ -85,7 +85,7 @@ def validate_build_step(build_step: "BuildStep", model_path: list[str]) -> None:
             f"Phase names must be unique. Multiple phases were detected: ({multiple_phases})",
         )
     for phase in build_step.phases:
-        validate_phase(phase, _model_path)
+        phase.validate_model_graph(_model_path)
 
 
 def validate_package_file_config(package_file_config: "PackageFile") -> None:
@@ -104,4 +104,4 @@ def validate_package_file_config(package_file_config: "PackageFile") -> None:
             f"Buildstep names must be unique. Multiple Buildsteps were detected: ({multiple_buildsteps})",
         )
     for build_step in package_file_config.build_steps:
-        validate_build_step(build_step, model_path)
+        build_step.validate_model_graph(model_path)

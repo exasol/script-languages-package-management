@@ -179,6 +179,26 @@ def test_valid_package_installer_apt_without_comment():
     assert model
 
 
+def test_unique_apt_packages():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt:
+                comment: null
+                packages:
+                - name: curl
+                  version: 7.68.0
+                - name: curl
+                  version: 7.42.0
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    expected_error = "Packages must be unique. Multiple packages were detected: (['curl']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'> -> <AptPackages>]"
+    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
+        PackageFile.model_validate(yaml_data)
+
+
 def test_valid_package_installer_pip():
     yaml_file = """
     build_steps:
@@ -194,6 +214,27 @@ def test_valid_package_installer_pip():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+
+
+def test_unique_pip_packages():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            pip:
+                comment: null
+                packages:
+                - name: requests
+                  version: 2.25.1
+                  comment: install requests
+                - name: requests
+                  version: 2.5.1
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    expected_error = "Packages must be unique. Multiple packages were detected: (['requests']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'> -> <PipPackages>]"
+    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_installer_conda():
@@ -214,6 +255,27 @@ def test_valid_package_installer_conda():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+
+
+def test_unique_conda_packages():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            conda:
+                comment: null
+                packages:
+                - name: numpy
+                  version: 1.19.2
+                  comment: install numpy
+                - name: numpy
+                  version: 1.2.0
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    expected_error = "Packages must be unique. Multiple packages were detected: (['numpy']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'> -> <CondaPackages>]"
+    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_installer_r():
@@ -249,6 +311,26 @@ def test_valid_package_installer_r_without_comment():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+
+
+def test_unique_r_packages():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  version: 3.3.5
+                - name: ggplot2
+                  version: 1.2.3
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    expected_error = "Packages must be unique. Multiple packages were detected: (['ggplot2']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'> -> <RPackages>]"
+    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_all_installers():
