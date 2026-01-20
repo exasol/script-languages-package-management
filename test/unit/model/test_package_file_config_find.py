@@ -62,6 +62,17 @@ def test_find_build_step_in_multi_build_step_model():
     assert found_build_step == test_build_step_two
 
 
+def test_duplicated_buildstep_raises():
+    model = PackageFile(build_steps=[TEST_BUILD_STEP])
+    model.build_steps.append(TEST_BUILD_STEP)
+
+    with pytest.raises(
+        ValueError,
+        match=r"More than on build step for build step name 'build_step_one'",
+    ):
+        model.find_build_step("build_step_one")
+
+
 def test_invalid_buildstep_raises():
     model = PackageFile(build_steps=[TEST_BUILD_STEP])
 
