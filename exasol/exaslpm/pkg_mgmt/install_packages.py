@@ -1,26 +1,11 @@
 import pathlib
 
-import yaml
-
-from exasol.exaslpm.model.package_file_config import (
-    PackageFile,
-    Phase,
-)
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import install_via_apt
-
-
-def parse_package_file(
-    package_file: PackageFile, phase_name: str, build_step_name: str
-) -> Phase:
-    build_steps = package_file.build_steps
-    build_step = build_steps[build_step_name]
-    phases = build_step.phases
-    phase = phases[phase_name]
-    return phase
+from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
 
 
 def package_install(
@@ -43,22 +28,16 @@ def package_install(
     )
 
     try:
-        package_content = package_file.read_text()
+        package_file_session = PackageFileSession(package_file=package_file)
     except Exception as e:
         logger.err(
             "Failed to read package file.", package_file=package_file, exception=e
         )
         raise
     try:
-        yaml_data = yaml.safe_load(package_content)
-        pkg_file = PackageFile.model_validate(yaml_data)
-    except Exception as e:
-        logger.err(
-            "Failed to parse package file.", package_file=package_file, exception=e
-        )
-        raise
-    try:
-        single_phase = parse_package_file(pkg_file, phase, build_step)
+        single_phase = package_file_session.package_file_config.find_build_step(
+            build_step
+        ).find_phase(phase)
     except Exception as e:
         logger.err(
             "Build step or phase not found.",

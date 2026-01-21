@@ -6,7 +6,7 @@ from unittest.mock import (
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
-    Package,
+    AptPackage,
 )
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandResult,
@@ -34,8 +34,8 @@ def test_install_via_apt_with_pkgs():
     mock_command_result.return_code.return_value = 0
     mock_logger = MagicMock(spec=CommandLogger)
     pkgs = [
-        Package(name="curl", version="7.68.0"),
-        Package(name="requests", version="2.25.1"),
+        AptPackage(name="curl", version="7.68.0"),
+        AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
     install_via_apt(aptPackages, mock_executor, mock_logger)
@@ -115,8 +115,8 @@ def test_install_via_apt_negative_cases(fail_step, expected_error):
     cmd_executor = FailCommandExecutor(fail_step)
 
     pkgs = [
-        Package(name="curl", version="7.68.0"),
-        Package(name="requests", version="2.25.1"),
+        AptPackage(name="curl", version="7.68.0"),
+        AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
 

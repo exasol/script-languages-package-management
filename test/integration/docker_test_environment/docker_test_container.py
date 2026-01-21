@@ -7,7 +7,7 @@ from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 from docker.models.containers import Container
 
-from exasol.exaslpm.model.package_file_config import Package
+from exasol.exaslpm.model.package_file_config import AptPackage
 
 
 class DockerTestContainer:
@@ -52,7 +52,7 @@ class DockerTestContainer:
         assert res
         return Path(target_path_in_container) / file_name
 
-    def list_apt(self) -> list[Package]:
+    def list_apt(self) -> list[AptPackage]:
         _, out = self.run(
             [
                 "bash",
@@ -65,5 +65,5 @@ class DockerTestContainer:
             if line.strip():  # avoid empty lines
                 packages.append(json.loads(line))
         return [
-            Package(name=pkg["package"], version=pkg["version"]) for pkg in packages
+            AptPackage(name=pkg["package"], version=pkg["version"]) for pkg in packages
         ]
