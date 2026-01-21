@@ -25,9 +25,10 @@ def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
 
 @pytest.fixture
 def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
-    mock_function_to_mock = MagicMock()
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
     monkeypatch.setattr(cli, "HistoryFileManager", mock_function_to_mock)
-    return mock_function_to_mock
+    return return_mock
 
 
 def test_mock_no_phase(cliRunner, mock_install_packages, some_package_file):
@@ -80,6 +81,6 @@ def test_mock_all_options(
             pathlib.PosixPath(r_binary),
             mock.ANY,
             mock.ANY,
-            history_file_manager=mock_history_manager.mock_calls[0],
+            history_file_manager=mock_history_manager,
         )
     ]

@@ -30,7 +30,20 @@ def apt_package_file_content() -> PackageFile:
                         ),
                     )
                 ],
-            )
+            ),
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(name="coreutils", version="9.4-3ubuntu6.1"),
+                            ]
+                        ),
+                    )
+                ],
+            ),
         ]
     )
 
@@ -108,25 +121,6 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
 
-def test_history(docker_container, apt_package_file_content, cli_helper):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
-
-    apt_package_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file_01", apt_package_file_yaml
-    )
-
-    ret, out = docker_container.run_exaslpm(
-        cli_helper.install.package_file(apt_package_file)
-        .phase("phase_1")
-        .build_step("build_step_1")
-        .args
-    )
-    assert ret == 0
-    _, out = docker_container.run(["ls", "/build_info/packages/history"])
-    history_files = [line.strip() for line in out.splitlines()]
-    assert history_files == ["build_step_1"]
-
-
 def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helper):
     apt_invalid_package_file_yaml = yaml.dump(apt_invalid_package_file.model_dump())
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
@@ -142,3 +136,41 @@ def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helpe
     )
     assert ret != 0
     assert "Unable to locate package unknowsoftware" in out
+
+
+def test_history(docker_container, apt_package_file_content, cli_helper):
+    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+
+    apt_package_file = docker_container.make_and_upload_file(
+        Path("/"), "apt_file_01", apt_package_file_yaml
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(apt_package_file)
+        .phase("phase_1")
+        .build_step("build_step_1")
+        .args
+    )
+    assert ret == 0
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(apt_package_file)
+        .phase("phase_1")
+        .build_step("build_step_2")
+        .args
+    )
+    assert ret == 0
+
+    _, out = docker_container.run(["ls", "/build_info/packages/history"])
+    history_files = [line.strip() for line in out.splitlines()]
+    assert history_files == ["build_step_1", "build_step_2"]
+
+    _, out = docker_container.run(["cat", "/build_info/packages/history/build_step_1"])
+    history_one_model = PackageFile.model_validate(yaml.safe_load(out))
+    assert len(history_one_model.build_steps) == 1
+    assert history_one_model.build_steps[0] == apt_package_file_content.build_steps[0]
+
+    _, out = docker_container.run(["cat", "/build_info/packages/history/build_step_2"])
+    history_two_model = PackageFile.model_validate(yaml.safe_load(out))
+    assert len(history_two_model.build_steps) == 1
+    assert history_two_model.build_steps[0] == apt_package_file_content.build_steps[1]
