@@ -30,18 +30,28 @@ class HistoryFileManager:
         return package_file_model.build_steps[0]
 
     def raise_if_build_step_exists(self, build_step_name: str) -> None:
+        """
+        Check if a build step exists and raise an exception if so.
+        """
         if build_step_name in self.get_all_previous_build_step_names():
             raise ValueError(
                 f"Buildstep '{build_step_name}' already exists in history path: '{self.history_path}'"
             )
 
     def add_build_step_to_history(self, build_step: BuildStep) -> None:
+        """
+        Create a new history file and add it to the history path.
+        The history file contains the given build step.
+        """
         self.raise_if_build_step_exists(build_step.name)
         (self.history_path / build_step.name).write_text(
             self._serialize_build_step(build_step)
         )
 
     def get_all_previous_build_step_names(self) -> set[str]:
+        """
+        Read all build step names from the history path.
+        """
         return {p.name for p in self.history_path.iterdir() if p.is_file()}
 
     def get_all_previous_build_steps(self) -> list[BuildStep]:
