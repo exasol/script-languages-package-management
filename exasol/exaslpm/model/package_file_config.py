@@ -12,6 +12,8 @@ import exasol.exaslpm.model.package_edit as package_edit
 import exasol.exaslpm.model.package_file_config_find as package_file_config_find
 import exasol.exaslpm.model.package_file_config_validation as package_file_config_validation
 
+CURRENT_VERSION = "1.0.0"
+
 
 class Package(BaseModel):
     name: str
@@ -219,6 +221,7 @@ class BuildStep(BaseModel):
 class PackageFile(BaseModel):
     build_steps: list[BuildStep]
     comment: None | str = None
+    version: str = CURRENT_VERSION
 
     @overload
     def find_build_step(
