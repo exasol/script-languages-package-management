@@ -21,6 +21,7 @@ def collect_conda_packages(build_steps: list[BuildStep]) -> list[CondaPackage]:
     """
     Collects all conda packages as flat list from a list of build steps.
     """
+
     def get_conda_packages(phase: Phase) -> list[CondaPackage]:
         if not phase.conda:
             return []
@@ -33,6 +34,7 @@ def collect_pip_packages(build_steps: list[BuildStep]) -> list[PipPackage]:
     """
     Collects all Pip packages as flat list from a list of build steps.
     """
+
     def get_pip_packages(phase: Phase) -> list[PipPackage]:
         if not phase.pip:
             return []
