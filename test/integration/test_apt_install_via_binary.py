@@ -1,4 +1,7 @@
 from pathlib import Path
+from test.integration.docker_test_environment.docker_test_container import (
+    DockerTestContainer,
+)
 from typing import Any
 
 import pytest
@@ -138,6 +141,17 @@ def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helpe
     assert "Unable to locate package unknowsoftware" in out
 
 
+def _validate_build_step_history_file(
+    docker_container: DockerTestContainer,
+    history_file_path: Path,
+    expected_build_step: BuildStep,
+) -> None:
+    _, out = docker_container.run(["cat", str(history_file_path)])
+    history_one_model = PackageFile.model_validate(yaml.safe_load(out))
+    assert len(history_one_model.build_steps) == 1
+    assert history_one_model.build_steps[0] == expected_build_step
+
+
 def test_history(docker_container, apt_package_file_content, cli_helper):
     apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
 
@@ -165,12 +179,13 @@ def test_history(docker_container, apt_package_file_content, cli_helper):
     history_files = [line.strip() for line in out.splitlines()]
     assert history_files == ["build_step_1", "build_step_2"]
 
-    _, out = docker_container.run(["cat", "/build_info/packages/history/build_step_1"])
-    history_one_model = PackageFile.model_validate(yaml.safe_load(out))
-    assert len(history_one_model.build_steps) == 1
-    assert history_one_model.build_steps[0] == apt_package_file_content.build_steps[0]
-
-    _, out = docker_container.run(["cat", "/build_info/packages/history/build_step_2"])
-    history_two_model = PackageFile.model_validate(yaml.safe_load(out))
-    assert len(history_two_model.build_steps) == 1
-    assert history_two_model.build_steps[0] == apt_package_file_content.build_steps[1]
+    _validate_build_step_history_file(
+        docker_container,
+        Path("/build_info/packages/history/build_step_1"),
+        apt_package_file_content.build_steps[0],
+    )
+    _validate_build_step_history_file(
+        docker_container,
+        Path("/build_info/packages/history/build_step_2"),
+        apt_package_file_content.build_steps[1],
+    )
