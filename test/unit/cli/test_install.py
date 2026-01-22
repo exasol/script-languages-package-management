@@ -23,6 +23,14 @@ def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     return mock_function_to_mock
 
 
+@pytest.fixture
+def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
+    monkeypatch.setattr(cli, "HistoryFileManager", mock_function_to_mock)
+    return return_mock
+
+
 def test_mock_no_phase(cliRunner, mock_install_packages, some_package_file):
     ret = cliRunner.run("--package-file", some_package_file)
     assert ret.failed and "Missing option '--build-step'" in ret.output
@@ -45,6 +53,7 @@ def test_mock_all_options(
     python_binary,
     conda_binary,
     r_binary,
+    mock_history_manager,
 ):
     ret = cliRunner.run(
         "--phase",
@@ -72,5 +81,6 @@ def test_mock_all_options(
             pathlib.PosixPath(r_binary),
             mock.ANY,
             mock.ANY,
+            history_file_manager=mock_history_manager,
         )
     ]

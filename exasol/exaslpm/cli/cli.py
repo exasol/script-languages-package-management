@@ -6,6 +6,7 @@ from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
 )
 from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
+from exasol.exaslpm.pkg_mgmt.history_file_manager import HistoryFileManager
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -80,4 +81,5 @@ def install(
         r_binary,
         cmd_executor,
         logger,
+        history_file_manager=HistoryFileManager(),
     )
