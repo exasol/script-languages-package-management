@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import (
     Literal,
     overload,
@@ -56,6 +57,7 @@ class RPackage(Package):
 
 
 class PPA(BaseModel):
+    name: str
     key_server: str
     key: str
     ppa: str
@@ -64,7 +66,7 @@ class PPA(BaseModel):
 
 
 class AptPackages(BaseModel):
-    ppa: PPA | None = None
+    ppas: list[PPA] = []
     packages: list[AptPackage]
     comment: None | str = None
 
@@ -194,7 +196,6 @@ class CondaPackages(BaseModel):
 
 class Pip(BaseModel):
     version: str
-    python_binary: str
     comment: None | str = None
 
 
@@ -212,6 +213,8 @@ class Tools(BaseModel):
     pip: Pip | None = None
     micromamba: Micromamba | None = None
     bazel: Bazel | None = None
+    python_binary_path: Path | None
+    r_binary_path: Path | None
 
 
 class Phase(BaseModel):
@@ -221,6 +224,7 @@ class Phase(BaseModel):
     r: None | RPackages = None
     conda: None | CondaPackages = None
     tools: None | Tools = None
+    variables: None | dict[str, str] = None
     comment: None | str = None
 
     def validate_model_graph(self, model_path: list[str]) -> None:

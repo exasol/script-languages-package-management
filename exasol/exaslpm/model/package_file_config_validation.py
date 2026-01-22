@@ -8,6 +8,7 @@ if TYPE_CHECKING:
         PackageType,
     )
     from exasol.exaslpm.model.package_file_config import (
+        PPA,
         AptPackages,
         BuildStep,
         CondaPackages,
@@ -33,9 +34,22 @@ def _check_unique_packages(
         )
 
 
+def _check_unique_ppas(ppas: list["PPA"], model_path: list[str]) -> None:
+    ppa_key_counter = Counter(p.key for p in ppas)
+    multiple_packages = [name for name, count in ppa_key_counter.items() if count > 1]
+
+    if multiple_packages:
+        ppa_key_name_list = [ppa.name for ppa in ppas if ppa.key in ppa_key_counter]
+        raise PackageFileValidationError(
+            model_path,
+            f"PPA's must be unique. Multiple PPA's with same key were detected: ({ppa_key_name_list})",
+        )
+
+
 def validate_apt_packages(apt_packages: "AptPackages", model_path: list[str]) -> None:
     _model_path = [*model_path, "<AptPackages>"]
     _check_unique_packages(apt_packages.packages, _model_path)
+    _check_unique_ppas(apt_packages.ppas, model_path)
 
 
 def validate_conda_packages(

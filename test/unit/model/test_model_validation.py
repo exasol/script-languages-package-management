@@ -4,8 +4,13 @@ import pytest
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
+    PPA,
     AptPackage,
+    Bazel,
+    Micromamba,
     PackageFile,
+    Pip,
+    Tools,
 )
 from exasol.exaslpm.model.package_validation_error import PackageFileValidationError
 
@@ -206,19 +211,76 @@ def test_ppa():
         phases:
           - name: phase_one
             apt:
-                ppa:
-                    key_server: http://some_key_server
-                    key: some_key
-                    ppa: some_ppa
-                    out_file: some_out_file
-                    comment: This is a sample PPA
+                ppas:
+                  -  name: some_ppa
+                     key_server: http://some_key_server
+                     key: some_key
+                     ppa: deb http://some_ppa_server/some_ppa some_ppa/
+                     out_file: some_out_file
+                     comment: This is a sample PPA
+                  -  name: some_other_ppa
+                     key_server: http://some_key_server
+                     key: some_other_key
+                     ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
+                     out_file: some_other_out_file
+                     comment: This is a sample PPA
                 packages:
                 - name: curl
                   version: 7.68.0
     """
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
+    expected_first_ppa = PPA(
+        name="some_ppa",
+        key_server="http://some_key_server",
+        key="some_key",
+        ppa="deb http://some_ppa_server/some_ppa some_ppa/",
+        out_file="some_out_file",
+        comment="This is a sample PPA",
+    )
+    expected_second_ppa = PPA(
+        name="some_other_ppa",
+        key_server="http://some_key_server",
+        key="some_other_key",
+        ppa="deb http://some_other_ppa_server/some_ppa some_ppa/",
+        out_file="some_other_out_file",
+        comment="This is a sample PPA",
+    )
     assert model
+    assert model.find_build_step("build_step_one").find_phase("phase_one").apt.ppas == [
+        expected_first_ppa,
+        expected_second_ppa,
+    ]
+
+
+def test_unique_ppa():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt:
+                ppas:
+                  -  name: some_ppa
+                     key_server: http://some_key_server
+                     key: some_key
+                     ppa: deb http://some_ppa_server/some_ppa some_ppa/
+                     out_file: some_out_file
+                     comment: This is a sample PPA
+                  -  name: some_other_ppa
+                     key_server: http://some_key_server
+                     key: some_key
+                     ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
+                     out_file: some_other_out_file
+                     comment: This is a sample PPA
+                packages:
+                - name: curl
+                  version: 7.68.0
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    expected_error = "PPA's must be unique. Multiple PPA's with same key were detected: (['some_ppa', 'some_other_ppa']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'>]"
+    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_installer_pip():
@@ -364,14 +426,16 @@ def test_tools():
             tools:
                 pip:
                     version: 1.2.3
-                    python_binary: python3.12
                     comment: install pip
                 micromamba:
                     version: 1.2.3
                     comment: install micromamba
                 bazel:
                     version: 1.2.3
-                    comment: install micromamba
+                    comment: install bazel
+                python_binary_path: /usr/bin/python3.12
+                r_binary_path: /usr/bin/r4.4
+
             apt:
                 packages:
                 - name: curl
@@ -381,6 +445,40 @@ def test_tools():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+    assert model.find_build_step("build_step_one").find_phase(
+        "phase_one"
+    ).tools == Tools(
+        pip=Pip(version="1.2.3", comment="install pip"),
+        micromamba=Micromamba(version="1.2.3", comment="install micromamba"),
+        bazel=Bazel(version="1.2.3", comment="install bazel"),
+        python_binary_path="/usr/bin/python3.12",
+        r_binary_path="/usr/bin/r4.4",
+    )
+
+
+def test_variables():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+
+          - name: phase_one
+            comment: null
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
+                  comment: install curl
+            variables:
+                java_home: /usr/java
+                python_prefix: /usr/bin/
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+    assert model.find_build_step("build_step_one").find_phase(
+        "phase_one"
+    ).variables == {"java_home": "/usr/java", "python_prefix": "/usr/bin/"}
 
 
 def test_valid_package_all_installers():
