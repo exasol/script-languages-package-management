@@ -1,3 +1,4 @@
+from enum import Enum
 from pathlib import Path
 from typing import (
     Literal,
@@ -57,7 +58,6 @@ class RPackage(Package):
 
 
 class PPA(BaseModel):
-    name: str
     key_server: str
     key: str
     ppa: str
@@ -66,7 +66,7 @@ class PPA(BaseModel):
 
 
 class AptPackages(BaseModel):
-    ppas: list[PPA] = []
+    ppas: dict[str, PPA] | None = None
     packages: list[AptPackage]
     comment: None | str = None
 
@@ -161,10 +161,17 @@ class RPackages(BaseModel):
         package_file_config_validation.validate_r_packages(self, model_path)
 
 
+class CondaBinary(Enum):
+    Micromamba = "Micromamba"
+    Mamba = "Mamba"
+    Conda = "Conda"
+
+
 class CondaPackages(BaseModel):
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
     channels: None | set[str] = None
     packages: list[CondaPackage]
+    binary: CondaBinary = CondaBinary.Micromamba
     comment: None | str = None
 
     @overload
@@ -213,8 +220,10 @@ class Tools(BaseModel):
     pip: Pip | None = None
     micromamba: Micromamba | None = None
     bazel: Bazel | None = None
-    python_binary_path: Path | None
-    r_binary_path: Path | None
+    python_binary_path: Path | None = None
+    r_binary_path: Path | None = None
+    conda_binary_path: Path | None = None
+    mamba_binary_path: Path | None = None
 
 
 class Phase(BaseModel):

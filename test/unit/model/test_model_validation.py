@@ -1,12 +1,15 @@
 import re
+from pathlib import Path
 
 import pytest
 import yaml
+from pydantic import ValidationError
 
 from exasol.exaslpm.model.package_file_config import (
     PPA,
     AptPackage,
     Bazel,
+    CondaBinary,
     Micromamba,
     PackageFile,
     Pip,
@@ -212,13 +215,13 @@ def test_ppa():
           - name: phase_one
             apt:
                 ppas:
-                  -  name: some_ppa
+                  some_ppa:
                      key_server: http://some_key_server
                      key: some_key
                      ppa: deb http://some_ppa_server/some_ppa some_ppa/
                      out_file: some_out_file
                      comment: This is a sample PPA
-                  -  name: some_other_ppa
+                  some_other_ppa:
                      key_server: http://some_key_server
                      key: some_other_key
                      ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
@@ -231,7 +234,6 @@ def test_ppa():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     expected_first_ppa = PPA(
-        name="some_ppa",
         key_server="http://some_key_server",
         key="some_key",
         ppa="deb http://some_ppa_server/some_ppa some_ppa/",
@@ -239,7 +241,6 @@ def test_ppa():
         comment="This is a sample PPA",
     )
     expected_second_ppa = PPA(
-        name="some_other_ppa",
         key_server="http://some_key_server",
         key="some_other_key",
         ppa="deb http://some_other_ppa_server/some_ppa some_ppa/",
@@ -247,10 +248,10 @@ def test_ppa():
         comment="This is a sample PPA",
     )
     assert model
-    assert model.find_build_step("build_step_one").find_phase("phase_one").apt.ppas == [
-        expected_first_ppa,
-        expected_second_ppa,
-    ]
+    assert model.find_build_step("build_step_one").find_phase("phase_one").apt.ppas == {
+        "some_ppa": expected_first_ppa,
+        "some_other_ppa": expected_second_ppa,
+    }
 
 
 def test_unique_ppa():
@@ -261,13 +262,13 @@ def test_unique_ppa():
           - name: phase_one
             apt:
                 ppas:
-                  -  name: some_ppa
+                  some_ppa:
                      key_server: http://some_key_server
                      key: some_key
                      ppa: deb http://some_ppa_server/some_ppa some_ppa/
                      out_file: some_out_file
                      comment: This is a sample PPA
-                  -  name: some_other_ppa
+                  some_other_ppa:
                      key_server: http://some_key_server
                      key: some_key
                      ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
@@ -321,8 +322,12 @@ def test_unique_pip_packages():
         PackageFile.model_validate(yaml_data)
 
 
-def test_valid_package_installer_conda():
-    yaml_file = """
+@pytest.mark.parametrize(
+    "conda_binary",
+    [CondaBinary.Micromamba.value, CondaBinary.Mamba.value, CondaBinary.Conda.value],
+)
+def test_valid_package_installer_conda(conda_binary):
+    yaml_file = f"""
     build_steps:
       - name: build_step_one
         phases:
@@ -330,6 +335,7 @@ def test_valid_package_installer_conda():
             
             conda:
                 channels: null
+                binary: {conda_binary}
                 comment: null
                 packages:
                 - name: numpy
@@ -339,6 +345,29 @@ def test_valid_package_installer_conda():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+
+
+def test_valid_package_installer_conda_invalid_binary():
+    yaml_file = f"""
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+
+            conda:
+                channels: null
+                binary: invalid_conda_binary
+                comment: null
+                packages:
+                - name: numpy
+                  version: 1.19.2
+                  comment: install numpy
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    with pytest.raises(
+        ValidationError, match=r"Input should be 'Micromamba', 'Mamba' or 'Conda'"
+    ):
+        PackageFile.model_validate(yaml_data)
 
 
 def test_unique_conda_packages():
@@ -435,6 +464,8 @@ def test_tools():
                     comment: install bazel
                 python_binary_path: /usr/bin/python3.12
                 r_binary_path: /usr/bin/r4.4
+                conda_binary_path: /usr/conda/bin/conda
+                mamba_binary_path: /usr/conda/bin/mamba
 
             apt:
                 packages:
@@ -451,8 +482,10 @@ def test_tools():
         pip=Pip(version="1.2.3", comment="install pip"),
         micromamba=Micromamba(version="1.2.3", comment="install micromamba"),
         bazel=Bazel(version="1.2.3", comment="install bazel"),
-        python_binary_path="/usr/bin/python3.12",
-        r_binary_path="/usr/bin/r4.4",
+        python_binary_path=Path("/usr/bin/python3.12"),
+        r_binary_path=Path("/usr/bin/r4.4"),
+        conda_binary_path=Path("/usr/conda/bin/conda"),
+        mamba_binary_path=Path("/usr/conda/bin/mamba"),
     )
 
 
