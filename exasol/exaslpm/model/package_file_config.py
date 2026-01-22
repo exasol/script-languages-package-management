@@ -55,8 +55,16 @@ class RPackage(Package):
     """
 
 
+class PPA(BaseModel):
+    key_server: str
+    key: str
+    ppa: str
+    out_file: str
+    comment: None | str = None
+
+
 class AptPackages(BaseModel):
-    # we need to add here later different package indexes
+    ppa: PPA | None = None
     packages: list[AptPackage]
     comment: None | str = None
 
@@ -184,12 +192,35 @@ class CondaPackages(BaseModel):
         package_file_config_validation.validate_conda_packages(self, model_path)
 
 
+class Pip(BaseModel):
+    version: str
+    python_binary: str
+    comment: None | str = None
+
+
+class Micromamba(BaseModel):
+    version: str
+    comment: None | str = None
+
+
+class Bazel(BaseModel):
+    version: str
+    comment: None | str = None
+
+
+class Tools(BaseModel):
+    pip: Pip | None = None
+    micromamba: Micromamba | None = None
+    bazel: Bazel | None = None
+
+
 class Phase(BaseModel):
     name: str
     apt: None | AptPackages = None
     pip: None | PipPackages = None
     r: None | RPackages = None
     conda: None | CondaPackages = None
+    tools: None | Tools = None
     comment: None | str = None
 
     def validate_model_graph(self, model_path: list[str]) -> None:

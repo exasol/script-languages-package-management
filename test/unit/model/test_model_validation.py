@@ -199,6 +199,28 @@ def test_unique_apt_packages():
         PackageFile.model_validate(yaml_data)
 
 
+def test_ppa():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            apt:
+                ppa:
+                    key_server: http://some_key_server
+                    key: some_key
+                    ppa: some_ppa
+                    out_file: some_out_file
+                    comment: This is a sample PPA
+                packages:
+                - name: curl
+                  version: 7.68.0
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+
+
 def test_valid_package_installer_pip():
     yaml_file = """
     build_steps:
@@ -331,6 +353,34 @@ def test_unique_r_packages():
     expected_error = "Packages must be unique. Multiple packages were detected: (['ggplot2']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'> -> <RPackages>]"
     with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
         PackageFile.model_validate(yaml_data)
+
+
+def test_tools():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            tools:
+                pip:
+                    version: 1.2.3
+                    python_binary: python3.12
+                    comment: install pip
+                micromamba:
+                    version: 1.2.3
+                    comment: install micromamba
+                bazel:
+                    version: 1.2.3
+                    comment: install micromamba
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
+                  comment: install curl
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
 
 
 def test_valid_package_all_installers():
