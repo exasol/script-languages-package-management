@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     apt_invalid_package_file,
