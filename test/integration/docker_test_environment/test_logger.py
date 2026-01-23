@@ -9,7 +9,6 @@ class TestLogger:
         if self.info_callback:
             self.info_callback(msg, **kwargs)
 
-
     def warn(self, msg: str, **kwargs) -> None:
         if self.warning_callback:
             self.warning_callback(msg, **kwargs)
