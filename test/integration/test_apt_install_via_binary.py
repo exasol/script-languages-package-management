@@ -6,16 +6,14 @@ from test.integration.package_fixtures import (  # noqa: F401, fixtures to be us
     apt_invalid_package_file,
     apt_package_file_content,
 )
-from typing import Any
+from test.integration.package_utils import ContainsPackages
 
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
-    AptPackage,
     BuildStep,
     PackageFile,
 )
-from test.integration.package_utils import ContainsPackages
 
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):

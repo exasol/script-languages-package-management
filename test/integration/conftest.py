@@ -1,7 +1,5 @@
 from collections.abc import Iterator
 from pathlib import Path
-
-from exasol.exaslpm.pkg_mgmt.history_file_manager import HistoryFileManager
 from test.integration.cli_helper import CliHelper
 from test.integration.docker_test_environment.docker_command_executor import (
     DockerCommandExecutor,
@@ -16,6 +14,8 @@ from test.integration.docker_test_environment.docker_test_image_builder import (
 from test.integration.docker_test_environment.test_logger import TestLogger
 
 import pytest
+
+from exasol.exaslpm.pkg_mgmt.history_file_manager import HistoryFileManager
 
 
 def pytest_addoption(parser):
@@ -52,14 +52,18 @@ def docker_container(docker_image, request) -> Iterator[DockerTestContainer]:
     yield container
     container.remove()
 
+
 @pytest.fixture(scope="function")
 def test_logger() -> TestLogger:
     return TestLogger()
 
 
 @pytest.fixture(scope="function")
-def docker_command_executor(docker_container: DockerTestContainer, test_logger: TestLogger) -> DockerCommandExecutor:
+def docker_command_executor(
+    docker_container: DockerTestContainer, test_logger: TestLogger
+) -> DockerCommandExecutor:
     return DockerCommandExecutor(logger=test_logger, test_container=docker_container)
+
 
 @pytest.fixture(scope="function")
 def local_package_path(tmp_path, request) -> Path:
@@ -68,11 +72,9 @@ def local_package_path(tmp_path, request) -> Path:
     return p
 
 
-
 @pytest.fixture(scope="function")
 def temp_history_file_manager(tmp_path) -> HistoryFileManager:
     return HistoryFileManager(history_path=tmp_path / "history")
-
 
 
 @pytest.fixture

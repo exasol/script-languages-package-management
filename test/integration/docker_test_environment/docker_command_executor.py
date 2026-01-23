@@ -1,7 +1,6 @@
 import threading
 import time
 from collections import deque
-
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
@@ -70,7 +69,7 @@ class DockerCommandExecutor:
         )
 
         exec_output = docker_client.api.exec_start(
-            exec_instance['Id'],
+            exec_instance["Id"],
             tty=False,
             stream=True,
             demux=True,
@@ -81,12 +80,11 @@ class DockerCommandExecutor:
         def return_code():
             stream_splitter.thread.join()
             if not stream_splitter.finished:
-                raise RuntimeError("Stream not finished"
-            )
+                raise RuntimeError("Stream not finished")
             for i in range(100):
-                exit_metadata = docker_client.api.exec_inspect(exec_instance['Id'])
-                if not exit_metadata['Running']:
-                    return exit_metadata['ExitCode']
+                exit_metadata = docker_client.api.exec_inspect(exec_instance["Id"])
+                if not exit_metadata["Running"]:
+                    return exit_metadata["ExitCode"]
                 time.sleep(1)
             raise RuntimeError("Command did not exit cleanly.")
 

@@ -1,9 +1,6 @@
-from pathlib import Path
 from typing import Any
 
-import yaml
-
-from exasol.exaslpm.model.package_file_config import AptPackage, PackageFile
+from exasol.exaslpm.model.package_file_config import AptPackage
 
 
 class ContainsPackages:
