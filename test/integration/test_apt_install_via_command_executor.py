@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     apt_invalid_package_file,
     apt_package_file_content,
@@ -26,6 +28,9 @@ def test_apt_install(
     pkgs_before_install = docker_container.list_apt()
     assert pkgs_before_install != ContainsPackages(expected_packages)
 
+    return_code_counter = StringMatchCounter("Return Code: 0")
+    test_logger.info = return_code_counter.log
+
     package_install(
         phase_name="phase_1",
         package_file=local_package_path,
@@ -42,4 +47,4 @@ def test_apt_install(
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
     # Check that all 'install apt' commands (see install_apt.prepare_all_cmds() for list) succeeded
-    assert test_logger.info_messages.count("Return Code: 0") == 7
+    assert return_code_counter.result == 7

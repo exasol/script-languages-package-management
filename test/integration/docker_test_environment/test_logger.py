@@ -1,14 +1,24 @@
 class TestLogger:
-    def __init__(self) -> None:
-        self.info_messages = ""
-        self.warning_messages = ""
-        self.error_messages = ""
 
     def info(self, msg: str, **kwargs) -> None:
-        self.info_messages += msg + str(kwargs)
+        pass
 
     def warn(self, msg: str, **kwargs) -> None:
-        self.warning_messages += msg + str(kwargs)
+        pass
 
     def err(self, msg: str, **kwargs) -> None:
-        self.error_messages += msg + str(kwargs)
+        pass
+
+
+class StringMatchCounter:
+    def __init__(self, search_string: str):
+        self.search_string = search_string
+        self._count = 0
+
+    def log(self, msg: str, **kwargs):
+        if self.search_string in msg:
+            self._count += 1
+
+    @property
+    def result(self) -> int:
+        return self._count
