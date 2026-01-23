@@ -53,12 +53,6 @@ class CommandResult:
     def return_code(self) -> int:
         return self._fn_return_code()
 
-    def itr_stdout(self) -> Iterator[str]:
-        return self._stdout
-
-    def itr_stderr(self) -> Iterator[str]:
-        return self._stderr
-
     def consume_results(
         self,
         consume_stdout: Callable[[str | bytes, Any], None],
