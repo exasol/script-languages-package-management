@@ -217,13 +217,13 @@ def test_ppa():
                 ppas:
                   some_ppa:
                      key_server: http://some_key_server
-                     key: some_key
+                     key_fingerprint: some_key
                      ppa: deb http://some_ppa_server/some_ppa some_ppa/
                      out_file: some_out_file
                      comment: This is a sample PPA
                   some_other_ppa:
                      key_server: http://some_key_server
-                     key: some_other_key
+                     key_fingerprint: some_other_key
                      ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
                      out_file: some_other_out_file
                      comment: This is a sample PPA
@@ -235,14 +235,14 @@ def test_ppa():
     model = PackageFile.model_validate(yaml_data)
     expected_first_ppa = PPA(
         key_server="http://some_key_server",
-        key="some_key",
+        key_fingerprint="some_key",
         ppa="deb http://some_ppa_server/some_ppa some_ppa/",
         out_file="some_out_file",
         comment="This is a sample PPA",
     )
     expected_second_ppa = PPA(
         key_server="http://some_key_server",
-        key="some_other_key",
+        key_fingerprint="some_other_key",
         ppa="deb http://some_other_ppa_server/some_ppa some_ppa/",
         out_file="some_other_out_file",
         comment="This is a sample PPA",
@@ -252,36 +252,6 @@ def test_ppa():
         "some_ppa": expected_first_ppa,
         "some_other_ppa": expected_second_ppa,
     }
-
-
-def test_unique_ppa():
-    yaml_file = """
-    build_steps:
-      - name: build_step_one
-        phases:
-          - name: phase_one
-            apt:
-                ppas:
-                  some_ppa:
-                     key_server: http://some_key_server
-                     key: some_key
-                     ppa: deb http://some_ppa_server/some_ppa some_ppa/
-                     out_file: some_out_file
-                     comment: This is a sample PPA
-                  some_other_ppa:
-                     key_server: http://some_key_server
-                     key: some_key
-                     ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
-                     out_file: some_other_out_file
-                     comment: This is a sample PPA
-                packages:
-                - name: curl
-                  version: 7.68.0
-    """
-    yaml_data = yaml.safe_load(yaml_file)
-    expected_error = "PPA's must be unique. Multiple PPA's with same key were detected: (['some_ppa', 'some_other_ppa']) at [<PackageFile root> -> <Build-Step 'build_step_one'> -> <Phase 'phase_one'>]"
-    with pytest.raises(PackageFileValidationError, match=re.escape(expected_error)):
-        PackageFile.model_validate(yaml_data)
 
 
 def test_valid_package_installer_pip():
