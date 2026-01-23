@@ -1,13 +1,22 @@
 class TestLogger:
 
+    def __init__(self):
+        self.info_callback = None
+        self.warning_callback = None
+        self.error_callback = None
+
     def info(self, msg: str, **kwargs) -> None:
-        pass
+        if self.info_callback:
+            self.info_callback(msg, **kwargs)
+
 
     def warn(self, msg: str, **kwargs) -> None:
-        pass
+        if self.warning_callback:
+            self.warning_callback(msg, **kwargs)
 
     def err(self, msg: str, **kwargs) -> None:
-        pass
+        if self.error_callback:
+            self.error_callback(msg, **kwargs)
 
 
 class StringMatchCounter:

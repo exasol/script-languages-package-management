@@ -28,7 +28,7 @@ def test_apt_install(
     assert pkgs_before_install != ContainsPackages(expected_packages)
 
     return_code_counter = StringMatchCounter("Return Code: 0")
-    test_logger.info = return_code_counter.log
+    test_logger.info_callback = return_code_counter.log
 
     package_install(
         phase_name="phase_1",
@@ -38,7 +38,7 @@ def test_apt_install(
         conda_binary=Path(),
         r_binary=Path(),
         cmd_executor=docker_command_executor,
-        logger=docker_command_executor._log,
+        logger=test_logger,
         history_file_manager=temp_history_file_manager,
     )
 
