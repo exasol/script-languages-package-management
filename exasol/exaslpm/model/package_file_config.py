@@ -1,3 +1,5 @@
+from enum import Enum
+from pathlib import Path
 from typing import (
     Literal,
     overload,
@@ -55,8 +57,17 @@ class RPackage(Package):
     """
 
 
+class PPA(BaseModel):
+    key_server: str
+    # Note: the key fingerprint is not necessarily unique across PPAs, see https://documentation.ubuntu.com/launchpad/user/reference/packaging/ppas/ppa/index.html#your-ppa-s-key
+    key_fingerprint: str
+    ppa: str
+    out_file: str
+    comment: None | str = None
+
+
 class AptPackages(BaseModel):
-    # we need to add here later different package indexes
+    ppas: dict[str, PPA] | None = None
     packages: list[AptPackage]
     comment: None | str = None
 
@@ -151,10 +162,17 @@ class RPackages(BaseModel):
         package_file_config_validation.validate_r_packages(self, model_path)
 
 
+class CondaBinary(Enum):
+    Micromamba = "Micromamba"
+    Mamba = "Mamba"
+    Conda = "Conda"
+
+
 class CondaPackages(BaseModel):
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
     channels: None | set[str] = None
     packages: list[CondaPackage]
+    binary: CondaBinary = CondaBinary.Micromamba
     comment: None | str = None
 
     @overload
@@ -184,12 +202,39 @@ class CondaPackages(BaseModel):
         package_file_config_validation.validate_conda_packages(self, model_path)
 
 
+class Pip(BaseModel):
+    version: str
+    comment: None | str = None
+
+
+class Micromamba(BaseModel):
+    version: str
+    comment: None | str = None
+
+
+class Bazel(BaseModel):
+    version: str
+    comment: None | str = None
+
+
+class Tools(BaseModel):
+    pip: Pip | None = None
+    micromamba: Micromamba | None = None
+    bazel: Bazel | None = None
+    python_binary_path: Path | None = None
+    r_binary_path: Path | None = None
+    conda_binary_path: Path | None = None
+    mamba_binary_path: Path | None = None
+
+
 class Phase(BaseModel):
     name: str
     apt: None | AptPackages = None
     pip: None | PipPackages = None
     r: None | RPackages = None
     conda: None | CondaPackages = None
+    tools: None | Tools = None
+    variables: None | dict[str, str] = None
     comment: None | str = None
 
     def validate_model_graph(self, model_path: list[str]) -> None:
