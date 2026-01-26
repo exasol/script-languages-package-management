@@ -14,7 +14,7 @@ from exasol.exaslpm.model.package_file_config import (
     RPackage,
     RPackages,
 )
-from exasol.exaslpm.pkg_mgmt.package_collectors import (
+from exasol.exaslpm.pkg_mgmt.search.package_collectors import (
     collect_conda_packages,
     collect_pip_packages,
 )

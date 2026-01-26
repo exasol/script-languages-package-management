@@ -2,6 +2,7 @@ import pathlib
 
 import click
 
+from exasol.exaslpm.pkg_mgmt.binary_finder import BinaryFinder
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
 )
@@ -82,4 +83,5 @@ def install(
         cmd_executor,
         logger,
         history_file_manager=HistoryFileManager(),
+        binary_finder=BinaryFinder(),
     )

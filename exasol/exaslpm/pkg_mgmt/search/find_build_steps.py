@@ -1,20 +1,13 @@
-from enum import Enum
 from pathlib import Path
 
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     Phase,
 )
+from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
 
 
-class BinaryType(Enum):
-    PYTHON = "python_binary_path"
-    R = "r_binary_path"
-    CONDA = "conda_binary_path"
-    MAMBA = "mamba_binary_path"
-
-
-def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path | None:
+def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
     def get_binary(phase: Phase) -> Path | None:
         if phase.tools:
             return getattr(phase.tools, binary_type.value, None)
@@ -25,10 +18,12 @@ def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path |
     filtered = [res for res in result if res is not None]
     if len(filtered) > 1:
         raise ValueError(f"Found more than one result for binary '{binary_type.value}'")
-    return filtered[0] if len(filtered) == 1 else None
+    if len(filtered) == 0:
+        raise ValueError(f"Binary '{binary_type.value}' not found")
+    return filtered[0]
 
 
-def find_variable(variable_name: str, build_steps: list[BuildStep]) -> Path | None:
+def find_variable(variable_name: str, build_steps: list[BuildStep]) -> str:
     phases = [phase for build_step in build_steps for phase in build_step.phases]
     result = [
         phase.variables[variable_name]
@@ -37,4 +32,6 @@ def find_variable(variable_name: str, build_steps: list[BuildStep]) -> Path | No
     ]
     if len(result) > 1:
         raise ValueError(f"Found more than one result for variable '{variable_name}'")
-    return result[0] if len(result) == 1 else None
+    if len(result) == 0:
+        raise ValueError(f"Variable '{variable_name}' not found")
+    return result[0]

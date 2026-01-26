@@ -6,12 +6,12 @@ from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     Phase,
 )
-from exasol.exaslpm.pkg_mgmt.find_in_buildsteps import find_variable
+from exasol.exaslpm.pkg_mgmt.search.find_build_steps import find_variable
 
 
 def test_find_variable_empty():
-    result = find_variable("some_variable", [])
-    assert result is None
+    with pytest.raises(ValueError, match=r"Variable 'some_variable' not found"):
+        find_variable("some_variable", [])
 
 
 def test_find_variable_single_build_step():
