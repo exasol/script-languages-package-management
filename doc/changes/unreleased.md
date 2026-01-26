@@ -15,3 +15,7 @@
  - #42: Added DockerCommandExecutor test framework
  - #35: Implemented build-steps history mechanism
  - #44: Implemented find methods for binaries and variables
+
+## Refactorings
+
+ - #46: Refactored injection of classes which implement external dependencies

@@ -10,7 +10,7 @@ from typing import (
     cast,
 )
 
-from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
 
 
 class CommandFailedException(Exception):

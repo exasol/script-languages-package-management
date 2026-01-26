@@ -8,7 +8,7 @@ from test.unit.test_data import (
 import pytest
 
 from exasol.exaslpm.model.package_file_config import BuildStep
-from exasol.exaslpm.pkg_mgmt.history_file_manager import HistoryFileManager
+from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 
 
 @pytest.fixture

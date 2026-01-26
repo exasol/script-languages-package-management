@@ -8,38 +8,34 @@ import pytest
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandResult,
 )
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 
-def test_install_via_apt_empty_packages():
-    mock_logger = MagicMock(spec=CommandLogger)
-    mock_executor = MagicMock(spec=CommandExecutor)
+def test_install_via_apt_empty_packages(context_mock):
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, mock_executor, mock_logger)
+    install_via_apt(aptPackages, context_mock.cmd_executor, context_mock.cmd_logger)
 
-    mock_logger.warn.assert_called_once()
-    mock_logger.warn.assert_called_with("Got an empty list of AptPackages")
-    assert mock_logger.mock_calls == [
+    context_mock.cmd_logger.warn.assert_called_once()
+    context_mock.cmd_logger.warn.assert_called_with("Got an empty list of AptPackages")
+    assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
     ]
 
 
-def test_install_via_apt_with_pkgs():
-    mock_executor = MagicMock(spec=CommandExecutor)
+def test_install_via_apt_with_pkgs(context_mock):
     mock_command_result = MagicMock(spec=CommandResult)
-    mock_executor.execute.return_value = mock_command_result
     mock_command_result.return_code.return_value = 0
-    mock_logger = MagicMock(spec=CommandLogger)
+    context_mock.cmd_executor.execute.return_value = mock_command_result
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, mock_executor, mock_logger)
-    assert mock_executor.mock_calls == [
+    install_via_apt(aptPackages, context_mock.cmd_executor, context_mock.cmd_logger)
+    assert context_mock.cmd_executor.mock_calls == [
         call.execute(["apt-get", "-y", "update"]),
         call.execute().print_results(),
         call.execute().return_code(),

@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from exasol.exaslpm.model.package_file_config import AptPackages
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandExecutor,
     CommandFailedException,
     CommandLogger,

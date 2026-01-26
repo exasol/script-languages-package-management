@@ -24,6 +24,14 @@ def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 @pytest.fixture
+def mock_context(monkeypatch: MonkeyPatch) -> MagicMock:
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
+    monkeypatch.setattr(cli, "Context", mock_function_to_mock)
+    return return_mock
+
+
+@pytest.fixture
 def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
     return_mock = MagicMock()
     mock_function_to_mock = MagicMock(return_value=return_mock)
@@ -58,9 +66,7 @@ def test_mock_all_options(
     cliRunner,
     mock_install_packages,
     some_package_file,
-    python_binary,
-    conda_binary,
-    r_binary,
+    mock_context,
     mock_history_manager,
     mock_binary_checker,
 ):
@@ -71,12 +77,6 @@ def test_mock_all_options(
         some_package_file,
         "--build-step",
         "udf_client",
-        "--python-binary",
-        python_binary,
-        "--conda-binary",
-        conda_binary,
-        "--r-binary",
-        r_binary,
     )
     assert ret.succeeded
 
@@ -85,12 +85,6 @@ def test_mock_all_options(
             "Phase1",
             pathlib.PosixPath(some_package_file),
             "udf_client",
-            pathlib.PosixPath(python_binary),
-            pathlib.PosixPath(conda_binary),
-            pathlib.PosixPath(r_binary),
-            mock.ANY,
-            mock.ANY,
-            history_file_manager=mock_history_manager,
-            binary_checker=mock_binary_checker,
+            mock_context,
         )
     ]

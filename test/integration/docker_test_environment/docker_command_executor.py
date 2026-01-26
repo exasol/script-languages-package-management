@@ -5,8 +5,8 @@ from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
 
-from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandResult
-from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandResult
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
 
 
 class StreamSplitter:

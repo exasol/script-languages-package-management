@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from exasol.exaslpm.pkg_mgmt.binary_checker import BinaryChecker
+from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
 
 
 def _create_binary(binary_path: Path) -> Path:
