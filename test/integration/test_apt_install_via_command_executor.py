@@ -1,6 +1,4 @@
 from pathlib import Path
-
-from exasol.exaslpm.pkg_mgmt.binary_finder import BinaryFinder
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     apt_invalid_package_file,
@@ -10,6 +8,7 @@ from test.integration.package_utils import ContainsPackages
 
 import yaml
 
+from exasol.exaslpm.pkg_mgmt.binary_finder import BinaryFinder
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
