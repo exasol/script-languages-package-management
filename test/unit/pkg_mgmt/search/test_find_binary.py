@@ -11,6 +11,7 @@ from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     Phase,
 )
+from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 from exasol.exaslpm.pkg_mgmt.search.find_build_steps import (
     BinaryType,
     find_binary,
@@ -156,7 +157,7 @@ def test_find_binary(binary_type, build_step_builder):
 def test_find_binary_raises_if_not_found(binary_type, build_step_builder):
     build_steps = build_step_builder(binary_type)
     for other_binary in BinaryType:
-        if other_binary != binary_type:
+        if other_binary != binary_type and other_binary != BinaryType.MICROMAMBA:
             with pytest.raises(
                 ValueError, match=rf"Binary '{other_binary.value}' not found"
             ):
@@ -204,3 +205,17 @@ def test_find_binary_unique(
         match=rf"Found more than one result for binary '{binary_type.value}'",
     ):
         find_binary(binary_type, [test_build_step_one, test_build_step_two])
+
+
+@pytest.mark.parametrize(
+    "build_step_builder",
+    [
+        pytest.param(_build_single_build_steps, id="single"),
+        pytest.param(_build_multiple_build_steps_single_phase, id="multiple steps"),
+        pytest.param(_build_single_build_steps_multiple_phase, id="multiple phases"),
+    ],
+)
+def test_find_micromamba(binary_type, build_step_builder):
+    build_steps = build_step_builder(binary_type)
+    result = find_binary(BinaryType.MICROMAMBA, build_steps)
+    assert result == MICROMAMBA_PATH

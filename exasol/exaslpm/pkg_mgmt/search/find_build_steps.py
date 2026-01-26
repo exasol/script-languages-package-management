@@ -5,6 +5,7 @@ from exasol.exaslpm.model.package_file_config import (
     Phase,
 )
 from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
+from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 
 
 def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
@@ -12,6 +13,9 @@ def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
         if phase.tools:
             return getattr(phase.tools, binary_type.value, None)
         return None
+
+    if binary_type == BinaryType.MICROMAMBA:
+        return MICROMAMBA_PATH
 
     phases = [phase for build_step in build_steps for phase in build_step.phases]
     result = [get_binary(phase) for phase in phases]
