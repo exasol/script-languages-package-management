@@ -41,7 +41,7 @@ def test_apt_install(
         cmd_executor=docker_command_executor,
         logger=test_logger,
         history_file_manager=temp_history_file_manager,
-        binary_finder=BinaryChecker(),
+        binary_checker=BinaryChecker(),
     )
 
     pkgs_after_install = docker_container.list_apt()
