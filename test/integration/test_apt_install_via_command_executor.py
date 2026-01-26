@@ -1,4 +1,6 @@
 from pathlib import Path
+
+from exasol.exaslpm.pkg_mgmt.binary_finder import BinaryFinder
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     apt_invalid_package_file,
@@ -40,6 +42,7 @@ def test_apt_install(
         cmd_executor=docker_command_executor,
         logger=test_logger,
         history_file_manager=temp_history_file_manager,
+        binary_finder=BinaryFinder(),
     )
 
     pkgs_after_install = docker_container.list_apt()
