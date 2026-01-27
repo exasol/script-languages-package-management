@@ -8,6 +8,7 @@ from test.integration.package_utils import ContainsPackages
 
 import yaml
 
+from exasol.exaslpm.pkg_mgmt.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -40,6 +41,7 @@ def test_apt_install(
         cmd_executor=docker_command_executor,
         logger=test_logger,
         history_file_manager=temp_history_file_manager,
+        binary_checker=BinaryChecker(),
     )
 
     pkgs_after_install = docker_container.list_apt()

@@ -14,3 +14,4 @@
  - #40: Added the Install Binaries section (pip, microconda, bazel) and PPA section to the model.
  - #42: Added DockerCommandExecutor test framework
  - #35: Implemented build-steps history mechanism
+ - #44: Implemented find methods for binaries and variables

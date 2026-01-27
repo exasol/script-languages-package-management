@@ -1,5 +1,6 @@
 import pathlib
 
+from exasol.exaslpm.pkg_mgmt.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.cmd_executor import (
     CommandExecutor,
     CommandLogger,
@@ -19,6 +20,7 @@ def package_install(
     cmd_executor: CommandExecutor,
     logger: CommandLogger,
     history_file_manager: HistoryFileManager,
+    binary_checker: BinaryChecker,
 ):
     logger.info(
         f"Phase: {phase_name}, \
