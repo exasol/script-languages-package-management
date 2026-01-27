@@ -9,6 +9,7 @@ from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandFailedException,
     CommandLogger,
 )
+from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 
 @dataclass
@@ -70,15 +71,15 @@ def check_error(ret_val: int, msg: str, log: Callable[[str], None]) -> bool:
 
 
 def install_via_apt(
-    apt_packages: AptPackages, executor: CommandExecutor, log: CommandLogger
+    apt_packages: AptPackages, context: Context
 ) -> int:
     if len(apt_packages.packages) > 0:
         cmd_n_errs = prepare_all_cmds(apt_packages)
         for cmd_n_err in cmd_n_errs:
-            cmd_res = executor.execute(cmd_n_err.cmd)
+            cmd_res = context.cmd_executor.execute(cmd_n_err.cmd)
             cmd_res.print_results()
-            if not check_error(cmd_res.return_code(), cmd_n_err.err, log.err):
+            if not check_error(cmd_res.return_code(), cmd_n_err.err, context.cmd_logger.err):
                 raise CommandFailedException(cmd_n_err.err)
     else:
-        log.warn("Got an empty list of AptPackages")
+        context.cmd_logger.warn("Got an empty list of AptPackages")
     return 0

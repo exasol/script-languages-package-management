@@ -38,7 +38,7 @@ def package_install(
         raise
     try:
         if single_phase.apt is not None:
-            install_via_apt(single_phase.apt, context.cmd_executor, logger)
+            install_via_apt(single_phase.apt, context)
     except Exception as e:
         logger.err(
             "Failed to install apt packages.", package_file=package_file, exception=e

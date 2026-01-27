@@ -6,7 +6,7 @@ from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
 from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 
 
-@dataclass
+@dataclass(frozen=True)
 class Context:
     cmd_logger: CommandLogger
     cmd_executor: CommandExecutor
