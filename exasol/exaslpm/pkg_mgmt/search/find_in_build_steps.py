@@ -29,9 +29,7 @@ def find_phases_of_build_steps(
             f"Multiple phases with name '{current_phase_name}' found in current build step"
         )
 
-    phases_of_current_build_step = current_build_step.phases[
-        : (current_phase_indeces[0] + 1)
-    ]
+    phases_of_current_build_step = current_build_step.phases[: current_phase_indeces[0]]
     phases_of_previous_build_steps = [
         phase for build_step in previous_build_steps for phase in build_step.phases
     ]

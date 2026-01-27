@@ -102,15 +102,21 @@ def test_find_binary_empty(binary_type):
     "test_data_builder",
     [
         pytest.param(
-            data_builder(_build_single_phase, True, False),
+            data_builder(
+                _build_single_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="single phase",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, True, False),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="multiphase - binary in phase one",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, False, True),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=False, binary_in_phase_two=True
+            ),
             id="multiphase - binary in phase two",
         ),
     ],
@@ -125,15 +131,21 @@ def test_find_binary(binary_type, test_data_builder):
     "test_data_builder",
     [
         pytest.param(
-            data_builder(_build_single_phase, True, False),
+            data_builder(
+                _build_single_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="single phase",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, True, False),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="multiphase - binary in phase one",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, False, True),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=False, binary_in_phase_two=True
+            ),
             id="multiphase - binary in phase two",
         ),
     ],
@@ -149,7 +161,9 @@ def test_find_binary_raises_if_not_found(binary_type, test_data_builder):
 
 
 def test_find_binary_unique(binary_type):
-    test_data_builder = data_builder(_build_multi_phase, True, True)
+    test_data_builder = data_builder(
+        _build_multi_phase, binary_in_phase_one=True, binary_in_phase_two=True
+    )
     phases = test_data_builder(binary_type=binary_type)
 
     with pytest.raises(
@@ -163,15 +177,21 @@ def test_find_binary_unique(binary_type):
     "test_data_builder",
     [
         pytest.param(
-            data_builder(_build_single_phase, True, False),
+            data_builder(
+                _build_single_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="single phase",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, True, False),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=True, binary_in_phase_two=False
+            ),
             id="multiphase - binary in phase one",
         ),
         pytest.param(
-            data_builder(_build_multi_phase, False, True),
+            data_builder(
+                _build_multi_phase, binary_in_phase_one=False, binary_in_phase_two=True
+            ),
             id="multiphase - binary in phase two",
         ),
     ],

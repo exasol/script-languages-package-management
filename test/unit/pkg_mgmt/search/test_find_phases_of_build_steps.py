@@ -88,43 +88,58 @@ def _make_expected_phases(names: list[str]):
             _build_empty_build_steps(),
             _build_single_build_steps()[0],
             "phase 1",
-            _make_expected_phases(["phase 1"]),
+            _make_expected_phases([]),
             id="empty previous",
         ),
         pytest.param(
             _build_single_build_steps(),
             _build_single_build_steps("phase 2")[0],
             "phase 2",
-            _make_expected_phases(["phase 1", "phase 2"]),
+            _make_expected_phases(["phase 1"]),
             id="single previous",
         ),
         pytest.param(
             _build_multiple_build_steps_single_phase(),
             _build_single_build_steps("phase 3")[0],
             "phase 3",
-            _make_expected_phases(["phase 1", "phase 2", "phase 3"]),
+            _make_expected_phases(["phase 1", "phase 2"]),
             id="multi steps previous",
         ),
         pytest.param(
             _build_single_build_steps_multiple_phase(),
             _build_single_build_steps("phase 3")[0],
             "phase 3",
-            _make_expected_phases(["phase 1", "phase 2", "phase 3"]),
+            _make_expected_phases(["phase 1", "phase 2"]),
             id="multi phase previous",
         ),
         pytest.param(
             _build_single_build_steps_multiple_phase(),
-            _build_single_build_steps_multiple_phase("phase 3", "phase 4")[0],
+            _build_single_build_steps_multiple_phase(
+                phase_name_one="phase 3", phase_name_two="phase 4"
+            )[0],
             "phase 3",
-            _make_expected_phases(["phase 1", "phase 2", "phase 3"]),
+            _make_expected_phases(["phase 1", "phase 2"]),
             id="multi phase previous, multiple phase current, first phase",
         ),
         pytest.param(
             _build_single_build_steps_multiple_phase(),
-            _build_single_build_steps_multiple_phase("phase 3", "phase 4")[0],
+            _build_single_build_steps_multiple_phase(
+                phase_name_one="phase 3", phase_name_two="phase 4"
+            )[0],
             "phase 4",
-            _make_expected_phases(["phase 1", "phase 2", "phase 3", "phase 4"]),
+            _make_expected_phases(["phase 1", "phase 2", "phase 3"]),
             id="multi phase previous, multiple phase current, second phase",
+        ),
+        pytest.param(
+            _build_multiple_build_steps_single_phase(
+                phase_name_one="phase 1", phase_name_two="phase 1"
+            ),
+            _build_single_build_steps_multiple_phase(
+                phase_name_one="phase 1", phase_name_two="phase 2"
+            )[0],
+            "phase 2",
+            _make_expected_phases(["phase 1", "phase 1", "phase 1"]),
+            id="multi build steps previous, multiple phase current, second phase, same name",
         ),
     ],
 )
