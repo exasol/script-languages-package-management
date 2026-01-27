@@ -455,31 +455,6 @@ def test_tools():
     )
 
 
-def test_variables():
-    yaml_file = """
-    build_steps:
-      - name: build_step_one
-        phases:
-
-          - name: phase_one
-            comment: null
-            apt:
-                packages:
-                - name: curl
-                  version: 7.68.0
-                  comment: install curl
-            variables:
-                java_home: /usr/java
-                python_prefix: /usr/bin/
-    """
-    yaml_data = yaml.safe_load(yaml_file)
-    model = PackageFile.model_validate(yaml_data)
-    assert model
-    assert model.find_build_step("build_step_one").find_phase(
-        "phase_one"
-    ).variables == {"java_home": "/usr/java", "python_prefix": "/usr/bin/"}
-
-
 R_PACKAGES_DATA = """
             r:
                 comment: null
@@ -522,6 +497,38 @@ TOOLS_DATA = """
 """
 
 
+@pytest.mark.parametrize(
+    "additional_enty",
+    [
+        "",
+        R_PACKAGES_DATA,
+        APT_PACKAGES_DATA,
+        TOOLS_DATA,
+        CONDA_PACKAGES_DATA,
+        PIP_PACKAGES_DATA,
+    ],
+)
+def test_variables(additional_enty):
+    base_yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+
+          - name: phase_one
+            comment: null
+            variables:
+                java_home: /usr/java
+                python_prefix: /usr/bin/
+    """
+    yaml_file = base_yaml_file + additional_enty
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+    assert model.find_build_step("build_step_one").find_phase(
+        "phase_one"
+    ).variables == {"java_home": "/usr/java", "python_prefix": "/usr/bin/"}
+
+
 def build_phase_entries() -> Iterator[list[str]]:
     """
     Returns an Iterator for all combinations of all phase entries with length >=2:
@@ -545,8 +552,9 @@ def build_phase_entries() -> Iterator[list[str]]:
         CONDA_PACKAGES_DATA,
         TOOLS_DATA,
     ]
-
-    for length in range(2, len(all_phase_entries) + 1):
+    min_length = 2
+    max_length = len(all_phase_entries)
+    for length in range(min_length, max_length + 1):
         combinations_object = itertools.combinations(all_phase_entries, length)
         # Convert combinations (tuples) to lists and extend the main list
         for combo in combinations_object:

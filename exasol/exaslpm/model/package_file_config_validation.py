@@ -55,11 +55,12 @@ def validate_r_packages(r_packages: "RPackages", model_path: list[str]) -> None:
     _check_unique_packages(r_packages.packages, _model_path)
 
 
-def validate_phase(phase: "Phase", model_path: list[str]) -> None:
-    _model_path = [*model_path, f"<Phase '{phase.name}'>"]
-    if not any([phase.apt, phase.pip, phase.conda, phase.r, phase.tools]):
+def _validate_phase_entries_consistency(phase: "Phase", model_path: list[str]) -> None:
+    if not any(
+        [phase.apt, phase.pip, phase.conda, phase.r, phase.tools, phase.variables]
+    ):
         raise PackageFileValidationError(
-            _model_path, "There shall be at least one Package installer"
+            model_path, "There shall be at least one Package installer"
         )
     if (
         sum(
@@ -74,8 +75,13 @@ def validate_phase(phase: "Phase", model_path: list[str]) -> None:
         > 1
     ):
         raise PackageFileValidationError(
-            _model_path, "A phase must have exactly one of: apt, pip, conda, r, tools."
+            model_path, "A phase must have exactly one of: apt, pip, conda, r, tools."
         )
+
+
+def validate_phase(phase: "Phase", model_path: list[str]) -> None:
+    _model_path = [*model_path, f"<Phase '{phase.name}'>"]
+    _validate_phase_entries_consistency(phase, model_path)
     if phase.apt is not None:
         phase.apt.validate_model_graph(_model_path)
     if phase.conda is not None:
