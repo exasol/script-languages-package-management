@@ -8,20 +8,45 @@ from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 
 
-def find_binary(
-    binary_type: BinaryType, build_steps: list[BuildStep], current_phase: Phase
-) -> Path:
+def find_phases_of_build_steps(
+    previous_build_steps: list[BuildStep],
+    current_build_step: BuildStep,
+    current_phase_name: str,
+) -> list[Phase]:
+    current_phase_indeces = [
+        idx
+        for idx, phase in enumerate(current_build_step.phases)
+        if phase.name == current_phase_name
+    ]
+
+    if len(current_phase_indeces) == 0:
+        raise ValueError(
+            f"Phase '{current_phase_name}' not found in given current build step'"
+        )
+
+    if len(current_phase_indeces) > 1:
+        raise ValueError(
+            f"Multiple phases with name '{current_phase_name}' found in current build step"
+        )
+
+    phases_of_current_build_step = current_build_step.phases[
+        : (current_phase_indeces[0] + 1)
+    ]
+    phases_of_previous_build_steps = [
+        phase for build_step in previous_build_steps for phase in build_step.phases
+    ]
+    return phases_of_previous_build_steps + phases_of_current_build_step
+
+
+def find_binary(binary_type: BinaryType, phases: list[Phase]) -> Path:
+    if binary_type == BinaryType.MICROMAMBA:
+        return MICROMAMBA_PATH
+
     def get_binary(phase: Phase) -> Path | None:
         if phase.tools:
             return getattr(phase.tools, binary_type.value, None)
         return None
 
-    if binary_type == BinaryType.MICROMAMBA:
-        return MICROMAMBA_PATH
-
-    phases = [phase for build_step in build_steps for phase in build_step.phases] + [
-        current_phase
-    ]
     result = [get_binary(phase) for phase in phases]
     filtered = [res for res in result if res is not None]
     if len(filtered) > 1:
@@ -31,12 +56,7 @@ def find_binary(
     return filtered[0]
 
 
-def find_variable(
-    variable_name: str, build_steps: list[BuildStep], current_phase: Phase
-) -> str:
-    phases = [phase for build_step in build_steps for phase in build_step.phases] + [
-        current_phase
-    ]
+def find_variable(variable_name: str, phases: list[Phase]) -> str:
     result = [
         phase.variables[variable_name]
         for phase in phases

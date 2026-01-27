@@ -1,239 +1,103 @@
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
-    AptPackage,
     AptPackages,
-    BuildStep,
     Phase,
 )
 from exasol.exaslpm.pkg_mgmt.search.find_in_build_steps import find_variable
 
 
-def _make_phase(variables: dict[str, str] | None) -> Phase:
+def test_find_variable_empty():
+    with pytest.raises(ValueError, match=r"Variable 'some_variable' not found"):
+        find_variable("some_variable", [])
+
+
+def _make_phase(phase_name: str, variables: dict[str, str] | None) -> Phase:
     phase = Phase(
-        name="current phase",
+        name=phase_name,
         apt=AptPackages(packages=[]),
         variables=variables,
     )
     return phase
 
 
-def test_find_variable_empty():
-    with pytest.raises(ValueError, match=r"Variable 'some_variable' not found"):
-        find_variable("some_variable", [], _make_phase(None))
-
-
-def _single_build_step(variables: dict[str, str] | None) -> list[BuildStep]:
-    test_build_step_one = BuildStep(
-        name="build_step_1",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="curl", version="7.68.0", comment="For downloading"
-                        )
-                    ]
-                ),
-                variables=variables,
-            ),
-        ],
-    )
-    return [test_build_step_one]
-
-
-def _multiple_build_step(variables: dict[str, str] | None) -> list[BuildStep]:
-    test_build_step_one = BuildStep(
-        name="build_step_1",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="curl", version="7.68.0", comment="For downloading"
-                        )
-                    ]
-                ),
-                variables=variables,
-            ),
-        ],
-    )
-    test_build_step_two = BuildStep(
-        name="build_step_2",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="wget", version="1.2.3", comment="For downloading"
-                        )
-                    ]
-                ),
-            ),
-        ],
-    )
-
-    return [test_build_step_one, test_build_step_two]
-
-
-def _multiple_phases(variables: dict[str, str] | None) -> list[BuildStep]:
-    test_build_step_one = BuildStep(
-        name="build_step_1",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="curl", version="7.68.0", comment="For downloading"
-                        )
-                    ]
-                ),
-                variables=variables,
-            ),
-            Phase(
-                name="phase 2",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="wget", version="1.2.3", comment="For downloading"
-                        )
-                    ]
-                ),
-            ),
-        ],
-    )
-
-    return [test_build_step_one]
-
-
 def data_builder(
-    build_step_builder, variable_in_build_step: bool, variable_in_phase: bool
+    phases: list[tuple[str, dict[str, str] | None]],
 ):
-    def make_data() -> tuple[list[BuildStep], Phase]:
-        variables = {"some_variable": "some_value"}
-        builds_steps = build_step_builder(variables if variable_in_build_step else None)
-        phase = _make_phase(variables if variable_in_phase else None)
-        return builds_steps, phase
-
-    return make_data
+    return [_make_phase(phase_name, variables) for phase_name, variables in phases]
 
 
 @pytest.mark.parametrize(
-    "test_data_builder",
+    "phases",
     [
         pytest.param(
-            data_builder(_single_build_step, True, False),
-            id="variable in single build step",
+            data_builder([("phase 1", {"some_variable": "some_value"})]),
+            id="variable in single phase",
         ),
         pytest.param(
-            data_builder(_single_build_step, False, True),
-            id="variable in phase, single build step",
+            data_builder(
+                [("phase 1", {"some_variable": "some_value"}), ("phase 2", None)]
+            ),
+            id="variable in first phase",
         ),
         pytest.param(
-            data_builder(_multiple_build_step, True, False),
-            id="variable in multiple build step",
+            data_builder(
+                [("phase 1", None), ("phase 2", {"some_variable": "some_value"})]
+            ),
+            id="variable in second phase",
         ),
         pytest.param(
-            data_builder(_multiple_build_step, False, True),
-            id="variable in phase, multiple build step",
-        ),
-        pytest.param(
-            data_builder(_multiple_phases, True, False),
-            id="variable in multiphase build step",
-        ),
-        pytest.param(
-            data_builder(_multiple_phases, False, True),
-            id="variable in phase, multiphase buildstep",
+            data_builder(
+                [
+                    ("phase 1", {"some_variable": "some_value"}),
+                    ("phase 2", {"some_other_variable": "some_value"}),
+                ]
+            ),
+            id="variables in both phases",
         ),
     ],
 )
-def test_find_variable(test_data_builder):
-    build_steps, phase = test_data_builder()
-    result = find_variable("some_variable", build_steps, phase)
+def test_find_variable(phases):
+    result = find_variable("some_variable", phases)
     assert result == "some_value"
 
 
-def _build_multi_variable_build_step(
-    variables_build_step_one: dict[str, str] | None,
-    variables_build_step_two: dict[str, str] | None,
-) -> list[BuildStep]:
-    test_build_step_one = BuildStep(
-        name="build_step_1",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="curl", version="7.68.0", comment="For downloading"
-                        )
-                    ]
-                ),
-                variables=variables_build_step_one,
-            ),
-        ],
-    )
-    test_build_step_two = BuildStep(
-        name="build_step_2",
-        phases=[
-            Phase(
-                name="phase 1",
-                apt=AptPackages(
-                    packages=[
-                        AptPackage(
-                            name="wget", version="1.2.3", comment="For downloading"
-                        )
-                    ]
-                ),
-                variables=variables_build_step_two,
-            ),
-        ],
-    )
-    return [test_build_step_one, test_build_step_two]
-
-
-def multi_variables_data_builder(
-    build_step_builder,
-    variable_in_build_step_one: bool,
-    variable_in_build_step_two: bool,
-    variable_in_phase: bool,
-):
-    def make_data() -> tuple[list[BuildStep], Phase]:
-        variables = {"some_variable": "some_value"}
-        builds_steps = build_step_builder(
-            variables if variable_in_build_step_one else None,
-            variables if variable_in_build_step_two else None,
-        )
-        phase = _make_phase(variables if variable_in_phase else None)
-        return builds_steps, phase
-
-    return make_data
-
-
 @pytest.mark.parametrize(
-    "test_data_builder",
+    "phases",
     [
         pytest.param(
-            multi_variables_data_builder(
-                _build_multi_variable_build_step, True, True, False
+            data_builder(
+                [
+                    ("phase 1", {"some_variable": "some_value"}),
+                    ("phase 2", {"some_variable": "some_other_value"}),
+                ]
             ),
-            id="duplicated variables in build steps",
+            id="2 phases with duplicated variables",
         ),
         pytest.param(
-            multi_variables_data_builder(
-                _build_multi_variable_build_step, True, False, True
+            data_builder(
+                [
+                    ("phase 1", {"some_variable": "some_value"}),
+                    ("phase 2", {"some_variable": "some_other_value"}),
+                    ("phase 3", None),
+                ]
             ),
-            id="duplicated variables in one build step and phase",
+            id="2 phases with duplicated variables, third with none",
+        ),
+        pytest.param(
+            data_builder(
+                [
+                    ("phase 1", {"some_variable": "some_value"}),
+                    ("phase 2", {"some_variable": "some_other_value"}),
+                    ("phase 3", {"some_other_variable": "some_other_value"}),
+                ]
+            ),
+            id="2 phases with duplicated variables, third with other",
         ),
     ],
 )
-def test_find_variable_unique(test_data_builder):
-    build_steps, phase = test_data_builder()
+def test_find_variable_unique(phases):
     with pytest.raises(
         ValueError, match="Found more than one result for variable 'some_variable'"
     ):
-        find_variable("some_variable", build_steps, phase)
+        find_variable("some_variable", phases)
