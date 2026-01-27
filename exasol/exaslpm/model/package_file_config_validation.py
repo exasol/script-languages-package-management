@@ -81,7 +81,7 @@ def _validate_phase_entries_consistency(phase: "Phase", model_path: list[str]) -
 
 def validate_phase(phase: "Phase", model_path: list[str]) -> None:
     _model_path = [*model_path, f"<Phase '{phase.name}'>"]
-    _validate_phase_entries_consistency(phase, model_path)
+    _validate_phase_entries_consistency(phase, _model_path)
     if phase.apt is not None:
         phase.apt.validate_model_graph(_model_path)
     if phase.conda is not None:
