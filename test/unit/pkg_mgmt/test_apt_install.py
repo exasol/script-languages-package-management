@@ -22,8 +22,6 @@ def test_install_via_apt_empty_packages(context_mock):
     aptPackages = AptPackages(packages=[])
     install_via_apt(aptPackages, context_mock)
 
-    context_mock.cmd_logger.warn.assert_called_once()
-    context_mock.cmd_logger.warn.assert_called_with("Got an empty list of AptPackages")
     assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
     ]
@@ -112,30 +110,19 @@ def build_context_with_fail_command_executor(fail_step: int):
 
 
 @pytest.mark.parametrize(
-    "context, expected_error",
+    "fail_step, expected_error",
     [
-        (build_context_with_fail_command_executor(0), "Failed while updating apt cmd"),
-        (
-            build_context_with_fail_command_executor(1),
-            "Failed while installing apt cmd",
-        ),
-        (build_context_with_fail_command_executor(2), "Failed while running apt clean"),
-        (
-            build_context_with_fail_command_executor(3),
-            "Failed while running apt autoremove",
-        ),
-        (
-            build_context_with_fail_command_executor(4),
-            "Failed while running locale-gen cmd",
-        ),
-        (
-            build_context_with_fail_command_executor(5),
-            "Failed while running update-locale cmd",
-        ),
-        (build_context_with_fail_command_executor(6), "Failed while running ldconfig"),
+        (0, "Failed while updating apt cmd"),
+        (1, "Failed while installing apt cmd"),
+        (2, "Failed while running apt clean"),
+        (3, "Failed while running apt autoremove"),
+        (4, "Failed while running locale-gen cmd"),
+        (5, "Failed while running update-locale cmd"),
+        (6, "Failed while running ldconfig"),
     ],
 )
-def test_install_via_apt_negative_cases(context, expected_error):
+def test_install_via_apt_negative_cases(fail_step, expected_error):
+    context = build_context_with_fail_command_executor(fail_step)
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
