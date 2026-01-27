@@ -24,11 +24,8 @@ def find_phases_of_build_steps(
             f"Phase '{current_phase_name}' not found in given current build step'"
         )
 
-    if len(current_phase_indeces) > 1:
-        raise ValueError(
-            f"Multiple phases with name '{current_phase_name}' found in current build step"
-        )
-
+    # Take first phase matching the names.
+    # Duplicated phase names can be ignored as model validation will raise an exception if found
     phases_of_current_build_step = current_build_step.phases[: current_phase_indeces[0]]
     phases_of_previous_build_steps = [
         phase for build_step in previous_build_steps for phase in build_step.phases
