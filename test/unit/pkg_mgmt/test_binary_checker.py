@@ -27,7 +27,7 @@ def test_binary_checker(binary_path):
     assert binary_checker.check_binary(binary_path) == binary_path
 
 
-def test_binary_finder_raises_if_not_found():
+def test_binary_checker_raises_if_not_found():
     invalid_path = Path("/some_invalid/path")
     binary_checker = BinaryChecker()
     with pytest.raises(
@@ -43,7 +43,7 @@ def binary_path_not_executable(tmp_path: Path) -> Path:
     return binary_path
 
 
-def test_binary_finder_raises_if_not_executable(binary_path_not_executable):
+def test_binary_checker_raises_if_not_executable(binary_path_not_executable):
     binary_checker = BinaryChecker()
     expected_error = rf"Binary file {binary_path_not_executable} is not executable"
     with pytest.raises(ValueError, match=re.escape(expected_error)):

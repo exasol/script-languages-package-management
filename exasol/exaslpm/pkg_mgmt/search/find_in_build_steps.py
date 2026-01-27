@@ -8,7 +8,9 @@ from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 
 
-def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
+def find_binary(
+    binary_type: BinaryType, build_steps: list[BuildStep], current_phase: Phase
+) -> Path:
     def get_binary(phase: Phase) -> Path | None:
         if phase.tools:
             return getattr(phase.tools, binary_type.value, None)
@@ -17,7 +19,9 @@ def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
     if binary_type == BinaryType.MICROMAMBA:
         return MICROMAMBA_PATH
 
-    phases = [phase for build_step in build_steps for phase in build_step.phases]
+    phases = [phase for build_step in build_steps for phase in build_step.phases] + [
+        current_phase
+    ]
     result = [get_binary(phase) for phase in phases]
     filtered = [res for res in result if res is not None]
     if len(filtered) > 1:
@@ -27,8 +31,12 @@ def find_binary(binary_type: BinaryType, build_steps: list[BuildStep]) -> Path:
     return filtered[0]
 
 
-def find_variable(variable_name: str, build_steps: list[BuildStep]) -> str:
-    phases = [phase for build_step in build_steps for phase in build_step.phases]
+def find_variable(
+    variable_name: str, build_steps: list[BuildStep], current_phase: Phase
+) -> str:
+    phases = [phase for build_step in build_steps for phase in build_step.phases] + [
+        current_phase
+    ]
     result = [
         phase.variables[variable_name]
         for phase in phases
