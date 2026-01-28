@@ -1,4 +1,6 @@
+import itertools
 import re
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -436,12 +438,6 @@ def test_tools():
                 r_binary_path: /usr/bin/r4.4
                 conda_binary_path: /usr/conda/bin/conda
                 mamba_binary_path: /usr/conda/bin/mamba
-
-            apt:
-                packages:
-                - name: curl
-                  version: 7.68.0
-                  comment: install curl
     """
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
@@ -459,23 +455,72 @@ def test_tools():
     )
 
 
-def test_variables():
-    yaml_file = """
+R_PACKAGES_DATA = """
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  version: 3.3.5
+                  comment: install ggplot
+"""
+
+CONDA_PACKAGES_DATA = """
+            conda:
+                channels: null
+                comment: null
+                packages:
+                - name: numpy
+                  version: 1.19.2
+                  comment: install numpy
+"""
+
+PIP_PACKAGES_DATA = """
+            pip:
+                packages:
+                - name: requests
+                  version: 2.25.1
+                  comment: install requests
+
+"""
+
+APT_PACKAGES_DATA = """
+            apt:
+                packages:
+                - name: curl
+                  version: 7.68.0
+                  comment: install curl
+"""
+
+TOOLS_DATA = """
+            tools:
+                python_binary_path: /some/path
+"""
+
+
+@pytest.mark.parametrize(
+    "additional_enty",
+    [
+        "",
+        R_PACKAGES_DATA,
+        APT_PACKAGES_DATA,
+        TOOLS_DATA,
+        CONDA_PACKAGES_DATA,
+        PIP_PACKAGES_DATA,
+    ],
+)
+def test_variables(additional_enty):
+    base_yaml_file = """
     build_steps:
       - name: build_step_one
         phases:
 
           - name: phase_one
             comment: null
-            apt:
-                packages:
-                - name: curl
-                  version: 7.68.0
-                  comment: install curl
             variables:
                 java_home: /usr/java
                 python_prefix: /usr/bin/
     """
+    yaml_file = base_yaml_file + additional_enty
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
@@ -484,39 +529,53 @@ def test_variables():
     ).variables == {"java_home": "/usr/java", "python_prefix": "/usr/bin/"}
 
 
-def test_valid_package_all_installers():
-    yaml_file = """
+def build_phase_entries() -> Iterator[list[str]]:
+    """
+    Returns an Iterator for all combinations of all phase entries with length >=2:
+    - [R_PACKAGES_DATA, APT_PACKAGES_DATA]
+    - [R_PACKAGES_DATA, PIP_PACKAGES_DATA]
+    - [R_PACKAGES_DATA, CONDA_PACKAGES_DATA]
+    - [APT_PACKAGES_DATA, PIP_PACKAGES_DATA]
+    - ...
+    - [R_PACKAGES_DATA, APT_PACKAGES_DATA, PIP_PACKAGES_DATA]
+    - [R_PACKAGES_DATA, APT_PACKAGES_DATA, CONDA_PACKAGES_DATA]
+    - ...
+    - [R_PACKAGES_DATA, APT_PACKAGES_DATA, PIP_PACKAGES_DATA, CONDA_PACKAGES_DATA]
+    - ...
+    - [R_PACKAGES_DATA, APT_PACKAGES_DATA, PIP_PACKAGES_DATA, CONDA_PACKAGES_DATA, TOOLS_DATA]
+
+    """
+    all_phase_entries = [
+        R_PACKAGES_DATA,
+        APT_PACKAGES_DATA,
+        PIP_PACKAGES_DATA,
+        CONDA_PACKAGES_DATA,
+        TOOLS_DATA,
+    ]
+    min_length = 2
+    max_length = len(all_phase_entries)
+    for length in range(min_length, max_length + 1):
+        combinations_object = itertools.combinations(all_phase_entries, length)
+        # Convert combinations (tuples) to lists and extend the main list
+        for combo in combinations_object:
+            yield list(combo)
+
+
+@pytest.mark.parametrize("phase_entries", build_phase_entries())
+def test_valid_package_all_installers(phase_entries):
+    base_yaml_file = """
     build_steps:
       - name: build_step_one
         phases:
         
           - name: phase_one
             comment: null
-            r:
-                comment: null
-                packages:
-                - name: ggplot2
-                  version: 3.3.5
-                  comment: install ggplot
-                  
-            apt:
-                packages:
-                - name: curl
-                  version: 7.68.0
-                  comment: install curl
-            conda:
-                channels: null
-                comment: null
-                packages:
-                - name: numpy
-                  version: 1.19.2
-                  comment: install numpy
-            pip:
-                packages:
-                - name: requests
-                  version: 2.25.1
-                  comment: install requests
     """
+    yaml_file = base_yaml_file + "\n".join(phase_entries)
     yaml_data = yaml.safe_load(yaml_file)
-    model = PackageFile.model_validate(yaml_data)
-    assert model
+
+    with pytest.raises(
+        PackageFileValidationError,
+        match=r"A phase must have exactly one of: apt, pip, conda, r, tools.",
+    ):
+        PackageFile.model_validate(yaml_data)

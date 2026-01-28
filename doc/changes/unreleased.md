@@ -15,3 +15,7 @@
  - #42: Added DockerCommandExecutor test framework
  - #35: Implemented build-steps history mechanism
  - #44: Implemented find methods for binaries and variables
+
+## Refactorings
+
+ - #48: Updated model validation to restrict each phase to a single entry of (apt/r/conda/pip/tools)
