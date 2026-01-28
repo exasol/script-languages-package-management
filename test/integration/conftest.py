@@ -1,7 +1,9 @@
 from collections.abc import Iterator
 from pathlib import Path
 from test.integration.cli_helper import CliHelper
-from test.integration.docker_test_environment.docker_binary_checker import DockerBinaryChecker
+from test.integration.docker_test_environment.docker_binary_checker import (
+    DockerBinaryChecker,
+)
 from test.integration.docker_test_environment.docker_command_executor import (
     DockerCommandExecutor,
 )
@@ -19,7 +21,6 @@ from test.integration.docker_test_environment.test_logger import TestLogger
 
 import pytest
 
-from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 
