@@ -29,6 +29,7 @@ exasol-toolbox = ">=4.0.0, <5.0.0"
 pyinstaller = ">=6.15.0, <7.0.0"
 types-pyinstaller = ">=6.15.0.20250822, <7.0.0.0"
 docker = { version = ">=7.1.0,<8.0.0", markers = "sys_platform != 'win32'" }
+types-requests = ">=2.30.0, <3.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
