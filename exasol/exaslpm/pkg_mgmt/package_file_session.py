@@ -17,7 +17,7 @@ class PackageFileSession:
         return self._package_file_config
 
     def commit_changes(self):
-        data_dict = self._package_file_config.model_dump()
+        data_dict = self._package_file_config.model_dump(mode="json")
 
         self._package_file_config.validate_model_graph()
 

@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
     Phase,
+    Tools,
 )
 
 TEST_BUILD_STEP = BuildStep(
@@ -15,7 +18,13 @@ TEST_BUILD_STEP = BuildStep(
                     AptPackage(name="curl", version="7.68.0", comment="For downloading")
                 ]
             ),
-        )
+        ),
+        Phase(
+            name="phase 2",
+            tools=Tools(
+                python_binary_path=Path("/usr/bin/python"),
+            ),
+        ),
     ],
 )
 
