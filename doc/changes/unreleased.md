@@ -20,3 +20,4 @@
 
  - #48: Updated model validation to restrict each phase to a single entry of (apt/r/conda/pip/tools)
  - #46: Refactored injection of classes which implement external dependencies
+ - #49: Updated install_packages to process all phases of a build step

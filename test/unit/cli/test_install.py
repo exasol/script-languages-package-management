@@ -47,19 +47,14 @@ def mock_binary_checker(monkeypatch: MonkeyPatch) -> MagicMock:
     return return_mock
 
 
-def test_mock_no_phase(cliRunner, mock_install_packages, some_package_file):
+def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
     ret = cliRunner.run("--package-file", some_package_file)
     assert ret.failed and "Missing option '--build-step'" in ret.output
 
 
 def test_mock_no_package(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run("--phase", "Phase1")
+    ret = cliRunner.run("--build-step", "build-step-1")
     assert ret.failed and "Missing option '--package-file'" in ret.output
-
-
-def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run("--phase", "Phase1", "--package-file", some_package_file)
-    assert ret.failed and "Missing option '--build-step'" in ret.output
 
 
 def test_mock_all_options(
@@ -71,8 +66,6 @@ def test_mock_all_options(
     mock_binary_checker,
 ):
     ret = cliRunner.run(
-        "--phase",
-        "Phase1",
         "--package-file",
         some_package_file,
         "--build-step",
@@ -82,7 +75,6 @@ def test_mock_all_options(
 
     assert mock_install_packages.mock_calls == [
         mock.call(
-            "Phase1",
             pathlib.PosixPath(some_package_file),
             "udf_client",
             mock_context,

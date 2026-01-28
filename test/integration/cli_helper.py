@@ -13,10 +13,6 @@ class InstallCmd:
         self._args += ["--package-file", str(package_file)]
         return self
 
-    def phase(self, phase: str) -> "InstallCmd":
-        self._args += ["--phase", phase]
-        return self
-
     def build_step(self, build_step: str) -> "InstallCmd":
         self._args += ["--build-step", build_step]
         return self

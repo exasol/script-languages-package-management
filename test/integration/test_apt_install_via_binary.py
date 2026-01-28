@@ -30,7 +30,6 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(apt_package_file)
-        .phase("phase_1")
         .build_step("build_step_1")
         .args
     )
@@ -48,7 +47,6 @@ def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helpe
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(apt_invalid_pkg_file)
-        .phase("phase_1")
         .build_step("build_step_1")
         .args,
         False,
@@ -77,7 +75,6 @@ def test_history(docker_container, apt_package_file_content, cli_helper):
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(apt_package_file)
-        .phase("phase_1")
         .build_step("build_step_1")
         .args
     )
@@ -85,7 +82,6 @@ def test_history(docker_container, apt_package_file_content, cli_helper):
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(apt_package_file)
-        .phase("phase_1")
         .build_step("build_step_2")
         .args
     )

@@ -43,7 +43,6 @@ def test_apt_install(
     docker_executor_context.cmd_logger.info_callback = return_code_counter.log
 
     package_install(
-        phase_name="phase_1",
         package_file=local_package_path,
         build_step_name="build_step_1",
         context=docker_executor_context,
