@@ -3,7 +3,6 @@ from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    apt_invalid_package_file,
     apt_package_file_content,
 )
 from test.integration.package_utils import ContainsPackages
@@ -39,8 +38,11 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
 
-def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helper):
-    apt_invalid_package_file_yaml = yaml.dump(apt_invalid_package_file.model_dump())
+def test_apt_install_error(docker_container, apt_package_file_content, cli_helper):
+    apt_package_file_content.find_build_step("build_step_1").find_phase(
+        "phase_1"
+    ).apt.packages[0].name = "unknowsoftware"
+    apt_invalid_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_02", apt_invalid_package_file_yaml
     )
