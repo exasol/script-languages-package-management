@@ -28,7 +28,6 @@ def cli():
 
 
 @cli.command()
-@click.option("--phase", required=False, type=str, help="Name of the phase")
 @click.option(
     "--package-file",
     type=click.Path(exists=True, path_type=pathlib.Path),
@@ -37,7 +36,6 @@ def cli():
 )
 @click.option("--build-step", type=str, required=True, help="Name of the build deps")
 def install(
-    phase: str,
     package_file: pathlib.Path,
     build_step: str,
 ):
@@ -58,7 +56,6 @@ def install(
     )
 
     package_install(
-        phase,
         package_file,
         build_step,
         context,
