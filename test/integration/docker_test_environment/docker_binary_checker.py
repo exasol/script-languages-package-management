@@ -1,5 +1,7 @@
-from test.integration.docker_test_environment.docker_test_container import DockerTestContainer
 from pathlib import Path
+from test.integration.docker_test_environment.docker_test_container import (
+    DockerTestContainer,
+)
 
 
 class DockerBinaryChecker:
@@ -15,7 +17,7 @@ class DockerBinaryChecker:
 
         if exit_code == 0:
             # File exists, now check executable permissions (any x bit set)
-            permissions_octal_str = output.decode('utf-8').strip()
+            permissions_octal_str = output.decode("utf-8").strip()
             try:
                 permissions_octal = int(permissions_octal_str, 8)
                 # Check if any executable bit is set (user, group, or others)
@@ -27,6 +29,8 @@ class DockerBinaryChecker:
                 if not is_exec:
                     raise ValueError(f"Binary file {binary_path} is not executable")
             except ValueError as e:
-                raise Value(f"Failed to parse permissions: {permissions_octal_str}") from e
+                raise Value(
+                    f"Failed to parse permissions: {permissions_octal_str}"
+                ) from e
         else:
             raise ValueError(f"Failed to check if {binary_path} is executable")
