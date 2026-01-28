@@ -1,4 +1,4 @@
-import subprocess # nosec B404
+import subprocess  # nosec B404
 import threading
 from collections.abc import (
     Callable,
@@ -93,7 +93,7 @@ class CommandExecutor:
 
         sub_process = subprocess.Popen(
             cmd_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        ) # nosec B603
+        )  # nosec B603
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)
 
