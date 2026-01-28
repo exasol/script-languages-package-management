@@ -17,7 +17,7 @@ from exasol.exaslpm.model.package_file_config import (
 
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump(mode="json"))
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml
@@ -40,7 +40,9 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
 
 
 def test_apt_install_error(docker_container, apt_invalid_package_file, cli_helper):
-    apt_invalid_package_file_yaml = yaml.dump(apt_invalid_package_file.model_dump())
+    apt_invalid_package_file_yaml = yaml.dump(
+        apt_invalid_package_file.model_dump(mode="json")
+    )
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_02", apt_invalid_package_file_yaml
     )
@@ -67,7 +69,7 @@ def _validate_build_step_history_file(
 
 
 def test_history(docker_container, apt_package_file_content, cli_helper):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump(mode="json"))
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml

@@ -17,7 +17,7 @@ class HistoryFileManager:
     @staticmethod
     def _serialize_build_step(build_step: BuildStep) -> str:
         package = PackageFile(build_steps=[build_step])
-        return yaml.dump(package.model_dump(), sort_keys=False)
+        return yaml.dump(package.model_dump(mode="json"), sort_keys=False)
 
     @staticmethod
     def _deserialize_build_step(model: str) -> BuildStep:
