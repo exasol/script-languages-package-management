@@ -1,4 +1,4 @@
-import subprocess
+import subprocess  # nosec B404
 import threading
 from collections.abc import (
     Callable,
@@ -10,7 +10,7 @@ from typing import (
     cast,
 )
 
-from exasol.exaslpm.pkg_mgmt.cmd_logger import CommandLogger
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
 
 
 class CommandFailedException(Exception):
@@ -82,18 +82,18 @@ class CommandExecutor:
     def __init__(self, logger: CommandLogger):
         self._log = logger
 
-    def execute(self, cmd_strs: list[str]) -> CommandResult:
+    def execute(self, cmd_args: list[str]) -> CommandResult:
         """
-        :param cmd_strs: command with all its options as a list of individual str
+        :param cmd_args: command with all its options as a list of individual str
         :return: The result that can be used to access the results
         :rtype: CommandResult
         """
-        cmd_str = " ".join(cmd_strs)
+        cmd_str = " ".join(cmd_args)
         self._log.info(f"Executing: {cmd_str}")
 
         sub_process = subprocess.Popen(
-            cmd_strs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-        )
+            cmd_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )  # nosec B603
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)
 

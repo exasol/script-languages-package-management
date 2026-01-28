@@ -19,3 +19,4 @@
 ## Refactorings
 
  - #48: Updated model validation to restrict each phase to a single entry of (apt/r/conda/pip/tools)
+ - #46: Refactored injection of classes which implement external dependencies

@@ -8,38 +8,36 @@ import pytest
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandResult,
 )
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
+from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 
-def test_install_via_apt_empty_packages():
-    mock_logger = MagicMock(spec=CommandLogger)
-    mock_executor = MagicMock(spec=CommandExecutor)
+def test_install_via_apt_empty_packages(context_mock):
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, mock_executor, mock_logger)
+    install_via_apt(aptPackages, context_mock)
 
-    mock_logger.warn.assert_called_once()
-    mock_logger.warn.assert_called_with("Got an empty list of AptPackages")
-    assert mock_logger.mock_calls == [
+    assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
     ]
 
 
-def test_install_via_apt_with_pkgs():
-    mock_executor = MagicMock(spec=CommandExecutor)
+def test_install_via_apt_with_pkgs(context_mock):
     mock_command_result = MagicMock(spec=CommandResult)
-    mock_executor.execute.return_value = mock_command_result
     mock_command_result.return_code.return_value = 0
-    mock_logger = MagicMock(spec=CommandLogger)
+    context_mock.cmd_executor.execute.return_value = mock_command_result
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, mock_executor, mock_logger)
-    assert mock_executor.mock_calls == [
+    install_via_apt(aptPackages, context_mock)
+    assert context_mock.cmd_executor.mock_calls == [
         call.execute(["apt-get", "-y", "update"]),
         call.execute().print_results(),
         call.execute().return_code(),
@@ -98,6 +96,19 @@ class FailCommandExecutor:
         return FailCommandResult(0)
 
 
+def build_context_with_fail_command_executor(fail_step: int):
+    mock_logger = MagicMock(spec=CommandLogger)
+    fail_command_executor = FailCommandExecutor(fail_step)
+    mock_history_file_manager = MagicMock(spec=HistoryFileManager)
+    mock_binary_checker = MagicMock(spec=BinaryChecker)
+    return Context(
+        cmd_logger=mock_logger,
+        cmd_executor=fail_command_executor,
+        history_file_manager=mock_history_file_manager,
+        binary_checker=mock_binary_checker,
+    )
+
+
 @pytest.mark.parametrize(
     "fail_step, expected_error",
     [
@@ -111,9 +122,7 @@ class FailCommandExecutor:
     ],
 )
 def test_install_via_apt_negative_cases(fail_step, expected_error):
-    logger = MagicMock(spec=CommandLogger)
-    cmd_executor = FailCommandExecutor(fail_step)
-
+    context = build_context_with_fail_command_executor(fail_step)
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
@@ -121,6 +130,6 @@ def test_install_via_apt_negative_cases(fail_step, expected_error):
     aptPackages = AptPackages(packages=pkgs)
 
     with pytest.raises(CommandFailedException):
-        install_via_apt(aptPackages, cmd_executor, logger)
+        install_via_apt(aptPackages, context)
 
-    logger.err.assert_any_call(expected_error)
+    context.cmd_logger.err.assert_any_call(expected_error)

@@ -1,5 +1,5 @@
-from exasol.exaslpm.pkg_mgmt.cmd_executor import CommandExecutor
-from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandExecutor
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import StdLogger
 
 
 def test_cat_command_positive(tmp_path):

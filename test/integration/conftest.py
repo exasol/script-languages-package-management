@@ -15,7 +15,7 @@ from test.integration.docker_test_environment.test_logger import TestLogger
 
 import pytest
 
-from exasol.exaslpm.pkg_mgmt.history_file_manager import HistoryFileManager
+from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 
 
 def pytest_addoption(parser):
