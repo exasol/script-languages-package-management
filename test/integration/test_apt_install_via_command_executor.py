@@ -1,28 +1,12 @@
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    apt_invalid_package_file,
     apt_package_file_content,
 )
 from test.integration.package_utils import ContainsPackages
 
-import pytest
 import yaml
 
-from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
-from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
-
-
-@pytest.fixture
-def docker_executor_context(
-    docker_command_executor, temp_history_file_manager, test_logger
-):
-    return Context(
-        cmd_executor=docker_command_executor,
-        history_file_manager=temp_history_file_manager,
-        cmd_logger=test_logger,
-        binary_checker=BinaryChecker(),
-    )
 
 
 def test_apt_install(
