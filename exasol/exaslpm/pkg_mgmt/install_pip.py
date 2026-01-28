@@ -29,6 +29,7 @@ def install_pip(build_step: BuildStep, phase: Phase, ctx: Context):
                 phase.name,
             )
             python_binary_path = find_binary(BinaryType.PYTHON, previous_phases)
+            ctx.binary_checker.check_binary(python_binary_path)
             install_pip_cmd = CommandExecInfo(
                 cmd=[str(python_binary_path), str(get_pip), f"pip == {pip.version}"],
                 err="Failed while installing pip",
