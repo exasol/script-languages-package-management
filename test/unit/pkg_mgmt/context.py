@@ -21,12 +21,13 @@ class HistoryFileManagerMock:
 
     def __init__(self) -> None:
         self.build_steps: list[BuildStep] = []
+        self.mock = MagicMock()
 
     def raise_if_build_step_exists(self, build_step_name: str) -> None:
-        pass
+        self.mock.raise_if_build_step_exists(build_step_name)
 
     def add_build_step_to_history(self, build_step: BuildStep) -> None:
-        pass
+        self.mock.add_build_step_to_history(build_step)
 
     def get_all_previous_build_step_names(self) -> set[str]:
         return {build_step.name for build_step in self.build_steps}
