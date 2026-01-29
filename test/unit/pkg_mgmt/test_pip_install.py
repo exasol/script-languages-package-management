@@ -13,6 +13,7 @@ from exasol.exaslpm.model.package_file_config import (
     Tools,
 )
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
+from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
 
 def test_install_pip_empty_no_history(context_mock):
@@ -69,7 +70,8 @@ def test_install_pip(
     )
 
     phase = build_step.find_phase("phase-2")
-    install_pip(build_step, phase, context_mock)
+    search_cache = SearchCache(build_step, phase, context_mock)
+    install_pip(search_cache, phase, context_mock)
 
     expected_pip_script_arguments = [
         "/some/path",
