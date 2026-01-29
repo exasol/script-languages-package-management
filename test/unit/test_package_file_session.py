@@ -16,6 +16,9 @@ def test_commit(tmp_path):
                 - name: curl
                   version: 7.68.0
                   comment: install curl
+          - name: phase_two
+            tools:
+              python_binary_path: /usr/bin/python3.12
     """
     package_file_path = tmp_path / "package.yaml"
     package_file_path.write_text(yaml_file)
