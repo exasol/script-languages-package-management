@@ -1,4 +1,5 @@
 from pathlib import Path
+from test.unit.pkg_mgmt.utils import _named_params
 from unittest.mock import (
     call,
 )
@@ -43,13 +44,37 @@ def _make_build_step(
 @pytest.mark.parametrize(
     "pip_version, needs_break_system_packages_option, python_binary_in_history",
     [
-        pytest.param("23.3", True, True, id="New pip, Python binary in history"),
         pytest.param(
-            "23.3", True, False, id="New pip, Python binary in current build-step"
+            *_named_params(
+                pip_version="23.3",
+                needs_break_system_packages_option=True,
+                python_binary_in_history=True,
+            ),
+            id="New pip, Python binary in history",
         ),
-        pytest.param("21.1", False, True, id="Old pip, Python binary in history"),
         pytest.param(
-            "21.1", False, False, id="Old pip, Python binary in current build-step"
+            *_named_params(
+                pip_version="23.3",
+                needs_break_system_packages_option=True,
+                python_binary_in_history=False,
+            ),
+            id="New pip, Python binary in current build-step",
+        ),
+        pytest.param(
+            *_named_params(
+                pip_version="21.1",
+                needs_break_system_packages_option=False,
+                python_binary_in_history=True,
+            ),
+            id="Old pip, Python binary in history",
+        ),
+        pytest.param(
+            *_named_params(
+                pip_version="21.1",
+                needs_break_system_packages_option=False,
+                python_binary_in_history=False,
+            ),
+            id="Old pip, Python binary in current build-step",
         ),
     ],
 )

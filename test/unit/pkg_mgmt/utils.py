@@ -34,3 +34,7 @@ def create_tools_for_binary_type(binary_type: BinaryType, binary_path: Path) -> 
     if setter is not None:
         setter(tools, binary_path)
     return tools
+
+
+def _named_params(**kwargs) -> tuple:
+    return tuple(kwargs.values())

@@ -7,6 +7,11 @@ from exasol.exaslpm.model.package_file_config import BuildStep
 
 
 class FileDownloaderMock:
+    """
+    Simplifies mocking of the context manager method download_file_to_tmp().
+    Allows injection of a path, which will be returned from download_file_to_tmp().
+    self.mock can be used to check invocation of download_file_to_tmp().
+    """
     def __init__(self, path: Path) -> None:
         self.mock = MagicMock()
         self.mock_path = path
@@ -18,6 +23,10 @@ class FileDownloaderMock:
 
 
 class HistoryFileManagerMock:
+    """
+    Allows injection of list of build_steps which will be returned from get_all_previous_build_steps().
+    This simplifies test setup for different scenarios (with different build-step history).
+    """
 
     def __init__(self) -> None:
         self.build_steps: list[BuildStep] = []
