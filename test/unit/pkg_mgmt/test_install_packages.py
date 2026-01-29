@@ -1,7 +1,9 @@
 import contextlib
 from pathlib import Path
-from unittest import mock
-from unittest.mock import MagicMock
+from unittest.mock import (
+    MagicMock,
+    call,
+)
 
 import pytest
 import yaml
@@ -80,8 +82,8 @@ def test_install_packages_history_manager(
             context=context_mock,
         )
     assert context_mock.history_file_manager.mock_calls == [
-        mock.call.raise_if_build_step_exists("build-step-1"),
-        mock.call.add_build_step_to_history(
+        call.raise_if_build_step_exists("build-step-1"),
+        call.add_build_step_to_history(
             package_file_config.find_build_step("build-step-1")
         ),
     ]
@@ -108,7 +110,7 @@ def test_install_packages_apt(context_mock, mock_install_via_apt, package_file):
             context=context_mock,
         )
     assert mock_install_via_apt.mock_calls == [
-        mock.call(
+        call(
             package_file_config.find_build_step("build-step-1")
             .find_phase("phase-1")
             .apt,
@@ -144,6 +146,6 @@ def test_install_packages_multiple_apt(
             context=context_mock,
         )
     assert mock_install_via_apt.mock_calls == [
-        mock.call(phases[0].apt, context_mock),
-        mock.call(phases[2].apt, context_mock),
+        call(phases[0].apt, context_mock),
+        call(phases[2].apt, context_mock),
     ]
