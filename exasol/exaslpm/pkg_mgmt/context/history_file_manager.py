@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     PackageFile,
 )
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 class HistoryFileManager:
@@ -17,7 +18,7 @@ class HistoryFileManager:
     @staticmethod
     def _serialize_build_step(build_step: BuildStep) -> str:
         package = PackageFile(build_steps=[build_step])
-        return yaml.dump(package.model_dump(), sort_keys=False)
+        return to_yaml_str(package)
 
     @staticmethod
     def _deserialize_build_step(model: str) -> BuildStep:

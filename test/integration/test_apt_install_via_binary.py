@@ -13,10 +13,11 @@ from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     PackageFile,
 )
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_yaml = to_yaml_str(apt_package_file_content)
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml
@@ -42,9 +43,9 @@ def test_apt_install_error(docker_container, apt_package_file_content, cli_helpe
     apt_package_file_content.find_build_step("build_step_1").find_phase(
         "phase_1"
     ).apt.packages[0].name = "unknowsoftware"
-    apt_invalid_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_content_yaml = to_yaml_str(apt_package_file_content)
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file_02", apt_invalid_package_file_yaml
+        Path("/"), "apt_file_02", apt_package_file_content_yaml
     )
 
     ret, out = docker_container.run_exaslpm(
@@ -69,7 +70,7 @@ def _validate_build_step_history_file(
 
 
 def test_history(docker_container, apt_package_file_content, cli_helper):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_yaml = to_yaml_str(apt_package_file_content)
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml
