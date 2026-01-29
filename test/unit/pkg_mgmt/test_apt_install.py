@@ -1,5 +1,4 @@
 from unittest.mock import (
-    MagicMock,
     call,
 )
 
@@ -8,13 +7,9 @@ import pytest
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
 )
-from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
-    CommandResult,
+    CommandFailedException,
 )
-from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
-from exasol.exaslpm.pkg_mgmt.context.context import Context
-from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 from exasol.exaslpm.pkg_mgmt.install_apt import *
 
 
@@ -28,9 +23,6 @@ def test_install_via_apt_empty_packages(context_mock):
 
 
 def test_install_via_apt_with_pkgs(context_mock):
-    mock_command_result = MagicMock(spec=CommandResult)
-    mock_command_result.return_code.return_value = 0
-    context_mock.cmd_executor.execute.return_value = mock_command_result
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
@@ -96,16 +88,15 @@ class FailCommandExecutor:
         return FailCommandResult(0)
 
 
-def build_context_with_fail_command_executor(fail_step: int):
-    mock_logger = MagicMock(spec=CommandLogger)
+def build_context_with_fail_command_executor(ctx: Context, fail_step: int):
     fail_command_executor = FailCommandExecutor(fail_step)
-    mock_history_file_manager = MagicMock(spec=HistoryFileManager)
-    mock_binary_checker = MagicMock(spec=BinaryChecker)
+
     return Context(
-        cmd_logger=mock_logger,
+        cmd_logger=ctx.cmd_logger,
         cmd_executor=fail_command_executor,
-        history_file_manager=mock_history_file_manager,
-        binary_checker=mock_binary_checker,
+        history_file_manager=ctx.history_file_manager,
+        binary_checker=ctx.binary_checker,
+        file_downloader=ctx.file_downloader,
     )
 
 
@@ -121,8 +112,8 @@ def build_context_with_fail_command_executor(fail_step: int):
         (6, "Failed while running ldconfig"),
     ],
 )
-def test_install_via_apt_negative_cases(fail_step, expected_error):
-    context = build_context_with_fail_command_executor(fail_step)
+def test_install_via_apt_negative_cases(context_mock, fail_step, expected_error):
+    context = build_context_with_fail_command_executor(context_mock, fail_step)
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
