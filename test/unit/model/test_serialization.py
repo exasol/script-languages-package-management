@@ -41,7 +41,7 @@ def test_to_yaml_str_roundtrip_preserves_structure_and_values():
     yml = to_yaml_str(model)
     data = yaml.safe_load(yml)
 
-    assert data == model.model_dump(mode="json")
+    assert PackageFile.model_validate(data) == model
 
 
 def test_to_yaml_str_serializes_paths_as_strings():
@@ -69,9 +69,9 @@ def test_to_yaml_str_serializes_paths_as_strings():
 
 
 def test_to_yaml_str_omits_none_fields_by_default_in_dump():
-    # model_dump(mode="json") includes None fields by default? In pydantic v2
-    # the default is exclude_none=False; however, unset optionals that were not
-    # provided typically remain absent in the instance and thus absent in the dump.
+    # model_dump(mode="json") includes None fields by default.
+    # to_yaml_str() sets exclude_none=True
+    # Validate that None fields are not included in resulting yaml
     model = PackageFile(
         version="1.0.0",
         comment="c",
@@ -94,13 +94,13 @@ def test_to_yaml_str_omits_none_fields_by_default_in_dump():
     data = yaml.safe_load(yml)
 
     phase = data["build_steps"][0]["phases"][0]
-    assert phase["apt"] is not None
+    assert "apt" in phase
     # Ensure optional sections not provided are not forced into YAML
-    assert phase["pip"] is None
-    assert phase["r"] is None
-    assert phase["conda"] is None
-    assert phase["tools"] is None
-    assert phase["variables"] is None
+    assert "pip" not in phase
+    assert "r" not in phase
+    assert "conde" not in phase
+    assert "tools" not in phase
+    assert "variables" not in phase
 
 
 def test_to_yaml_str_produces_valid_yaml_for_empty_lists_and_nested_models():

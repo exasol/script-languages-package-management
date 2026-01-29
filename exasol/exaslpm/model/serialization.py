@@ -8,5 +8,5 @@ def to_yaml_str(model: PackageFile) -> str:
     Converts the given PackageFile model to a YAML string.
     Note: Uses (mode="JSON") for correct serialization of `Path` objects.
     """
-    d = model.model_dump(mode="json")
+    d = model.model_dump(mode="json", exclude_none=True)
     return yaml.dump(d, sort_keys=False)
