@@ -4,7 +4,6 @@ import yaml
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
-    BuildStep,
     CondaPackage,
     CondaPackages,
     PackageFile,
@@ -56,12 +55,8 @@ def yaml_to_package_file_config(yml: str) -> PackageFile:
 )
 def test_collect_empty(collector, package_variable, packages_model):
     d = {package_variable: packages_model(packages=[])}
-    tst_package_file_model = PackageFile(
-        build_steps=[
-            BuildStep(name="build_step_1", phases=[Phase(name="phase_one", **d)])
-        ]
-    )
-    assert collector(tst_package_file_model.build_steps) == []
+    phases = [Phase(name="phase_one", **d)]
+    assert collector(phases) == []
 
 
 TEST_PACKAGE_APT = AptPackage(name="test_package_apt", version="1.0.0")
@@ -103,10 +98,8 @@ TEST_PACKAGE_R = RPackage(name="test_package_conda", version="1.0.0")
 )
 def test_collect_ignore_other_packages(collector, package_variable, packages):
     d = {package_variable: packages}
-    test_build_step = BuildStep(
-        name="build_step_1", phases=[Phase(name="phase_one", **d)]
-    )
-    assert collector([test_build_step]) == []
+    phases = [Phase(name="phase_one", **d)]
+    assert collector(phases) == []
 
 
 @pytest.mark.parametrize(
@@ -128,14 +121,10 @@ def test_collect_ignore_other_packages(collector, package_variable, packages):
         ),
     ],
 )
-def test_collect_single_build_step_single_phase(
-    collector, package_variable, packages_model, package
-):
+def test_collect_single_phase(collector, package_variable, packages_model, package):
     d = {package_variable: packages_model(packages=[package])}
-    test_build_step = BuildStep(
-        name="build_step_1", phases=[Phase(name="phase_one", **d)]
-    )
-    assert collector([test_build_step]) == [package]
+    phases = [Phase(name="phase_one", **d)]
+    assert collector(phases) == [package]
 
 
 @pytest.mark.parametrize(
@@ -157,46 +146,9 @@ def test_collect_single_build_step_single_phase(
         ),
     ],
 )
-def test_collect_multi_build_step_single_phase(
-    collector, package_variable, packages_model, packages
-):
+def test_collect_multi_phases(collector, package_variable, packages_model, packages):
     d_one = {package_variable: packages_model(packages=[packages[0]])}
     d_two = {package_variable: packages_model(packages=[packages[1]])}
-    build_step_one = BuildStep(
-        name="build_step_1", phases=[Phase(name="phase_one", **d_one)]
-    )
-    build_step_two = BuildStep(
-        name="build_step_2", phases=[Phase(name="phase_one", **d_two)]
-    )
-    assert collector([build_step_one, build_step_two]) == packages
-
-
-@pytest.mark.parametrize(
-    "collector, package_variable, packages_model, packages",
-    [
-        pytest.param(
-            collect_conda_packages,
-            "conda",
-            CondaPackages,
-            [TEST_PACKAGE_CONDA, TEST_PACKAGE_CONDA_2],
-            id="conda collector",
-        ),
-        pytest.param(
-            collect_pip_packages,
-            "pip",
-            PipPackages,
-            [TEST_PACKAGE_PIP, TEST_PACKAGE_PIP_2],
-            id="pip collector",
-        ),
-    ],
-)
-def test_collect_single_build_step_multi_phase(
-    collector, package_variable, packages_model, packages
-):
-    d_one = {package_variable: packages_model(packages=[packages[0]])}
-    d_two = {package_variable: packages_model(packages=[packages[1]])}
-    build_step_one = BuildStep(
-        name="build_step_1",
-        phases=[Phase(name="phase_one", **d_one), Phase(name="phase_two", **d_two)],
-    )
-    assert collector([build_step_one]) == packages
+    phase_one = Phase(name="phase_one", **d_one)
+    phase_two = Phase(name="phase_two", **d_two)
+    assert collector([phase_one, phase_two]) == packages

@@ -10,25 +10,25 @@ from exasol.exaslpm.model.package_file_config import (
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandFailedException,
 )
-from exasol.exaslpm.pkg_mgmt.install_apt import *
+from exasol.exaslpm.pkg_mgmt.install_apt_packages import *
 
 
-def test_install_via_apt_empty_packages(context_mock):
+def test_empty_packages(context_mock):
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, context_mock)
+    install_apt_packages(aptPackages, context_mock)
 
     assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
     ]
 
 
-def test_install_via_apt_with_pkgs(context_mock):
+def test_install_apt_packages(context_mock):
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, context_mock)
+    install_apt_packages(aptPackages, context_mock)
     assert context_mock.cmd_executor.mock_calls == [
         call.execute(["apt-get", "-y", "update"]),
         call.execute().print_results(),
@@ -112,7 +112,7 @@ def build_context_with_fail_command_executor(ctx: Context, fail_step: int):
         (6, "Failed while running ldconfig"),
     ],
 )
-def test_install_via_apt_negative_cases(context_mock, fail_step, expected_error):
+def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_error):
     context = build_context_with_fail_command_executor(context_mock, fail_step)
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
@@ -121,6 +121,6 @@ def test_install_via_apt_negative_cases(context_mock, fail_step, expected_error)
     aptPackages = AptPackages(packages=pkgs)
 
     with pytest.raises(CommandFailedException):
-        install_via_apt(aptPackages, context)
+        install_apt_packages(aptPackages, context)
 
     context.cmd_logger.err.assert_any_call(expected_error)

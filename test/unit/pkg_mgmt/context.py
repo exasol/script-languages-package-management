@@ -1,5 +1,9 @@
 import contextlib
 from collections.abc import Iterator
+from io import (
+    StringIO,
+    TextIOBase,
+)
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -44,3 +48,31 @@ class HistoryFileManagerMock:
 
     def get_all_previous_build_steps(self) -> list[BuildStep]:
         return self.build_steps
+
+
+class TempFileProviderMock:
+    """
+    Allows injection of temporary file path.
+    Returns a string buffer, which can be used by tests to validate content.
+    """
+
+    def __init__(self, path: Path) -> None:
+        self.path = path
+        self.buffer = StringIO()
+
+    class TempFileMock:
+        def __init__(self, path: Path, buffer: StringIO) -> None:
+            self.path = path
+            self.buffer = buffer
+
+        @contextlib.contextmanager
+        def open(self) -> Iterator[TextIOBase]:
+            yield self.buffer
+
+    @contextlib.contextmanager
+    def create(self) -> Iterator[TempFileMock]:
+        yield self.TempFileMock(self.path, self.buffer)
+
+    @property
+    def result(self):
+        return self.buffer.getvalue()

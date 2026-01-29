@@ -60,3 +60,7 @@ class SearchCache:
                 variable_name, self._all_phases
             )
         return self._variables[variable_name]
+
+    @property
+    def all_phases(self) -> list[Phase]:
+        return self._all_phases
