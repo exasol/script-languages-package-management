@@ -12,6 +12,7 @@ class FileDownloaderMock:
     Allows injection of a path, which will be returned from download_file_to_tmp().
     self.mock can be used to check invocation of download_file_to_tmp().
     """
+
     def __init__(self, path: Path) -> None:
         self.mock = MagicMock()
         self.mock_path = path
