@@ -6,7 +6,6 @@ from unittest.mock import (
 )
 
 import pytest
-import yaml
 from _pytest.monkeypatch import MonkeyPatch
 
 import exasol.exaslpm.pkg_mgmt.install_packages as install_packages
@@ -18,6 +17,7 @@ from exasol.exaslpm.model.package_file_config import (
     Phase,
     Tools,
 )
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ def package_file(tmp_path):
 
     @contextlib.contextmanager
     def prepare(package_file: PackageFile):
-        content = yaml.dump(package_file.model_dump(mode="json"), sort_keys=False)
+        content = to_yaml_str(package_file)
         package_file_path.write_text(content)
         yield package_file_path
 

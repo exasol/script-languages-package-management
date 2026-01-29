@@ -6,8 +6,8 @@ from test.integration.package_fixtures import (  # noqa: F401, fixtures to be us
 from test.integration.package_utils import ContainsPackages
 
 import pytest
-import yaml
 
+from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
@@ -31,7 +31,7 @@ def test_apt_install(
     local_package_path,
     docker_executor_context,
 ):
-    apt_package_file_yaml = yaml.dump(apt_package_file_content.model_dump())
+    apt_package_file_yaml = to_yaml_str(apt_package_file_content)
     local_package_path.write_text(apt_package_file_yaml)
 
     expected_packages = apt_package_file_content.build_steps[0].phases[0].apt.packages
