@@ -2,7 +2,7 @@ import contextlib
 import os
 import secrets
 import tempfile
-from datetime import time
+import time
 from io import TextIOBase
 from pathlib import Path
 from typing import Iterator

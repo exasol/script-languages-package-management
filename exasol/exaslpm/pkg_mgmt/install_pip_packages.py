@@ -1,3 +1,4 @@
+from packaging.version import Version
 from exasol.exaslpm.model.package_file_config import (
     Phase,
 )
@@ -34,4 +35,6 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
                 ],
                 err="Failed while installing pip packages",
             )
+            if Version(search_cache.pip.version) >= Version("23.1"):
+                install_pip_cmd.cmd.append("--break-system-packages")
             run_cmd(install_pip_cmd, ctx)

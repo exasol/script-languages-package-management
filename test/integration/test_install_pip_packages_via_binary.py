@@ -47,3 +47,24 @@ def test_install_pip_packages(docker_container, pip_packages_file_content, cli_h
 
     pkgs_after_install = docker_container.list_pip()
     assert pkgs_after_install == ContainsPackages(expected_packages)
+
+
+def test_pip_packages_install_error(docker_container, pip_packages_file_content, cli_helper, prepare_pip_env):
+    pkg = pip_packages_file_content.find_build_step("build_step_2").find_phase(
+        "phase_1"
+    ).pip.packages[0]
+    pkg.name = "unknowsoftware"
+    pkg.version = "0.0.0"
+    pip_package_file_content_yaml = to_yaml_str(pip_packages_file_content)
+    pip_invalid_pkg_file = docker_container.make_and_upload_file(
+        Path("/"), "pip_file_02", pip_package_file_content_yaml
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(pip_invalid_pkg_file)
+        .build_step("build_step_2")
+        .args,
+        False,
+    )
+    assert ret != 0
+    assert "Could not find a version that satisfies the requirement unknowsoftware==0.0.0" in out
