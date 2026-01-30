@@ -3,6 +3,7 @@ from pathlib import Path
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
     Phase,
+    Pip,
 )
 from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
@@ -61,4 +62,13 @@ def find_variable(variable_name: str, phases: list[Phase]) -> str:
         raise ValueError(f"Found more than one result for variable '{variable_name}'")
     if len(result) == 0:
         raise ValueError(f"Variable '{variable_name}' not found")
+    return result[0]
+
+
+def find_pip(phases: list[Phase]) -> Pip:
+    result = [phase.tools.pip for phase in phases if phase.tools and phase.tools.pip]
+    if len(result) > 1:
+        raise ValueError(f"Found more than one result for pip: {result}")
+    if len(result) == 0:
+        raise ValueError("Pip not found")
     return result[0]
