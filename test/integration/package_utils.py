@@ -1,3 +1,5 @@
+from packaging.version import Version
+from packaging.specifiers import SpecifierSet
 from typing import Any
 
 from exasol.exaslpm.model.package_file_config import AptPackage
@@ -16,7 +18,7 @@ class ContainsPackages:
     def _compare_package(expected: AptPackage, installed: AptPackage) -> bool:
         return (
             expected.name.lower() == installed.name.lower()
-            and expected.version == installed.version
+            and Version(installed.version) in SpecifierSet(expected.version)
         )
 
     def __eq__(self, installed_packages: Any) -> bool:
