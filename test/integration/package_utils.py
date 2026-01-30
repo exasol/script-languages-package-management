@@ -1,8 +1,9 @@
-from packaging.version import Version
-from packaging.specifiers import SpecifierSet
 from typing import Any
 
-from exasol.exaslpm.model.package_file_config import AptPackage
+from packaging.specifiers import SpecifierSet
+from packaging.version import Version
+
+from exasol.exaslpm.model.package_file_config import Package
 
 
 class ContainsPackages:
@@ -11,15 +12,14 @@ class ContainsPackages:
     all expected packages (matching name and version).
     """
 
-    def __init__(self, expected_packages: list[AptPackage]):
+    def __init__(self, expected_packages: list[Package]):
         self.expected_packages = expected_packages
 
     @staticmethod
-    def _compare_package(expected: AptPackage, installed: AptPackage) -> bool:
-        return (
-            expected.name.lower() == installed.name.lower()
-            and Version(installed.version) in SpecifierSet(expected.version)
-        )
+    def _compare_package(expected: Package, installed: Package) -> bool:
+        return expected.name.lower() == installed.name.lower() and Version(
+            installed.version
+        ) in SpecifierSet(expected.version)
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):
