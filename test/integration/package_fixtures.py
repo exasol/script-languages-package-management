@@ -9,6 +9,8 @@ from exasol.exaslpm.model.package_file_config import (
     PackageFile,
     Phase,
     Pip,
+    PipPackage,
+    PipPackages,
     Tools,
 )
 
@@ -48,8 +50,15 @@ def apt_package_file_content() -> PackageFile:
     )
 
 
-@pytest.fixture
-def pip_package_file_content() -> PackageFile:
+# TODO Extend with configs `needs_break_system_packages=False`, see https://github.com/exasol/script-languages-package-management/issues/59
+@pytest.fixture(
+    params=[
+        Pip(version="23.1", needs_break_system_packages=True),
+        Pip(version="25.3", needs_break_system_packages=True),
+    ],
+    ids=["old", "new"],
+)
+def pip_package_file_content(request) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -71,7 +80,60 @@ def pip_package_file_content() -> PackageFile:
                     ),
                     Phase(
                         name="phase_3",
-                        tools=Tools(pip=Pip(version="25.2")),
+                        tools=Tools(pip=request.param),
+                    ),
+                ],
+            ),
+        ],
+    )
+
+
+@pytest.fixture
+def pip_packages_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(name="jinja2", version=" >=3.1.6, <4.0.0"),
+                            ]
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def pip_packages_file_content_which_needs_pkg_config() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="libsmbclient-dev",
+                                    version="2:4.19.5+dfsg-4ubuntu9.4",
+                                ),
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(name="pysmbc", version=" == 1.0.25.1"),
+                            ]
+                        ),
                     ),
                 ],
             ),

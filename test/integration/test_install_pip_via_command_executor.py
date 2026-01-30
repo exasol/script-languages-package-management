@@ -3,8 +3,7 @@ from test.integration.package_fixtures import (  # noqa: F401, fixtures to be us
     pip_package_file_content,
 )
 
-import yaml
-
+from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -14,7 +13,7 @@ def test_install_pip(
     local_package_path,
     docker_executor_context,
 ):
-    apt_package_file_yaml = yaml.dump(pip_package_file_content.model_dump(mode="json"))
+    apt_package_file_yaml = to_yaml_str(pip_package_file_content)
     local_package_path.write_text(apt_package_file_yaml)
 
     return_code_counter = StringMatchCounter("Return Code: 0")

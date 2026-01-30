@@ -3,7 +3,6 @@ from typing import Any
 
 from exasol.exaslpm.model.any_package import PackageType
 from exasol.exaslpm.model.package_file_config import (
-    BuildStep,
     CondaPackage,
     Phase,
     PipPackage,
@@ -11,15 +10,14 @@ from exasol.exaslpm.model.package_file_config import (
 
 
 def _collect_package(
-    build_steps: list[BuildStep], package_get: Callable[[Phase], Any]
+    phases: list[Phase], package_get: Callable[[Phase], Any]
 ) -> list[PackageType]:
-    phases = [phase for build_step in build_steps for phase in build_step.phases]
     return [package for phase in phases for package in package_get(phase)]
 
 
-def collect_conda_packages(build_steps: list[BuildStep]) -> list[CondaPackage]:
+def collect_conda_packages(phases: list[Phase]) -> list[CondaPackage]:
     """
-    Collects all conda packages as flat list from a list of build steps.
+    Collects all conda packages as flat list from a list of phases.
     """
 
     def get_conda_packages(phase: Phase) -> list[CondaPackage]:
@@ -27,12 +25,12 @@ def collect_conda_packages(build_steps: list[BuildStep]) -> list[CondaPackage]:
             return []
         return phase.conda.packages
 
-    return _collect_package(build_steps, get_conda_packages)
+    return _collect_package(phases, get_conda_packages)
 
 
-def collect_pip_packages(build_steps: list[BuildStep]) -> list[PipPackage]:
+def collect_pip_packages(phases: list[Phase]) -> list[PipPackage]:
     """
-    Collects all Pip packages as flat list from a list of build steps.
+    Collects all Pip packages as flat list from a list of phases.
     """
 
     def get_pip_packages(phase: Phase) -> list[PipPackage]:
@@ -40,4 +38,4 @@ def collect_pip_packages(build_steps: list[BuildStep]) -> list[PipPackage]:
             return []
         return phase.pip.packages
 
-    return _collect_package(build_steps, get_pip_packages)
+    return _collect_package(phases, get_pip_packages)

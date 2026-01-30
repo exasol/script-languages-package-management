@@ -2,6 +2,7 @@ from pathlib import Path
 from test.unit.pkg_mgmt.context import (
     FileDownloaderMock,
     HistoryFileManagerMock,
+    TempFileProviderMock,
 )
 from unittest.mock import MagicMock
 
@@ -23,6 +24,7 @@ def context_mock():
     mock_history_file_manager = HistoryFileManagerMock()
     mock_binary_checker = MagicMock(spec=BinaryChecker)
     mock_file_downloader = FileDownloaderMock(path=Path("path/to/file"))
+    mock_temp_file_provider = TempFileProviderMock(path=Path("path/to/temp/file"))
 
     mock_command_result = MagicMock(spec=CommandResult)
     mock_command_result.return_code.return_value = 0
@@ -34,4 +36,5 @@ def context_mock():
         history_file_manager=mock_history_file_manager,
         binary_checker=mock_binary_checker,
         file_downloader=mock_file_downloader,
+        temp_file_provider=mock_temp_file_provider,
     )

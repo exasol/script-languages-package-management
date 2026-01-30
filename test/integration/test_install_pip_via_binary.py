@@ -1,13 +1,14 @@
+from copy import deepcopy
 from pathlib import Path
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     pip_package_file_content,
 )
 
-import yaml
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 def test_install_pip(docker_container, pip_package_file_content, cli_helper):
-    pip_package_file_yaml = yaml.dump(pip_package_file_content.model_dump(mode="json"))
+    pip_package_file_yaml = to_yaml_str(pip_package_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
         Path("/"), "pip_file_01", pip_package_file_yaml
@@ -27,10 +28,11 @@ def test_install_pip(docker_container, pip_package_file_content, cli_helper):
 
 
 def test_install_pip_error(docker_container, pip_package_file_content, cli_helper):
-    pip_package_file_content.find_build_step("build_step_1").find_phase(
+    pip_package_file_content_invalid = deepcopy(pip_package_file_content)
+    pip_package_file_content_invalid.find_build_step("build_step_1").find_phase(
         "phase_3"
     ).tools.pip.version = "invalid"
-    pip_package_file_yaml = yaml.dump(pip_package_file_content.model_dump(mode="json"))
+    pip_package_file_yaml = to_yaml_str(pip_package_file_content_invalid)
 
     pip_package_file = docker_container.make_and_upload_file(
         Path("/"), "pip_file_01", pip_package_file_yaml
@@ -43,4 +45,4 @@ def test_install_pip_error(docker_container, pip_package_file_content, cli_helpe
         check_exit_code=False,
     )
     assert ret != 0
-    assert "Invalid version: 'invalid'" in out
+    assert "Invalid requirement: 'pip == invalid'" in out
