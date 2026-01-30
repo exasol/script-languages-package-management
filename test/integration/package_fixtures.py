@@ -78,14 +78,9 @@ def pip_package_file_content(request) -> PackageFile:
                     ),
                     Phase(
                         name="phase_3",
-                        tools=Tools(
-                            pip=Pip(
-                                version=request.param.version,
-                                needs_break_system_packages=request.param.needs_break_system_packages,
-                            )
-                        ),
+                        tools=Tools(pip=request.param),
                     ),
                 ],
             ),
-        ]
+        ],
     )
