@@ -205,6 +205,7 @@ class CondaPackages(BaseModel):
 
 class Pip(BaseModel):
     version: str
+    needs_break_system_packages: bool = False
     comment: None | str = None
 
 

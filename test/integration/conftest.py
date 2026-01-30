@@ -55,7 +55,9 @@ def docker_image(request, tmp_path_factory) -> Iterator[DockerTestImage]:
 
 @pytest.fixture(scope="function")
 def docker_container(docker_image, request) -> Iterator[DockerTestContainer]:
-    container = docker_image.start_container(request.node.name.replace("[","_").replace("]", "_"))
+    container = docker_image.start_container(
+        request.node.name.replace("[", "_").replace("]", "_")
+    )
     yield container
     container.remove()
 

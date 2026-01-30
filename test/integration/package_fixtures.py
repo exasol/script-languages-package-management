@@ -48,7 +48,14 @@ def apt_package_file_content() -> PackageFile:
     )
 
 
-@pytest.fixture(params=["21.3.1", "25.2"])
+# TODO Extend with configs `needs_break_system_packages=False`, see https://github.com/exasol/script-languages-package-management/issues/59
+@pytest.fixture(
+    params=[
+        Pip(version="23.1", needs_break_system_packages=True),
+        Pip(version="25.3", needs_break_system_packages=True),
+    ],
+    ids=["old", "new"],
+)
 def pip_package_file_content(request) -> PackageFile:
     return PackageFile(
         build_steps=[
@@ -71,7 +78,12 @@ def pip_package_file_content(request) -> PackageFile:
                     ),
                     Phase(
                         name="phase_3",
-                        tools=Tools(pip=Pip(version=request.param)),
+                        tools=Tools(
+                            pip=Pip(
+                                version=request.param.version,
+                                needs_break_system_packages=request.param.needs_break_system_packages,
+                            )
+                        ),
                     ),
                 ],
             ),
