@@ -27,12 +27,23 @@ def test_install_pip_empty_no_history(context_mock):
 
 
 def _make_build_step(
-    name: str, pip_version: str, enable_binary: bool = False
+    name: str,
+    pip_version: str,
+    needs_break_system_packages_option: bool,
+    enable_binary: bool = False,
 ) -> BuildStep:
     phase_one = Phase(
         name="phase-1", tools=Tools(python_binary_path=Path("/some/path"))
     )
-    phase_two = Phase(name="phase-2", tools=Tools(pip=Pip(version=pip_version)))
+    phase_two = Phase(
+        name="phase-2",
+        tools=Tools(
+            pip=Pip(
+                version=pip_version,
+                needs_break_system_packages=needs_break_system_packages_option,
+            )
+        ),
+    )
     phases = []
     if enable_binary:
         phases.append(phase_one)
@@ -62,7 +73,7 @@ def _make_build_step(
         ),
         pytest.param(
             *_named_params(
-                pip_version="21.1",
+                pip_version="25.5",
                 needs_break_system_packages_option=False,
                 python_binary_in_history=True,
             ),
@@ -70,7 +81,7 @@ def _make_build_step(
         ),
         pytest.param(
             *_named_params(
-                pip_version="21.1",
+                pip_version="25.5",
                 needs_break_system_packages_option=False,
                 python_binary_in_history=False,
             ),
@@ -87,11 +98,17 @@ def test_install_pip(
 
     context_mock.history_file_manager.build_steps = [
         _make_build_step(
-            "build-step-1", pip_version, enable_binary=python_binary_in_history
+            "build-step-1",
+            pip_version,
+            enable_binary=python_binary_in_history,
+            needs_break_system_packages_option=needs_break_system_packages_option,
         )
     ]
     build_step = _make_build_step(
-        "build-step-2", pip_version, enable_binary=not python_binary_in_history
+        "build-step-2",
+        pip_version,
+        enable_binary=not python_binary_in_history,
+        needs_break_system_packages_option=needs_break_system_packages_option,
     )
 
     phase = build_step.find_phase("phase-2")
