@@ -97,6 +97,7 @@ def build_context_with_fail_command_executor(ctx: Context, fail_step: int):
         history_file_manager=ctx.history_file_manager,
         binary_checker=ctx.binary_checker,
         file_downloader=ctx.file_downloader,
+        temp_file_provider=ctx.temp_file_provider,
     )
 
 

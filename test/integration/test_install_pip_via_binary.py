@@ -32,7 +32,7 @@ def test_install_pip_error(docker_container, pip_package_file_content, cli_helpe
     pip_package_file_content_invalid.find_build_step("build_step_1").find_phase(
         "phase_3"
     ).tools.pip.version = "invalid"
-    pip_package_file_yaml = to_yaml_str(pip_package_file_content)
+    pip_package_file_yaml = to_yaml_str(pip_package_file_content_invalid)
 
     pip_package_file = docker_container.make_and_upload_file(
         Path("/"), "pip_file_01", pip_package_file_yaml

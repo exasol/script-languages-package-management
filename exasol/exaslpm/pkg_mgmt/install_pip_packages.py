@@ -49,7 +49,7 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
     packages_to_install = collect_pip_packages(search_cache.all_phases + [phase])
     python_binary_path = search_cache.python_binary_path
 
-    if not phase.pip.packages:
+    if not phase.pip or phase.pip.packages:
         ctx.cmd_logger.warn("Got an empty list of pip packages")
     else:
         if phase.pip.install_build_tools_ephemerally:
