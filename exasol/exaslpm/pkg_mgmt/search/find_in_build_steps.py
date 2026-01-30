@@ -68,7 +68,7 @@ def find_variable(variable_name: str, phases: list[Phase]) -> str:
 def find_pip(phases: list[Phase]) -> Pip:
     result = [phase.tools.pip for phase in phases if phase.tools and phase.tools.pip]
     if len(result) > 1:
-        raise ValueError(f"Found more than one result for pip")
+        raise ValueError("Found more than one result for pip")
     if len(result) == 0:
-        raise ValueError(f"Pip not found")
+        raise ValueError("Pip not found")
     return result[0]
