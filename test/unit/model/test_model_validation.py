@@ -15,6 +15,7 @@ from exasol.exaslpm.model.package_file_config import (
     Micromamba,
     PackageFile,
     Pip,
+    PipPackage,
     Tools,
 )
 from exasol.exaslpm.model.package_validation_error import PackageFileValidationError
@@ -267,10 +268,17 @@ def test_valid_package_installer_pip():
                 - name: requests
                   version: 2.25.1
                   comment: install requests
+                install_build_tools_ephemerally: True
     """
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
+    pip = model.find_build_step("build_step_one").find_phase("phase_one").pip
+
+    assert pip.packages == [
+        PipPackage(name="requests", version="2.25.1", comment="install requests")
+    ]
+    assert pip.install_build_tools_ephemerally is True
 
 
 def test_unique_pip_packages():
