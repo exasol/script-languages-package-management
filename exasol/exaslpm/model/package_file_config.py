@@ -101,6 +101,7 @@ class AptPackages(BaseModel):
 class PipPackages(BaseModel):
     # we need to add here later different package indexes
     packages: list[PipPackage]
+    install_build_tools_ephemerally: bool = False
     comment: None | str = None
 
     @overload
