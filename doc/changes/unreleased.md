@@ -16,8 +16,9 @@
  - #35: Implemented build-steps history mechanism
  - #44: Implemented find methods for binaries and variables
  - #11: Implemented install_python_pip command
- - #56: Added field "install_build_tools_ephemerally` to PipPackages
  - #54: Added find_pip method
+ - #56: Added field "install_build_tools_ephemerally` to PipPackages
+ - #58: Added field needs-break-system-packages to Pip
  - #5: Implemented install command for PIP
 
 ## Refactorings

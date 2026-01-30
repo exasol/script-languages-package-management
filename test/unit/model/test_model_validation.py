@@ -273,17 +273,12 @@ def test_valid_package_installer_pip():
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
-    assert model.find_build_step("build_step_one").find_phase(
-        "phase_one"
-    ).pip.packages == [
+    pip = model.find_build_step("build_step_one").find_phase("phase_one").pip
+
+    assert pip.packages == [
         PipPackage(name="requests", version="2.25.1", comment="install requests")
     ]
-    assert (
-        model.find_build_step("build_step_one")
-        .find_phase("phase_one")
-        .pip.install_build_tools_ephemerally
-        is True
-    )
+    assert pip.install_build_tools_ephemerally is True
 
 
 def test_unique_pip_packages():
@@ -440,6 +435,7 @@ def test_tools():
             tools:
                 pip:
                     version: 1.2.3
+                    needs_break_system_packages: true
                     comment: install pip
                 micromamba:
                     version: 1.2.3
@@ -458,7 +454,9 @@ def test_tools():
     assert model.find_build_step("build_step_one").find_phase(
         "phase_one"
     ).tools == Tools(
-        pip=Pip(version="1.2.3", comment="install pip"),
+        pip=Pip(
+            version="1.2.3", needs_break_system_packages=True, comment="install pip"
+        ),
         micromamba=Micromamba(version="1.2.3", comment="install micromamba"),
         bazel=Bazel(version="1.2.3", comment="install bazel"),
         python_binary_path=Path("/usr/bin/python3.12"),
