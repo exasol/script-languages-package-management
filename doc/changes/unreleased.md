@@ -16,6 +16,7 @@
  - #35: Implemented build-steps history mechanism
  - #44: Implemented find methods for binaries and variables
  - #11: Implemented install_python_pip command
+ - #54: Added find_pip method
  - #5: Implemented install command for PIP
 
 ## Refactorings
