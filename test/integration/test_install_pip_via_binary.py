@@ -43,4 +43,4 @@ def test_install_pip_error(docker_container, pip_package_file_content, cli_helpe
         check_exit_code=False,
     )
     assert ret != 0
-    assert "Invalid version: 'invalid'" in out
+    assert "Invalid requirement: 'pip == invalid'" in out
