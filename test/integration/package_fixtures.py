@@ -99,7 +99,7 @@ def pip_packages_file_content() -> PackageFile:
                         name="phase_1",
                         pip=PipPackages(
                             packages=[
-                                PipPackage(name="jinja2", version="3.1.6"),
+                                PipPackage(name="jinja2", version=" >=3.1.6, <4.0.0"),
                             ]
                         ),
                     ),
@@ -131,7 +131,7 @@ def pip_packages_file_content_which_needs_pkg_config() -> PackageFile:
                         name="phase_2",
                         pip=PipPackages(
                             packages=[
-                                PipPackage(name="pysmbc", version="1.0.25.1"),
+                                PipPackage(name="pysmbc", version=" == 1.0.25.1"),
                             ]
                         ),
                     ),

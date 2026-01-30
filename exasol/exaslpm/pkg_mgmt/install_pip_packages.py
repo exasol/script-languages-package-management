@@ -31,6 +31,12 @@ def _install_build_tools_ephemerally(ctx: Context):
 
 
 def _uninstall_build_tools_ephemerally(ctx: Context):
+    """
+    Remove build-tools.
+    `build-essential` is a meta-package and with `apt-get purge` only the named package is removed,
+    but not the packages it depends on.
+    `apt-get autoremove` removes all packages that where not directly requested with apt install.
+    """
     apt_purge_cmd = CommandExecInfo(
         cmd=["apt-get", "purge", "-y", "build-essential", "pkg-config"],
         err="Failed while running apt-get purge",
@@ -57,7 +63,7 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
         with ctx.temp_file_provider.create() as temp_file:
             with temp_file.open() as f:
                 for package in packages_to_install:
-                    print(f"{package.name}=={package.version}", file=f)
+                    print(f"{package.name} {package.version}", file=f)
 
             install_pip_cmd = CommandExecInfo(
                 cmd=[
