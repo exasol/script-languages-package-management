@@ -14,7 +14,10 @@ class ContainsPackages:
 
     @staticmethod
     def _compare_package(expected: AptPackage, installed: AptPackage) -> bool:
-        return expected.name.lower() == installed.name.lower() and expected.version == installed.version
+        return (
+            expected.name.lower() == installed.name.lower()
+            and expected.version == installed.version
+        )
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):

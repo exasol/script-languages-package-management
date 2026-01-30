@@ -1,13 +1,14 @@
 from pathlib import Path
-
-import pytest
-
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    pip_packages_file_content,pip_package_file_content
+    pip_package_file_content,
+    pip_packages_file_content,
 )
 from test.integration.package_utils import ContainsPackages
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
+
 
 @pytest.fixture
 def prepare_pip_env(docker_container, pip_package_file_content, cli_helper):
@@ -25,8 +26,9 @@ def prepare_pip_env(docker_container, pip_package_file_content, cli_helper):
     assert ret == 0
 
 
-
-def test_install_pip_packages(docker_container, pip_packages_file_content, cli_helper, prepare_pip_env):
+def test_install_pip_packages(
+    docker_container, pip_packages_file_content, cli_helper, prepare_pip_env
+):
     pip_packages_file_yaml = to_yaml_str(pip_packages_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
@@ -49,10 +51,14 @@ def test_install_pip_packages(docker_container, pip_packages_file_content, cli_h
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
 
-def test_pip_packages_install_error(docker_container, pip_packages_file_content, cli_helper, prepare_pip_env):
-    pkg = pip_packages_file_content.find_build_step("build_step_2").find_phase(
-        "phase_1"
-    ).pip.packages[0]
+def test_pip_packages_install_error(
+    docker_container, pip_packages_file_content, cli_helper, prepare_pip_env
+):
+    pkg = (
+        pip_packages_file_content.find_build_step("build_step_2")
+        .find_phase("phase_1")
+        .pip.packages[0]
+    )
     pkg.name = "unknowsoftware"
     pkg.version = "0.0.0"
     pip_package_file_content_yaml = to_yaml_str(pip_packages_file_content)
@@ -67,4 +73,7 @@ def test_pip_packages_install_error(docker_container, pip_packages_file_content,
         False,
     )
     assert ret != 0
-    assert "Could not find a version that satisfies the requirement unknowsoftware==0.0.0" in out
+    assert (
+        "Could not find a version that satisfies the requirement unknowsoftware==0.0.0"
+        in out
+    )

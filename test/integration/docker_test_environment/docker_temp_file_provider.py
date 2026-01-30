@@ -3,10 +3,9 @@ import os
 import secrets
 import tempfile
 import time
+from collections.abc import Iterator
 from io import TextIOBase
 from pathlib import Path
-from typing import Iterator
-
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
@@ -17,7 +16,12 @@ class DockerTempFileProvider:
         self.docker_test_container = docker_test_container
 
     class TemporaryFile:
-        def __init__(self, local_path: Path, remote_path: Path, docker_test_container: DockerTestContainer) -> None:
+        def __init__(
+            self,
+            local_path: Path,
+            remote_path: Path,
+            docker_test_container: DockerTestContainer,
+        ) -> None:
             self.local_path = local_path
             self.path = remote_path
             self.docker_test_container = docker_test_container
@@ -41,7 +45,13 @@ class DockerTempFileProvider:
 
     @contextlib.contextmanager
     def create(self) -> Iterator[TemporaryFile]:
-        remote_path = Path("/tmp") / self._make_unique_filename(prefix="int-test", suffix=".tmp.txt")
+        remote_path = Path("/tmp") / self._make_unique_filename(
+            prefix="int-test", suffix=".tmp.txt"
+        )
         with tempfile.TemporaryDirectory() as tmpdir:
             p = Path(tmpdir) / "file"
-            yield self.TemporaryFile(local_path=p, remote_path=remote_path, docker_test_container=self.docker_test_container)
+            yield self.TemporaryFile(
+                local_path=p,
+                remote_path=remote_path,
+                docker_test_container=self.docker_test_container,
+            )

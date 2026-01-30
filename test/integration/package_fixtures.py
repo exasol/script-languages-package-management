@@ -9,7 +9,9 @@ from exasol.exaslpm.model.package_file_config import (
     PackageFile,
     Phase,
     Pip,
-    Tools, PipPackages, PipPackage,
+    PipPackage,
+    PipPackages,
+    Tools,
 )
 
 
@@ -85,6 +87,7 @@ def pip_package_file_content(request) -> PackageFile:
         ],
     )
 
+
 @pytest.fixture
 def pip_packages_file_content() -> PackageFile:
     return PackageFile(
@@ -96,9 +99,39 @@ def pip_packages_file_content() -> PackageFile:
                         name="phase_1",
                         pip=PipPackages(
                             packages=[
-                                PipPackage(
-                                    name="jinja2", version="3.1.6"
+                                PipPackage(name="jinja2", version="3.1.6"),
+                            ]
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def pip_packages_file_content_which_needs_pkg_config() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="libsmbclient-dev",
+                                    version="2:4.19.5+dfsg-4ubuntu9.4",
                                 ),
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(name="pysmbc", version="1.0.25.1"),
                             ]
                         ),
                     ),

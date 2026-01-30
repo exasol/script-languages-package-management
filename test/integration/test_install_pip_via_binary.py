@@ -1,12 +1,10 @@
 from copy import deepcopy
 from pathlib import Path
-
-from exasol.exaslpm.model.serialization import to_yaml_str
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     pip_package_file_content,
 )
 
-import yaml
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 def test_install_pip(docker_container, pip_package_file_content, cli_helper):

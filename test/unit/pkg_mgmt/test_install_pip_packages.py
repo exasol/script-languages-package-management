@@ -41,7 +41,62 @@ def test_empty_packages(context_with_python_env):
     ]
 
 
-def test_install_apt_packages(context_with_python_env):
+def _build_calls_install_build_tools_ephemerally(
+    with_install_build_tools_ephemerally: bool,
+):
+    if with_install_build_tools_ephemerally:
+
+        return [
+            call.execute(
+                ["apt-get", "-y", "update"],
+            ),
+            call.execute().print_results(),
+            call.execute().return_code(),
+            call.execute(
+                [
+                    "apt-get",
+                    "install",
+                    "-y",
+                    "--no-install-recommends",
+                    "build-essential",
+                    "pkg-config",
+                ],
+            ),
+            call.execute().print_results(),
+            call.execute().return_code(),
+        ]
+    else:
+        return []
+
+
+def _build_calls_uninstall_build_tools_ephemerally(
+    with_install_build_tools_ephemerally: bool,
+):
+    if with_install_build_tools_ephemerally:
+
+        return [
+            call.execute(
+                ["apt-get", "purge", "-y", "build-essential", "pkg-config"],
+            ),
+            call.execute().print_results(),
+            call.execute().return_code(),
+            call.execute(
+                ["apt-get", "-y", "autoremove"],
+            ),
+            call.execute().print_results(),
+            call.execute().return_code(),
+        ]
+    else:
+        return []
+
+
+@pytest.mark.parametrize(
+    "with_install_build_tools_ephemerally",
+    [True, False],
+)
+def test_install_pip_packages(
+    context_with_python_env, with_install_build_tools_ephemerally
+):
     tmp_file_provider = context_with_python_env.temp_file_provider
 
     pkgs = [
@@ -49,23 +104,38 @@ def test_install_apt_packages(context_with_python_env):
         PipPackage(name="requests", version="2.25.1"),
     ]
 
-    phase_one = Phase(name="phase-1", pip=PipPackages(packages=pkgs))
+    phase_one = Phase(
+        name="phase-1",
+        pip=PipPackages(
+            packages=pkgs,
+            install_build_tools_ephemerally=with_install_build_tools_ephemerally,
+        ),
+    )
     build_step = BuildStep(name="build-step-1", phases=[phase_one])
     search_cache = SearchCache(build_step, phase_one, context_with_python_env)
     install_pip_packages(search_cache, phase_one, context_with_python_env)
-    assert context_with_python_env.cmd_executor.mock_calls == [
-        call.execute(
-            [
-                "/usr/bin/test-python",
-                "-m",
-                "pip",
-                "install",
-                "-r",
-                str(tmp_file_provider.path),
-            ]
-        ),
-        call.execute().print_results(),
-        call.execute().return_code(),
-    ]
+    expected_calls = (
+        _build_calls_install_build_tools_ephemerally(
+            with_install_build_tools_ephemerally
+        )
+        + [
+            call.execute(
+                [
+                    "/usr/bin/test-python",
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    str(tmp_file_provider.path),
+                ]
+            ),
+            call.execute().print_results(),
+            call.execute().return_code(),
+        ]
+        + _build_calls_uninstall_build_tools_ephemerally(
+            with_install_build_tools_ephemerally
+        )
+    )
+    assert context_with_python_env.cmd_executor.mock_calls == expected_calls
 
     assert tmp_file_provider.result == "numpy==1.2.3\nrequests==2.25.1\n"

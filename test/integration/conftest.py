@@ -10,7 +10,9 @@ from test.integration.docker_test_environment.docker_command_executor import (
 from test.integration.docker_test_environment.docker_file_downloader import (
     DockerFileDownloader,
 )
-from test.integration.docker_test_environment.docker_temp_file_provider import DockerTempFileProvider
+from test.integration.docker_test_environment.docker_temp_file_provider import (
+    DockerTempFileProvider,
+)
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
@@ -104,6 +106,7 @@ def docker_binary_checker(
     docker_container: DockerTestContainer,
 ) -> DockerBinaryChecker:
     return DockerBinaryChecker(docker_container)
+
 
 @pytest.fixture(scope="function")
 def docker_temp_file_provider(

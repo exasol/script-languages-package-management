@@ -7,7 +7,10 @@ from test.integration.docker_test_environment.exaslpm_info import ExaslpmInfo
 
 from docker.models.containers import Container
 
-from exasol.exaslpm.model.package_file_config import AptPackage, PipPackage
+from exasol.exaslpm.model.package_file_config import (
+    AptPackage,
+    PipPackage,
+)
 
 
 class DockerTestContainer:
@@ -68,7 +71,6 @@ class DockerTestContainer:
             AptPackage(name=pkg["package"], version=pkg["version"]) for pkg in packages
         ]
 
-
     def list_pip(self) -> list[PipPackage]:
         _, out = self.run(
             [
@@ -76,7 +78,8 @@ class DockerTestContainer:
                 "-m",
                 "pip",
                 "list",
-                "--format=json"
+                "--disable-pip-version-check",
+                "--format=json",
             ]
         )
         packages = json.loads(out.strip())

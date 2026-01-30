@@ -32,11 +32,11 @@ class StringMatchCounter:
         return self._count
 
 
-
 class LogCollector:
     """
     For debugging purposes useful.
     """
+
     def __init__(self):
         self._result = ""
 
