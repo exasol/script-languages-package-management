@@ -48,8 +48,8 @@ def apt_package_file_content() -> PackageFile:
     )
 
 
-@pytest.fixture
-def pip_package_file_content() -> PackageFile:
+@pytest.fixture(params=["21.3.1", "25.2"])
+def pip_package_file_content(request) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -71,7 +71,7 @@ def pip_package_file_content() -> PackageFile:
                     ),
                     Phase(
                         name="phase_3",
-                        tools=Tools(pip=Pip(version="25.2")),
+                        tools=Tools(pip=Pip(version=request.param)),
                     ),
                 ],
             ),
