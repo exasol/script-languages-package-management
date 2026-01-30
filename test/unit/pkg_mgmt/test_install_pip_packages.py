@@ -100,8 +100,8 @@ def test_install_pip_packages(
     tmp_file_provider = context_with_python_env.temp_file_provider
 
     pkgs = [
-        PipPackage(name="numpy", version="1.2.3"),
-        PipPackage(name="requests", version="2.25.1"),
+        PipPackage(name="numpy", version="== 1.2.3"),
+        PipPackage(name="requests", version="== 2.25.1"),
     ]
 
     phase_one = Phase(
@@ -138,4 +138,4 @@ def test_install_pip_packages(
     )
     assert context_with_python_env.cmd_executor.mock_calls == expected_calls
 
-    assert tmp_file_provider.result == "numpy==1.2.3\nrequests==2.25.1\n"
+    assert tmp_file_provider.result == "numpy == 1.2.3\nrequests == 2.25.1\n"
