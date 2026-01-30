@@ -3,7 +3,7 @@ from test.integration.package_fixtures import (  # noqa: F401, fixtures to be us
     pip_package_file_content,
     pip_packages_file_content,
 )
-from test.integration.package_utils import ContainsPackages
+from test.integration.package_utils import ContainsPipPackages
 
 import pytest
 
@@ -38,7 +38,7 @@ def test_install_pip_packages(
     expected_packages = pip_packages_file_content.build_steps[0].phases[0].pip.packages
 
     pkgs_before_install = docker_container.list_pip()
-    assert pkgs_before_install != ContainsPackages(expected_packages)
+    assert pkgs_before_install != ContainsPipPackages(expected_packages)
 
     ret, out = docker_container.run_exaslpm(
         cli_helper.install.package_file(pip_package_file)
@@ -48,7 +48,7 @@ def test_install_pip_packages(
     assert ret == 0
 
     pkgs_after_install = docker_container.list_pip()
-    assert pkgs_after_install == ContainsPackages(expected_packages)
+    assert pkgs_after_install == ContainsPipPackages(expected_packages)
 
 
 def test_pip_packages_install_error(
@@ -60,7 +60,7 @@ def test_pip_packages_install_error(
         .pip.packages[0]
     )
     pkg.name = "unknowsoftware"
-    pkg.version = "0.0.0"
+    pkg.version = " == 0.0.0"
     pip_package_file_content_yaml = to_yaml_str(pip_packages_file_content)
     pip_invalid_pkg_file = docker_container.make_and_upload_file(
         Path("/"), "pip_file_02", pip_package_file_content_yaml

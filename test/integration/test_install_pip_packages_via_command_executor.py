@@ -4,7 +4,7 @@ from test.integration.package_fixtures import (  # noqa: F401, fixtures to be us
     pip_packages_file_content,
     pip_packages_file_content_which_needs_pkg_config,
 )
-from test.integration.package_utils import ContainsPackages
+from test.integration.package_utils import ContainsPipPackages
 
 import pytest
 
@@ -43,7 +43,7 @@ def test_install_pip_packages(
     expected_packages = pip_packages_file_content.build_steps[0].phases[0].pip.packages
 
     pkgs_before_install = docker_container.list_pip()
-    assert pkgs_before_install != ContainsPackages(expected_packages)
+    assert pkgs_before_install != ContainsPipPackages(expected_packages)
 
     package_install(
         package_file=local_package_path,
@@ -52,7 +52,7 @@ def test_install_pip_packages(
     )
 
     pkgs_after_install = docker_container.list_pip()
-    assert pkgs_after_install == ContainsPackages(expected_packages)
+    assert pkgs_after_install == ContainsPipPackages(expected_packages)
 
 
 @pytest.mark.parametrize(
@@ -83,7 +83,7 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
     expected_packages = pip.packages
 
     pkgs_before_install = docker_container.list_pip()
-    assert pkgs_before_install != ContainsPackages(expected_packages)
+    assert pkgs_before_install != ContainsPipPackages(expected_packages)
 
     if use_install_build_tools_ephemerally:
         package_install(
@@ -93,7 +93,7 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
         )
 
         pkgs_after_install = docker_container.list_pip()
-        assert pkgs_after_install == ContainsPackages(expected_packages)
+        assert pkgs_after_install == ContainsPipPackages(expected_packages)
     else:
         with pytest.raises(CommandFailedException):
             package_install(
