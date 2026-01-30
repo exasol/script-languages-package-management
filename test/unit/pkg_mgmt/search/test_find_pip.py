@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 import pytest
@@ -12,7 +13,7 @@ from exasol.exaslpm.pkg_mgmt.search.find_in_build_steps import find_pip
 
 
 def test_find_pip_empty():
-    with pytest.raises(ValueError, match=r"ip not found"):
+    with pytest.raises(ValueError, match=r"Pip not found"):
         find_pip([])
 
 
@@ -95,5 +96,6 @@ def test_find_variable(phases):
     ],
 )
 def test_find_variable_unique(phases):
-    with pytest.raises(ValueError, match="Found more than one result for pip"):
+    expected_err = rf"Found more than one result for pip: [Pip(version='1.2.3', comment=None), Pip(version='1.2.3', comment=None)]"
+    with pytest.raises(ValueError, match=re.escape(expected_err)):
         find_pip(phases)
