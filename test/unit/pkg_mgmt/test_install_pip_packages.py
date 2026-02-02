@@ -137,7 +137,7 @@ def test_install_pip_packages(
     )
     assert context_with_python_env.cmd_executor.mock_calls == expected_calls
 
-    assert (
-        tmp_file_provider.result
-        == "numpy == 1.2.3\nrequests == 2.25.1\nhttps://exasol.org/exasol-db-api\n"
+    assert tmp_file_provider.result == (
+        "numpy == 1.2.3\n" + "requests == 2.25.1\n"
+        "exasol-db-api @ https://exasol.org/exasol-db-api\n"
     )
