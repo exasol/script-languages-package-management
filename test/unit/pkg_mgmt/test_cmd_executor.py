@@ -3,6 +3,7 @@ from unittest.mock import (
     MagicMock,
     call,
 )
+
 import pytest
 
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
@@ -22,6 +23,7 @@ def mock_command_result(logger: CommandLogger):
         stderr=stderr_iter,
         logger=logger,
     )
+
 
 @pytest.mark.parametrize(
     "env_variables",

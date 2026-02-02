@@ -82,7 +82,9 @@ class CommandExecutor:
     def __init__(self, logger: CommandLogger):
         self._log = logger
 
-    def execute(self, cmd_args: list[str], env_variables: dict[str, str] | None =None) -> CommandResult:
+    def execute(
+        self, cmd_args: list[str], env_variables: dict[str, str] | None = None
+    ) -> CommandResult:
         """
         :param cmd_args: command with all its options as a list of individual str
         :return: The result that can be used to access the results
@@ -93,7 +95,11 @@ class CommandExecutor:
         self._log.info(f"Executing: {cmd_str}")
 
         sub_process = subprocess.Popen(
-            cmd_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=env_variables,
+            cmd_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            env=env_variables,
         )  # nosec B603
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)

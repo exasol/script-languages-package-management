@@ -58,5 +58,3 @@ def test_env_variable():
     assert ret_code == 0
     assert not stderr_lines
     assert "FOO=bar\n" in stdout_lines
-
-

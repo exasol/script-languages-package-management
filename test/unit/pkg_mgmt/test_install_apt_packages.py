@@ -43,7 +43,7 @@ def test_install_apt_packages(context_mock):
                 "curl=7.68.0",
                 "requests=2.25.1",
             ],
-            None
+            None,
         ),
         call.execute().print_results(),
         call.execute().return_code(),
