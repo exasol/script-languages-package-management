@@ -30,6 +30,6 @@ class DockerFileDownloader:
         self.docker_test_container.make_and_upload_file(
             target_path_in_container=p.parent,
             file_name=p.name,
-            content=r.content.decode("utf-8"),
+            content=r.content,
         )
         yield p

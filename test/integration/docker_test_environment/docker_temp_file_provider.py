@@ -33,7 +33,7 @@ class DockerTempFileProvider:
             self.docker_test_container.make_and_upload_file(
                 target_path_in_container=self.path.parent,
                 file_name=self.path.name,
-                content=self.local_path.read_text(),
+                content=self.local_path.read_bytes(),
             )
 
     @staticmethod

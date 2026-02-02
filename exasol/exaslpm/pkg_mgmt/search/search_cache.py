@@ -2,6 +2,7 @@ from pathlib import Path
 
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
+    Micromamba,
     Phase,
     Pip,
 )
@@ -9,6 +10,7 @@ from exasol.exaslpm.pkg_mgmt.binary_types import BinaryType
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.search.find_in_build_steps import (
     find_binary,
+    find_micromamba,
     find_phases_of_build_steps,
     find_pip,
     find_variable,
@@ -29,6 +31,7 @@ class SearchCache:
         self._binary_paths: dict[BinaryType, Path] = {}
         self._variables: dict[str, str] = {}
         self._pip: Pip | None = None
+        self._micromamba: Micromamba | None = None
 
     def _find_binary(self, binary: BinaryType) -> Path:
         if binary not in self._binary_paths:
@@ -69,6 +72,12 @@ class SearchCache:
         if self._pip is None:
             self._pip = find_pip(self._all_phases)
         return self._pip
+
+    @property
+    def micromamba(self) -> Micromamba:
+        if self._micromamba is None:
+            self._micromamba = find_micromamba(self._all_phases)
+        return self._micromamba
 
     @property
     def all_phases(self) -> list[Phase]:

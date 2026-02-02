@@ -15,7 +15,7 @@ def prepare_pip_env(docker_container, pip_package_file_content, cli_helper):
     pip_package_file_yaml = to_yaml_str(pip_package_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
-        Path("/"), "pip_file_01", pip_package_file_yaml
+        Path("/"), "pip_file_01", pip_package_file_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(
@@ -32,7 +32,7 @@ def test_install_pip_packages(
     pip_packages_file_yaml = to_yaml_str(pip_packages_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
-        Path("/"), "pip_file_02", pip_packages_file_yaml
+        Path("/"), "pip_file_02", pip_packages_file_yaml.encode("utf-8")
     )
 
     expected_packages = pip_packages_file_content.build_steps[0].phases[0].pip.packages
@@ -63,7 +63,7 @@ def test_pip_packages_install_error(
     pkg.version = " == 0.0.0"
     pip_package_file_content_yaml = to_yaml_str(pip_packages_file_content)
     pip_invalid_pkg_file = docker_container.make_and_upload_file(
-        Path("/"), "pip_file_02", pip_package_file_content_yaml
+        Path("/"), "pip_file_02", pip_package_file_content_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(

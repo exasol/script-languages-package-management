@@ -439,6 +439,7 @@ def test_tools():
                     comment: install pip
                 micromamba:
                     version: 1.2.3
+                    root_prefix: /some/path
                     comment: install micromamba
                 bazel:
                     version: 1.2.3
@@ -457,7 +458,11 @@ def test_tools():
         pip=Pip(
             version="1.2.3", needs_break_system_packages=True, comment="install pip"
         ),
-        micromamba=Micromamba(version="1.2.3", comment="install micromamba"),
+        micromamba=Micromamba(
+            version="1.2.3",
+            comment="install micromamba",
+            root_prefix=Path("/some/path"),
+        ),
         bazel=Bazel(version="1.2.3", comment="install bazel"),
         python_binary_path=Path("/usr/bin/python3.12"),
         r_binary_path=Path("/usr/bin/r4.4"),

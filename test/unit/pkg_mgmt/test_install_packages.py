@@ -15,6 +15,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
+    Micromamba,
     PackageFile,
     Phase,
     Pip,
@@ -37,10 +38,18 @@ def mock_install_pip(monkeypatch: MonkeyPatch) -> MagicMock:
     return mock_function_to_mock
 
 
+@pytest.fixture
+def mock_install_micromamba(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_packages, "install_micromamba", mock_function_to_mock)
+    return mock_function_to_mock
+
+
 @dataclass
 class ToolsSettings:
     python_binary_path: bool = False
     pip: Pip | None = None
+    micromamba: Micromamba | None = None
 
     @staticmethod
     def disabled():
@@ -48,7 +57,7 @@ class ToolsSettings:
 
     @property
     def is_disabled(self) -> bool:
-        return not any([self.python_binary_path, self.pip])
+        return not any([self.python_binary_path, self.pip, self.micromamba])
 
 
 def _build_apt_package(
@@ -66,6 +75,7 @@ def _build_tools_package(
                 Path("/some/path") if tools_settings.python_binary_path else None
             ),
             pip=tools_settings.pip,
+            micromamba=tools_settings.micromamba,
         )
         if not tools_settings.is_disabled
         else None
@@ -173,8 +183,29 @@ def test_install_pip(context_mock, mock_install_pip, package_file):
     assert mock_install_pip.mock_calls == [call(ANY, phase_pip, context_mock)]
 
 
-def test_install_packages_multiple_apt(
-    context_mock, mock_install_apt_packages, mock_install_pip, package_file
+def test_install_micromamba(context_mock, mock_install_micromamba, package_file):
+    phase_micromamba = _build_phase(
+        phase_name="phase-1",
+        tools_settings=ToolsSettings(micromamba=Micromamba(version="2.5.0")),
+    )
+    package_file_config = _build_package_config([phase_micromamba])
+    with package_file(package_file_config) as package_file_path:
+        install_packages.package_install(
+            package_file=package_file_path,
+            build_step_name="build-step-1",
+            context=context_mock,
+        )
+    assert mock_install_micromamba.mock_calls == [
+        call(ANY, phase_micromamba, context_mock)
+    ]
+
+
+def test_install_packages_multiple(
+    context_mock,
+    mock_install_apt_packages,
+    mock_install_pip,
+    mock_install_micromamba,
+    package_file,
 ):
     phases = [
         Phase(
@@ -199,6 +230,12 @@ def test_install_packages_multiple_apt(
                 enable_apt=True, apt_package=AptPackage(name="wget", version="1.2.3")
             ),
         ),
+        Phase(
+            name="phase-5",
+            tools=_build_tools_package(
+                tools_settings=ToolsSettings(micromamba=Micromamba(version="2.5.0"))
+            ),
+        ),
     ]
     package_file_config = _build_package_config(phases)
     with package_file(package_file_config) as package_file_path:
@@ -212,3 +249,4 @@ def test_install_packages_multiple_apt(
         call(phases[3].apt, context_mock),
     ]
     assert mock_install_pip.mock_calls == [call(ANY, phases[2], context_mock)]
+    assert mock_install_micromamba.mock_calls == [call(ANY, phases[4], context_mock)]

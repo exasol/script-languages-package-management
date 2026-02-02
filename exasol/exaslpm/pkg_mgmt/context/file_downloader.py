@@ -13,5 +13,6 @@ class FileDownloader:
         with tempfile.TemporaryDirectory() as tmpdir:
             p = Path(tmpdir) / "file"
             r = requests.get(url, timeout=30)  # 30 seconds timeout
-            p.write_text(r.content.decode("utf-8"))
+            with p.open(mode="wb") as f:
+                f.write(r.content)
             yield p
