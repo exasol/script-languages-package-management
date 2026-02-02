@@ -66,7 +66,7 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
                     if not package.url:
                         print(f"{package.name} {package.version}", file=f)
                     else:
-                        print(package.url, file=f)
+                        print(f"{package.name} @ {package.url}", file=f)
 
             install_pip_cmd = CommandExecInfo(
                 cmd=[
