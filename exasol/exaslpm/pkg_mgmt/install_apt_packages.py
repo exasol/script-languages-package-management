@@ -53,7 +53,7 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
     return all_cmds
 
 
-def install_via_apt(apt_packages: AptPackages, context: Context) -> int:
+def install_apt_packages(apt_packages: AptPackages, context: Context) -> int:
     if len(apt_packages.packages) > 0:
         cmd_n_errs = prepare_all_cmds(apt_packages)
         for cmd_n_err in cmd_n_errs:

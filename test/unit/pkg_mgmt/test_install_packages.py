@@ -24,9 +24,9 @@ from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 @pytest.fixture
-def mock_install_via_apt(monkeypatch: MonkeyPatch) -> MagicMock:
+def mock_install_apt_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
-    monkeypatch.setattr(install_packages, "install_via_apt", mock_function_to_mock)
+    monkeypatch.setattr(install_packages, "install_apt_packages", mock_function_to_mock)
     return mock_function_to_mock
 
 
@@ -102,7 +102,7 @@ def package_file(tmp_path):
 
 
 def test_install_packages_history_manager(
-    context_mock, mock_install_via_apt, package_file
+    context_mock, mock_install_apt_packages, package_file
 ):
     package_file_config = _build_package_config(
         [_build_phase(tools_settings=ToolsSettings(python_binary_path=True))]
@@ -122,7 +122,9 @@ def test_install_packages_history_manager(
     ]
 
 
-def test_install_packages_apt_empty(context_mock, mock_install_via_apt, package_file):
+def test_install_packages_apt_empty(
+    context_mock, mock_install_apt_packages, package_file
+):
     package_file_config = _build_package_config(
         [_build_phase(tools_settings=ToolsSettings(python_binary_path=True))]
     )
@@ -133,10 +135,10 @@ def test_install_packages_apt_empty(context_mock, mock_install_via_apt, package_
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_via_apt.mock_calls == []
+    assert mock_install_apt_packages.mock_calls == []
 
 
-def test_install_packages_apt(context_mock, mock_install_via_apt, package_file):
+def test_install_packages_apt(context_mock, mock_install_apt_packages, package_file):
     package_file_config = _build_package_config([_build_phase(enable_apt=True)])
     with package_file(package_file_config) as package_file_path:
         install_packages.package_install(
@@ -144,7 +146,7 @@ def test_install_packages_apt(context_mock, mock_install_via_apt, package_file):
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_via_apt.mock_calls == [
+    assert mock_install_apt_packages.mock_calls == [
         call(
             package_file_config.find_build_step("build-step-1")
             .find_phase("phase-1")
@@ -172,7 +174,7 @@ def test_install_pip(context_mock, mock_install_pip, package_file):
 
 
 def test_install_packages_multiple_apt(
-    context_mock, mock_install_via_apt, mock_install_pip, package_file
+    context_mock, mock_install_apt_packages, mock_install_pip, package_file
 ):
     phases = [
         Phase(
@@ -205,7 +207,7 @@ def test_install_packages_multiple_apt(
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_via_apt.mock_calls == [
+    assert mock_install_apt_packages.mock_calls == [
         call(phases[0].apt, context_mock),
         call(phases[3].apt, context_mock),
     ]

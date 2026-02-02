@@ -10,6 +10,9 @@ from test.integration.docker_test_environment.docker_command_executor import (
 from test.integration.docker_test_environment.docker_file_downloader import (
     DockerFileDownloader,
 )
+from test.integration.docker_test_environment.docker_temp_file_provider import (
+    DockerTempFileProvider,
+)
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
@@ -105,6 +108,13 @@ def docker_binary_checker(
     return DockerBinaryChecker(docker_container)
 
 
+@pytest.fixture(scope="function")
+def docker_temp_file_provider(
+    docker_container: DockerTestContainer,
+) -> DockerTempFileProvider:
+    return DockerTempFileProvider(docker_container)
+
+
 @pytest.fixture
 def docker_executor_context(
     docker_command_executor,
@@ -112,6 +122,7 @@ def docker_executor_context(
     test_logger,
     docker_file_downloader,
     docker_binary_checker,
+    docker_temp_file_provider,
 ):
     return Context(
         cmd_executor=docker_command_executor,
@@ -119,4 +130,5 @@ def docker_executor_context(
         cmd_logger=test_logger,
         binary_checker=docker_binary_checker,
         file_downloader=docker_file_downloader,
+        temp_file_provider=docker_temp_file_provider,
     )

@@ -30,3 +30,19 @@ class StringMatchCounter:
     @property
     def result(self) -> int:
         return self._count
+
+
+class LogCollector:
+    """
+    For debugging purposes useful.
+    """
+
+    def __init__(self):
+        self._result = ""
+
+    def log(self, msg: str, **kwargs):
+        self._result += f"{msg} {str(kwargs)}\n"
+
+    @property
+    def result(self) -> str:
+        return self._result

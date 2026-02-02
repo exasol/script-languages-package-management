@@ -69,3 +69,7 @@ class SearchCache:
         if self._pip is None:
             self._pip = find_pip(self._all_phases)
         return self._pip
+
+    @property
+    def all_phases(self) -> list[Phase]:
+        return self._all_phases
