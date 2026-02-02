@@ -435,6 +435,7 @@ def test_tools():
             tools:
                 pip:
                     version: 1.2.3
+                    needs_break_system_packages: true
                     comment: install pip
                 micromamba:
                     version: 1.2.3
@@ -453,7 +454,9 @@ def test_tools():
     assert model.find_build_step("build_step_one").find_phase(
         "phase_one"
     ).tools == Tools(
-        pip=Pip(version="1.2.3", comment="install pip"),
+        pip=Pip(
+            version="1.2.3", needs_break_system_packages=True, comment="install pip"
+        ),
         micromamba=Micromamba(version="1.2.3", comment="install micromamba"),
         bazel=Bazel(version="1.2.3", comment="install bazel"),
         python_binary_path=Path("/usr/bin/python3.12"),
