@@ -21,12 +21,17 @@ from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
-def assert_packages_installed(docker_container: DockerTestContainer, pip: PipPackages) -> None:
+def assert_packages_installed(
+    docker_container: DockerTestContainer, pip: PipPackages
+) -> None:
     expected_packages = pip.packages
     pkgs_in_container = docker_container.list_pip()
     assert pkgs_in_container == ContainsPipPackages(expected_packages)
 
-def assert_packages_not_installed(docker_container: DockerTestContainer, pip: PipPackages) -> None:
+
+def assert_packages_not_installed(
+    docker_container: DockerTestContainer, pip: PipPackages
+) -> None:
     expected_packages = pip.packages
     pkgs_in_container = docker_container.list_pip()
     assert pkgs_in_container != ContainsPipPackages(expected_packages)
