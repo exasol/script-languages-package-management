@@ -84,10 +84,10 @@ def validate_pip_packages(
     _check_unique_packages(pip_packages.packages, _model_path)
 
     def _pip_version_checker(pkg: "PipPackage") -> bool:
-        if pkg.url is None:
-            return bool(pkg.version)
-        else:
-            return True
+        """
+        If a PipPackage uses a URL, then version can be ignored.
+        """
+        return bool(pkg.url) or bool(pkg.version)
 
     _check_versions(
         validation_cfg, pip_packages.packages, _model_path, _pip_version_checker
