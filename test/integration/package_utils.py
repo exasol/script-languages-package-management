@@ -43,7 +43,7 @@ class ContainsPackages:
 class ContainsPipPackages:
     """
     Matcher to check if a list of installed packages contains
-    all expected packages (matching name and version).
+    all expected pip packages (matching name and version).
     """
 
     def __init__(self, expected_packages: list[PipPackage]):

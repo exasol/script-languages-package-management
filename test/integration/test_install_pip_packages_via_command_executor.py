@@ -1,4 +1,8 @@
 from copy import deepcopy
+from pathlib import Path
+from test.integration.docker_test_environment.docker_test_container import (
+    DockerTestContainer,
+)
 from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
     pip_package_file_content,
     pip_packages_file_content,
@@ -8,9 +12,25 @@ from test.integration.package_utils import ContainsPipPackages
 
 import pytest
 
+from exasol.exaslpm.model.package_file_config import (
+    PackageFile,
+    PipPackages,
+)
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
+
+
+def check_packages(
+    docker_container: DockerTestContainer, pip: PipPackages, expected_result: bool
+) -> None:
+    expected_packages = pip.packages
+
+    pkgs_in_container = docker_container.list_pip()
+    if expected_result:
+        assert pkgs_in_container == ContainsPipPackages(expected_packages)
+    else:
+        assert pkgs_in_container != ContainsPipPackages(expected_packages)
 
 
 @pytest.fixture
@@ -39,11 +59,9 @@ def test_install_pip_packages(
 ):
     pip_packages_file_yaml = to_yaml_str(pip_packages_file_content)
     local_package_path.write_text(pip_packages_file_yaml)
+    pip = pip_packages_file_content.build_steps[0].phases[0].pip
 
-    expected_packages = pip_packages_file_content.build_steps[0].phases[0].pip.packages
-
-    pkgs_before_install = docker_container.list_pip()
-    assert pkgs_before_install != ContainsPipPackages(expected_packages)
+    check_packages(docker_container=docker_container, pip=pip, expected_result=False)
 
     package_install(
         package_file=local_package_path,
@@ -51,25 +69,15 @@ def test_install_pip_packages(
         context=docker_executor_context,
     )
 
-    pkgs_after_install = docker_container.list_pip()
-    assert pkgs_after_install == ContainsPipPackages(expected_packages)
+    check_packages(docker_container=docker_container, pip=pip, expected_result=True)
 
 
-@pytest.mark.parametrize(
-    "use_install_build_tools_ephemerally",
-    [True, False],
-)
-def test_install_pip_packages_with_install_build_tools_ephemerally(
-    docker_container,
-    pip_packages_file_content_which_needs_pkg_config,
-    docker_executor_context,
-    local_package_path,
-    prepare_pip_env,
-    use_install_build_tools_ephemerally,
+def prepare_package_file_with_packages_which_needs_pkg_config(
+    package_file: PackageFile,
+    use_install_build_tools_ephemerally: bool,
+    local_package_path: Path,
 ):
-    modified_pip_packages_file_content = deepcopy(
-        pip_packages_file_content_which_needs_pkg_config
-    )
+    modified_pip_packages_file_content = deepcopy(package_file)
     pip = (
         modified_pip_packages_file_content.find_build_step("build_step_2")
         .find_phase("phase_2")
@@ -80,24 +88,50 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
     pip_packages_file_yaml = to_yaml_str(modified_pip_packages_file_content)
     local_package_path.write_text(pip_packages_file_yaml)
 
-    expected_packages = pip.packages
 
-    pkgs_before_install = docker_container.list_pip()
-    assert pkgs_before_install != ContainsPipPackages(expected_packages)
+def test_install_pip_packages_with_install_build_tools_ephemerally(
+    docker_container,
+    pip_packages_file_content_which_needs_pkg_config,
+    docker_executor_context,
+    local_package_path,
+    prepare_pip_env,
+):
+    prepare_package_file_with_packages_which_needs_pkg_config(
+        package_file=pip_packages_file_content_which_needs_pkg_config,
+        use_install_build_tools_ephemerally=True,
+        local_package_path=local_package_path,
+    )
+    pip = pip_packages_file_content_which_needs_pkg_config.build_steps[0].phases[1].pip
 
-    if use_install_build_tools_ephemerally:
+    check_packages(docker_container=docker_container, pip=pip, expected_result=False)
+
+    package_install(
+        package_file=local_package_path,
+        build_step_name="build_step_2",
+        context=docker_executor_context,
+    )
+
+    check_packages(docker_container=docker_container, pip=pip, expected_result=True)
+
+
+def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
+    docker_container,
+    pip_packages_file_content_which_needs_pkg_config,
+    docker_executor_context,
+    local_package_path,
+    prepare_pip_env,
+):
+    prepare_package_file_with_packages_which_needs_pkg_config(
+        package_file=pip_packages_file_content_which_needs_pkg_config,
+        use_install_build_tools_ephemerally=False,
+        local_package_path=local_package_path,
+    )
+    pip = pip_packages_file_content_which_needs_pkg_config.build_steps[0].phases[1].pip
+    check_packages(docker_container=docker_container, pip=pip, expected_result=False)
+
+    with pytest.raises(CommandFailedException):
         package_install(
             package_file=local_package_path,
             build_step_name="build_step_2",
             context=docker_executor_context,
         )
-
-        pkgs_after_install = docker_container.list_pip()
-        assert pkgs_after_install == ContainsPipPackages(expected_packages)
-    else:
-        with pytest.raises(CommandFailedException):
-            package_install(
-                package_file=local_package_path,
-                build_step_name="build_step_2",
-                context=docker_executor_context,
-            )
