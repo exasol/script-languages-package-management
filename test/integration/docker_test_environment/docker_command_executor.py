@@ -60,11 +60,14 @@ class DockerCommandExecutor:
         self._log = logger
         self._test_container = test_container
 
-    def execute(self, cmd_strs: list[str]) -> CommandResult:
+    def execute(
+        self, cmd_strs: list[str], env_variables: dict[str, str] | None = None
+    ) -> CommandResult:
         docker_client = self._test_container.container.client
         exec_instance = docker_client.api.exec_create(
             self._test_container.container.id,
             cmd_strs,
+            environment=env_variables,
             tty=False,
         )
 

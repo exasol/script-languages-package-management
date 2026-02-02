@@ -30,7 +30,7 @@ def test_install_apt_packages(context_mock):
     aptPackages = AptPackages(packages=pkgs)
     install_apt_packages(aptPackages, context_mock)
     assert context_mock.cmd_executor.mock_calls == [
-        call.execute(["apt-get", "-y", "update"]),
+        call.execute(["apt-get", "-y", "update"], None),
         call.execute().print_results(),
         call.execute().return_code(),
         call.execute(
@@ -42,23 +42,24 @@ def test_install_apt_packages(context_mock):
                 "--no-install-recommends",
                 "curl=7.68.0",
                 "requests=2.25.1",
-            ]
+            ],
+            None,
         ),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["apt-get", "-y", "clean"]),
+        call.execute(["apt-get", "-y", "clean"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["apt-get", "-y", "autoremove"]),
+        call.execute(["apt-get", "-y", "autoremove"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["locale-gen", "en_US.UTF-8"]),
+        call.execute(["locale-gen", "en_US.UTF-8"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"]),
+        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["ldconfig"]),
+        call.execute(["ldconfig"], None),
         call.execute().print_results(),
         call.execute().return_code(),
     ]
@@ -80,7 +81,7 @@ class FailCommandExecutor:
         self.fail_step = fail_at_step
         self.count = 0
 
-    def execute(self, cmd):
+    def execute(self, cmd, env_variables):
         self.count += 1
         step_index = self.count - 1
         if step_index == self.fail_step:
