@@ -40,3 +40,23 @@ def test_cat_command_negative(tmp_path):
     assert ret_code != 0
     assert stderr_lines
     assert any("No such file" in line for line in stderr_lines)
+
+
+def test_env_variable():
+    executor = CommandExecutor(StdLogger())
+    result = executor.execute(["env"], env_variables={"FOO": "bar"})
+    stdout_lines = []
+    stderr_lines = []
+
+    def consume_stdout(line, **kwargs):
+        stdout_lines.append(line)
+
+    def consume_stderr(line, **kwargs):
+        stderr_lines.append(line)
+
+    ret_code = result.consume_results(consume_stdout, consume_stderr)
+    assert ret_code == 0
+    assert not stderr_lines
+    assert "FOO=bar\n" in stdout_lines
+
+

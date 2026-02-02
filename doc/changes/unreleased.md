@@ -20,6 +20,7 @@
  - #56: Added field "install_build_tools_ephemerally` to PipPackages
  - #58: Added field needs-break-system-packages to Pip
  - #5: Implemented install command for PIP packages
+ - #64: Added environment variables to CommandExecutor
 
 ## Refactorings
 

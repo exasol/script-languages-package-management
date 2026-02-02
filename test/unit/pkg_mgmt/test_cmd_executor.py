@@ -3,6 +3,7 @@ from unittest.mock import (
     MagicMock,
     call,
 )
+import pytest
 
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandExecutor,
@@ -22,17 +23,20 @@ def mock_command_result(logger: CommandLogger):
         logger=logger,
     )
 
-
-def test_command_executor(monkeypatch):
+@pytest.mark.parametrize(
+    "env_variables",
+    [None, {"some": "value"}],
+)
+def test_command_executor(monkeypatch, env_variables):
     mock_popen = MagicMock()
     monkeypatch.setattr(subprocess, "Popen", mock_popen)
 
     logger = MagicMock(spec=CommandLogger)
     executor = CommandExecutor(logger)
-    result = executor.execute(["cmd1", "cmd2"])
+    result = executor.execute(["cmd1", "cmd2"], env_variables=env_variables)
     ret_code = result.return_code()
     assert mock_popen.mock_calls == [
-        call(["cmd1", "cmd2"], stdout=-1, stderr=-1, text=True),
+        call(["cmd1", "cmd2"], stdout=-1, stderr=-1, text=True, env=env_variables),
         call().stdout.__iter__(),
         call().stderr.__iter__(),
         call().wait(),

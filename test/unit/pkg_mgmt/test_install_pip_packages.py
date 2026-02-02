@@ -48,7 +48,7 @@ def _build_calls_install_build_tools_ephemerally(
 
         return [
             call.execute(
-                ["apt-get", "-y", "update"],
+                ["apt-get", "-y", "update"], None
             ),
             call.execute().print_results(),
             call.execute().return_code(),
@@ -61,6 +61,7 @@ def _build_calls_install_build_tools_ephemerally(
                     "build-essential",
                     "pkg-config",
                 ],
+                None
             ),
             call.execute().print_results(),
             call.execute().return_code(),
@@ -76,12 +77,12 @@ def _build_calls_uninstall_build_tools_ephemerally(
 
         return [
             call.execute(
-                ["apt-get", "purge", "-y", "build-essential", "pkg-config"],
+                ["apt-get", "purge", "-y", "build-essential", "pkg-config"], None
             ),
             call.execute().print_results(),
             call.execute().return_code(),
             call.execute(
-                ["apt-get", "-y", "autoremove"],
+                ["apt-get", "-y", "autoremove"], None
             ),
             call.execute().print_results(),
             call.execute().return_code(),
@@ -127,7 +128,8 @@ def test_install_pip_packages(
                     "install",
                     "-r",
                     str(tmp_file_provider.path),
-                ]
+                ],
+                None
             ),
             call.execute().print_results(),
             call.execute().return_code(),
