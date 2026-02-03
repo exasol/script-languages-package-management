@@ -21,6 +21,7 @@ def install_micromamba(phase: Phase, ctx: Context):
 
         download_url = f"https://micro.mamba.pm/api/micromamba/linux-{micromamba_machine}/{micromamba.version}"
 
+        ctx.cmd_logger.info(f"Downloading {download_url}")
         with ctx.file_downloader.download_file_to_tmp(
             url=download_url
         ) as get_micromamba_tar:
