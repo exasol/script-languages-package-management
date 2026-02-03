@@ -168,7 +168,7 @@ def micromamba_file_content() -> PackageFile:
                     ),
                     Phase(
                         name="phase_2",
-                        tools=Tools(micromamba=Micromamba(version="2.5.0")),
+                        tools=Tools(micromamba=Micromamba(version="2.5.0-1")),
                     ),
                 ],
             ),
