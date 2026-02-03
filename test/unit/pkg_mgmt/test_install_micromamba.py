@@ -105,5 +105,7 @@ def test_install_micromamba(
     ]
 
     assert context_mock.file_downloader.mock.mock_calls == [
-        call(url="https://micro.mamba.pm/api/micromamba/linux-64/2.5.0")
+        call(
+            url="https://github.com/mamba-org/micromamba-releases/releases/download/2.5.0/micromamba-linux-64.tar.bz2"
+        )
     ]
