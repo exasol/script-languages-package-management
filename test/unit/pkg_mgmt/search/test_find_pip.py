@@ -66,7 +66,7 @@ def data_builder(
         ),
     ],
 )
-def test_find_variable(phases):
+def test_find_pip(phases):
     result = find_pip(phases)
     assert result == Pip(version="1.2.3")
 
@@ -95,7 +95,7 @@ def test_find_variable(phases):
         ),
     ],
 )
-def test_find_variable_unique(phases):
+def test_find_pip_unique(phases):
     expected_err = rf"Found more than one result for pip: [Pip(version='1.2.3', needs_break_system_packages=False, comment=None), Pip(version='1.2.3', needs_break_system_packages=False, comment=None)]"
     with pytest.raises(ValueError, match=re.escape(expected_err)):
         find_pip(phases)

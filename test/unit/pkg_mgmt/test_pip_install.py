@@ -133,5 +133,5 @@ def test_install_pip(
     ]
 
     assert context_mock.file_downloader.mock.mock_calls == [
-        call(url="https://bootstrap.pypa.io/get-pip.py")
+        call(url="https://bootstrap.pypa.io/get-pip.py", timeout_in_seconds=30),
     ]

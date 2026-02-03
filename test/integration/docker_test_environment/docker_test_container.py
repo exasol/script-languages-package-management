@@ -9,8 +9,10 @@ from docker.models.containers import Container
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
+    Micromamba,
     PipPackage,
 )
+from exasol.exaslpm.pkg_mgmt.micromamba_env import create_mamba_env_variables
 
 
 class DockerTestContainer:
@@ -19,9 +21,14 @@ class DockerTestContainer:
         self.exaslpm_info = exaslpm_info
 
     def run(
-        self, param_list: list[str], check_exit_code: bool = True
+        self,
+        param_list: list[str],
+        check_exit_code: bool = True,
+        environment: dict[str, str] | None = None,
     ) -> tuple[int, str]:
-        (exit_code, output) = self.container.exec_run(param_list)
+        (exit_code, output) = self.container.exec_run(
+            param_list, environment=environment
+        )
         if check_exit_code:
             assert exit_code == 0, output.decode("utf-8")
         return exit_code, output.decode("utf-8")
@@ -40,14 +47,13 @@ class DockerTestContainer:
         self.container.remove(force=True)
 
     def make_and_upload_file(
-        self, target_path_in_container: PathLike, file_name: str, content: str
+        self, target_path_in_container: PathLike, file_name: str, content: bytes
     ) -> Path:
         tarstream = io.BytesIO()
-        content_data = content.encode("utf-8")
         with tarfile.open(fileobj=tarstream, mode="w") as tar:
             tarinfo = tarfile.TarInfo(name=file_name)
-            tarinfo.size = len(content_data)
-            tar.addfile(tarinfo, io.BytesIO(content_data))
+            tarinfo.size = len(content)
+            tar.addfile(tarinfo, io.BytesIO(content))
         tarstream.seek(0)
         res = self.container.put_archive(
             str(target_path_in_container), tarstream.read()
@@ -86,3 +92,15 @@ class DockerTestContainer:
         return [
             PipPackage(name=pkg["name"], version=pkg["version"]) for pkg in packages
         ]
+
+    def run_in_mamba_env(
+        self,
+        param_list: list[str],
+        micromamba: Micromamba,
+        check_exit_code: bool = True,
+    ) -> tuple[int, str]:
+        return self.run(
+            param_list,
+            check_exit_code=check_exit_code,
+            environment=create_mamba_env_variables(micromamba),
+        )

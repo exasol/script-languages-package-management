@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_apt_packages import install_apt_packages
+from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
 from exasol.exaslpm.pkg_mgmt.install_pip_packages import install_pip_packages
 from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
@@ -17,6 +18,8 @@ def _process_tools(context: Context, search_cache: SearchCache, phase: Phase):
         tools = phase.tools
         if tools.pip:
             install_pip(search_cache, phase, context)
+        if tools.micromamba:
+            install_micromamba(phase, context)
 
 
 def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> None:

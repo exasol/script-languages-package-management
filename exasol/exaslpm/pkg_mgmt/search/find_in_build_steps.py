@@ -2,6 +2,7 @@ from pathlib import Path
 
 from exasol.exaslpm.model.package_file_config import (
     BuildStep,
+    Micromamba,
     Phase,
     Pip,
 )
@@ -71,4 +72,17 @@ def find_pip(phases: list[Phase]) -> Pip:
         raise ValueError(f"Found more than one result for pip: {result}")
     if len(result) == 0:
         raise ValueError("Pip not found")
+    return result[0]
+
+
+def find_micromamba(phases: list[Phase]) -> Micromamba:
+    result = [
+        phase.tools.micromamba
+        for phase in phases
+        if phase.tools and phase.tools.micromamba
+    ]
+    if len(result) > 1:
+        raise ValueError(f"Found more than one result for micromamba: {result}")
+    if len(result) == 0:
+        raise ValueError("Micromamba not found")
     return result[0]
