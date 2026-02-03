@@ -17,10 +17,14 @@ import exasol.exaslpm.model.package_file_config_validation as package_file_confi
 CURRENT_VERSION = "1.0.0"
 
 
+class ValidationConfig(BaseModel):
+    version_mandatory: bool = True
+
+
 class Package(BaseModel):
     name: str
-    version: str
-    comment: None | str = None
+    version: str | None = None
+    comment: str | None = None
     # yaml comments don't survive deserialization when we programatically change this file
 
 
@@ -94,8 +98,12 @@ class AptPackages(BaseModel):
     def add_package(self, package: AptPackage):
         package_edit.add_package(self.packages, package)
 
-    def validate_model_graph(self, model_path: list[str]) -> None:
-        package_file_config_validation.validate_apt_packages(self, model_path)
+    def validate_model_graph(
+        self, validation_cfg: ValidationConfig, model_path: list[str]
+    ) -> None:
+        package_file_config_validation.validate_apt_packages(
+            self, validation_cfg, model_path
+        )
 
 
 class PipPackages(BaseModel):
@@ -127,8 +135,12 @@ class PipPackages(BaseModel):
     def add_package(self, package: PipPackage):
         package_edit.add_package(self.packages, package)
 
-    def validate_model_graph(self, model_path: list[str]) -> None:
-        package_file_config_validation.validate_pip_packages(self, model_path)
+    def validate_model_graph(
+        self, validation_cfg: ValidationConfig, model_path: list[str]
+    ) -> None:
+        package_file_config_validation.validate_pip_packages(
+            self, validation_cfg, model_path
+        )
 
 
 class RPackages(BaseModel):
@@ -159,8 +171,12 @@ class RPackages(BaseModel):
     def add_package(self, package: RPackage):
         package_edit.add_package(self.packages, package)
 
-    def validate_model_graph(self, model_path: list[str]) -> None:
-        package_file_config_validation.validate_r_packages(self, model_path)
+    def validate_model_graph(
+        self, validation_cfg: ValidationConfig, model_path: list[str]
+    ) -> None:
+        package_file_config_validation.validate_r_packages(
+            self, validation_cfg, model_path
+        )
 
 
 class CondaBinary(Enum):
@@ -199,8 +215,12 @@ class CondaPackages(BaseModel):
     def add_package(self, package: CondaPackage):
         package_edit.add_package(self.packages, package)
 
-    def validate_model_graph(self, model_path: list[str]) -> None:
-        package_file_config_validation.validate_conda_packages(self, model_path)
+    def validate_model_graph(
+        self, validation_cfg: ValidationConfig, model_path: list[str]
+    ) -> None:
+        package_file_config_validation.validate_conda_packages(
+            self, validation_cfg, model_path
+        )
 
 
 class Pip(BaseModel):
@@ -239,13 +259,16 @@ class Phase(BaseModel):
     variables: None | dict[str, str] = None
     comment: None | str = None
 
-    def validate_model_graph(self, model_path: list[str]) -> None:
-        package_file_config_validation.validate_phase(self, model_path)
+    def validate_model_graph(
+        self, validation_cfg: ValidationConfig, model_path: list[str]
+    ) -> None:
+        package_file_config_validation.validate_phase(self, validation_cfg, model_path)
 
 
 class BuildStep(BaseModel):
     name: str
     phases: list[Phase]
+    validation_cfg: ValidationConfig = ValidationConfig(version_mandatory=True)
     comment: None | str = None
 
     @overload
