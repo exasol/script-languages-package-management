@@ -195,9 +195,7 @@ def test_install_micromamba(context_mock, mock_install_micromamba, package_file)
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_micromamba.mock_calls == [
-        call(ANY, phase_micromamba, context_mock)
-    ]
+    assert mock_install_micromamba.mock_calls == [call(phase_micromamba, context_mock)]
 
 
 def test_install_packages_multiple(
@@ -249,4 +247,4 @@ def test_install_packages_multiple(
         call(phases[3].apt, context_mock),
     ]
     assert mock_install_pip.mock_calls == [call(ANY, phases[2], context_mock)]
-    assert mock_install_micromamba.mock_calls == [call(ANY, phases[4], context_mock)]
+    assert mock_install_micromamba.mock_calls == [call(phases[4], context_mock)]

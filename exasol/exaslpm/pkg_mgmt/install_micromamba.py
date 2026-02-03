@@ -1,3 +1,5 @@
+import platform
+
 from exasol.exaslpm.model.package_file_config import (
     Phase,
 )
@@ -13,8 +15,18 @@ def install_micromamba(phase: Phase, ctx: Context):
     if phase.tools and phase.tools.micromamba:
         micromamba = phase.tools.micromamba
 
+
+        micromamba_machine_mapping = {
+            "x86_64": "64",
+            "aarch64": "aarch64"
+        }
+
+        micromamba_machine = micromamba_machine_mapping[platform.machine()]
+
+
+
         download_url = (
-            f"https://micro.mamba.pm/api/micromamba/linux-64/{micromamba.version}"
+            f"https://micro.mamba.pm/api/micromamba/linux-{micromamba_machine}/{micromamba.version}"
         )
 
         with ctx.file_downloader.download_file_to_tmp(
