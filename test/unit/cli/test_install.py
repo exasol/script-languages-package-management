@@ -23,54 +23,60 @@ def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     return mock_function_to_mock
 
 
-def test_mock_no_phase(cliRunner, mock_install_packages, some_package_file):
+@pytest.fixture
+def mock_context(monkeypatch: MonkeyPatch) -> MagicMock:
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
+    monkeypatch.setattr(cli, "Context", mock_function_to_mock)
+    return return_mock
+
+
+@pytest.fixture
+def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
+    monkeypatch.setattr(cli, "HistoryFileManager", mock_function_to_mock)
+    return return_mock
+
+
+@pytest.fixture
+def mock_binary_checker(monkeypatch: MonkeyPatch) -> MagicMock:
+    return_mock = MagicMock()
+    mock_function_to_mock = MagicMock(return_value=return_mock)
+    monkeypatch.setattr(cli, "BinaryChecker", mock_function_to_mock)
+    return return_mock
+
+
+def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
     ret = cliRunner.run("--package-file", some_package_file)
     assert ret.failed and "Missing option '--build-step'" in ret.output
 
 
 def test_mock_no_package(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run("--phase", "Phase1")
+    ret = cliRunner.run("--build-step", "build-step-1")
     assert ret.failed and "Missing option '--package-file'" in ret.output
-
-
-def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
-    ret = cliRunner.run("--phase", "Phase1", "--package-file", some_package_file)
-    assert ret.failed and "Missing option '--build-step'" in ret.output
 
 
 def test_mock_all_options(
     cliRunner,
     mock_install_packages,
     some_package_file,
-    python_binary,
-    conda_binary,
-    r_binary,
+    mock_context,
+    mock_history_manager,
+    mock_binary_checker,
 ):
     ret = cliRunner.run(
-        "--phase",
-        "Phase1",
         "--package-file",
         some_package_file,
         "--build-step",
         "udf_client",
-        "--python-binary",
-        python_binary,
-        "--conda-binary",
-        conda_binary,
-        "--r-binary",
-        r_binary,
     )
     assert ret.succeeded
 
     assert mock_install_packages.mock_calls == [
         mock.call(
-            "Phase1",
             pathlib.PosixPath(some_package_file),
             "udf_client",
-            pathlib.PosixPath(python_binary),
-            pathlib.PosixPath(conda_binary),
-            pathlib.PosixPath(r_binary),
-            mock.ANY,
-            mock.ANY,
+            mock_context,
         )
     ]

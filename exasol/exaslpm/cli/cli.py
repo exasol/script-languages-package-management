@@ -2,10 +2,15 @@ import pathlib
 
 import click
 
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
+from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandExecutor,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_logger import StdLogger
+from exasol.exaslpm.pkg_mgmt.context.cmd_logger import StdLogger
+from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.file_downloader import FileDownloader
+from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
+from exasol.exaslpm.pkg_mgmt.context.temp_file_provider import TempFileProvider
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -25,7 +30,6 @@ def cli():
 
 
 @cli.command()
-@click.option("--phase", required=False, type=str, help="Name of the phase")
 @click.option(
     "--package-file",
     type=click.Path(exists=True, path_type=pathlib.Path),
@@ -33,34 +37,9 @@ def cli():
     help="Yaml file containing package details",
 )
 @click.option("--build-step", type=str, required=True, help="Name of the build deps")
-@click.option(
-    "--python-binary",
-    required=False,
-    default=None,
-    type=click.Path(exists=True, path_type=pathlib.Path),
-    help="Source channel for apt-get",
-)
-@click.option(
-    "--conda-binary",
-    required=False,
-    default=None,
-    type=click.Path(exists=True, path_type=pathlib.Path),
-    help="Source channel for micromamba",
-)
-@click.option(
-    "--r-binary",
-    required=False,
-    default=None,
-    type=click.Path(exists=True, path_type=pathlib.Path),
-    help="Source channel for r-remote",
-)
 def install(
-    phase: str,
     package_file: pathlib.Path,
     build_step: str,
-    python_binary: pathlib.Path,
-    conda_binary: pathlib.Path,
-    r_binary: pathlib.Path,
 ):
     """
     This command installs the specified packages described in the given package file.
@@ -71,13 +50,17 @@ def install(
     logger = StdLogger()
     cmd_executor = CommandExecutor(logger)
 
+    context = Context(
+        cmd_logger=logger,
+        cmd_executor=cmd_executor,
+        history_file_manager=HistoryFileManager(),
+        binary_checker=BinaryChecker(),
+        file_downloader=FileDownloader(),
+        temp_file_provider=TempFileProvider(),
+    )
+
     package_install(
-        phase,
         package_file,
         build_step,
-        python_binary,
-        conda_binary,
-        r_binary,
-        cmd_executor,
-        logger,
+        context,
     )

@@ -1,46 +1,36 @@
 from unittest.mock import (
-    MagicMock,
     call,
 )
 
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
-    Package,
+    AptPackage,
 )
-from exasol.exaslpm.pkg_mgmt.cmd_executor import (
-    CommandResult,
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
+    CommandFailedException,
 )
-from exasol.exaslpm.pkg_mgmt.install_apt import *
+from exasol.exaslpm.pkg_mgmt.install_apt_packages import *
 
 
-def test_install_via_apt_empty_packages():
-    mock_logger = MagicMock(spec=CommandLogger)
-    mock_executor = MagicMock(spec=CommandExecutor)
+def test_empty_packages(context_mock):
     aptPackages = AptPackages(packages=[])
-    install_via_apt(aptPackages, mock_executor, mock_logger)
+    install_apt_packages(aptPackages, context_mock)
 
-    mock_logger.warn.assert_called_once()
-    mock_logger.warn.assert_called_with("Got an empty list of AptPackages")
-    assert mock_logger.mock_calls == [
+    assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
     ]
 
 
-def test_install_via_apt_with_pkgs():
-    mock_executor = MagicMock(spec=CommandExecutor)
-    mock_command_result = MagicMock(spec=CommandResult)
-    mock_executor.execute.return_value = mock_command_result
-    mock_command_result.return_code.return_value = 0
-    mock_logger = MagicMock(spec=CommandLogger)
+def test_install_apt_packages(context_mock):
     pkgs = [
-        Package(name="curl", version="7.68.0"),
-        Package(name="requests", version="2.25.1"),
+        AptPackage(name="curl", version="7.68.0"),
+        AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
-    install_via_apt(aptPackages, mock_executor, mock_logger)
-    assert mock_executor.mock_calls == [
-        call.execute(["apt-get", "-y", "update"]),
+    install_apt_packages(aptPackages, context_mock)
+    assert context_mock.cmd_executor.mock_calls == [
+        call.execute(["apt-get", "-y", "update"], None),
         call.execute().print_results(),
         call.execute().return_code(),
         call.execute(
@@ -52,23 +42,24 @@ def test_install_via_apt_with_pkgs():
                 "--no-install-recommends",
                 "curl=7.68.0",
                 "requests=2.25.1",
-            ]
+            ],
+            None,
         ),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["apt-get", "-y", "clean"]),
+        call.execute(["apt-get", "-y", "clean"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["apt-get", "-y", "autoremove"]),
+        call.execute(["apt-get", "-y", "autoremove"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["locale-gen", "en_US.UTF-8"]),
+        call.execute(["locale-gen", "en_US.UTF-8"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"]),
+        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"], None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["ldconfig"]),
+        call.execute(["ldconfig"], None),
         call.execute().print_results(),
         call.execute().return_code(),
     ]
@@ -90,12 +81,25 @@ class FailCommandExecutor:
         self.fail_step = fail_at_step
         self.count = 0
 
-    def execute(self, cmd):
+    def execute(self, cmd, env_variables):
         self.count += 1
         step_index = self.count - 1
         if step_index == self.fail_step:
             return FailCommandResult(1)
         return FailCommandResult(0)
+
+
+def build_context_with_fail_command_executor(ctx: Context, fail_step: int):
+    fail_command_executor = FailCommandExecutor(fail_step)
+
+    return Context(
+        cmd_logger=ctx.cmd_logger,
+        cmd_executor=fail_command_executor,
+        history_file_manager=ctx.history_file_manager,
+        binary_checker=ctx.binary_checker,
+        file_downloader=ctx.file_downloader,
+        temp_file_provider=ctx.temp_file_provider,
+    )
 
 
 @pytest.mark.parametrize(
@@ -110,17 +114,15 @@ class FailCommandExecutor:
         (6, "Failed while running ldconfig"),
     ],
 )
-def test_install_via_apt_negative_cases(fail_step, expected_error):
-    logger = MagicMock(spec=CommandLogger)
-    cmd_executor = FailCommandExecutor(fail_step)
-
+def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_error):
+    context = build_context_with_fail_command_executor(context_mock, fail_step)
     pkgs = [
-        Package(name="curl", version="7.68.0"),
-        Package(name="requests", version="2.25.1"),
+        AptPackage(name="curl", version="7.68.0"),
+        AptPackage(name="requests", version="2.25.1"),
     ]
     aptPackages = AptPackages(packages=pkgs)
 
     with pytest.raises(CommandFailedException):
-        install_via_apt(aptPackages, cmd_executor, logger)
+        install_apt_packages(aptPackages, context)
 
-    logger.err.assert_any_call(expected_error)
+    context.cmd_logger.err.assert_any_call(expected_error)
