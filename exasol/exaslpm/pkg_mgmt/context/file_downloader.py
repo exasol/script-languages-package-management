@@ -9,10 +9,10 @@ import requests
 class FileDownloader:
 
     @contextlib.contextmanager
-    def download_file_to_tmp(self, url: str) -> Iterator[Path]:
+    def download_file_to_tmp(self, url: str, timeout_in_seconds=30) -> Iterator[Path]:
         with tempfile.TemporaryDirectory() as tmpdir:
             p = Path(tmpdir) / "file"
-            r = requests.get(url, timeout=120)  # 120 seconds timeout
+            r = requests.get(url, timeout=timeout_in_seconds)
             with p.open(mode="wb") as f:
                 f.write(r.content)
             yield p

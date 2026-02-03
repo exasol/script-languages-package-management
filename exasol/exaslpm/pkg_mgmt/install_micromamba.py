@@ -24,7 +24,7 @@ def install_micromamba(phase: Phase, ctx: Context):
 
         ctx.cmd_logger.info(f"Downloading {download_url}")
         with ctx.file_downloader.download_file_to_tmp(
-            url=download_url
+            url=download_url, timeout_in_seconds=120
         ) as get_micromamba_tar:
             extract_cmd = CommandExecInfo(
                 # Extract only "bin/micromamba" to target directory /

@@ -22,8 +22,8 @@ class FileDownloaderMock:
         self.mock_path = path
 
     @contextlib.contextmanager
-    def download_file_to_tmp(self, url: str) -> Iterator[Path]:
-        self.mock(url=url)
+    def download_file_to_tmp(self, url: str, timeout_in_seconds=30) -> Iterator[Path]:
+        self.mock(url=url, timeout_in_seconds=timeout_in_seconds)
         yield self.mock_path
 
 
