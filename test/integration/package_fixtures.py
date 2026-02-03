@@ -72,6 +72,8 @@ def pip_package_file_content(request) -> PackageFile:
                                 AptPackage(
                                     name="python3.12-dev", version="3.12.3-1ubuntu0.10"
                                 ),
+                                AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
+                                AptPackage(name="ca-certificates", version="20240203"),
                             ]
                         ),
                     ),
@@ -101,6 +103,10 @@ def pip_packages_file_content() -> PackageFile:
                         pip=PipPackages(
                             packages=[
                                 PipPackage(name="jinja2", version=" >=3.1.6, <4.0.0"),
+                                PipPackage(
+                                    name="exasol-db-api",
+                                    url="git+https://github.com/EXASOL/websocket-api.git@91bd9a7970941c578f246c07f2645699fc491d6c#egg=exasol-db-api&subdirectory=python",
+                                ),
                             ]
                         ),
                     ),

@@ -257,7 +257,7 @@ def test_ppa():
     }
 
 
-def test_valid_package_installer_pip():
+def test_valid_package_installer_pip_name():
     yaml_file = """
     build_steps:
       - name: build_step_one
@@ -279,6 +279,34 @@ def test_valid_package_installer_pip():
         PipPackage(name="requests", version="2.25.1", comment="install requests")
     ]
     assert pip.install_build_tools_ephemerally is True
+
+
+def test_valid_package_installer_pip_url():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            pip:
+                packages:
+                - name: some_package
+                  url: http://some_package
+                  version: 2.25.1
+                  comment: some package
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+    pip = model.find_build_step("build_step_one").find_phase("phase_one").pip
+
+    assert pip.packages == [
+        PipPackage(
+            name="some_package",
+            url="http://some_package",
+            version="2.25.1",
+            comment="some package",
+        )
+    ]
 
 
 def test_unique_pip_packages():
@@ -514,7 +542,7 @@ TOOLS_DATA = """
 
 
 @pytest.mark.parametrize(
-    "additional_enty",
+    "additional_entry",
     [
         "",
         R_PACKAGES_DATA,
@@ -524,7 +552,7 @@ TOOLS_DATA = """
         PIP_PACKAGES_DATA,
     ],
 )
-def test_variables(additional_enty):
+def test_variables(additional_entry):
     base_yaml_file = """
     build_steps:
       - name: build_step_one
@@ -536,7 +564,7 @@ def test_variables(additional_enty):
                 java_home: /usr/java
                 python_prefix: /usr/bin/
     """
-    yaml_file = base_yaml_file + additional_enty
+    yaml_file = base_yaml_file + additional_entry
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
     assert model
@@ -595,3 +623,117 @@ def test_valid_package_all_installers(phase_entries):
         match=r"A phase must have exactly one of: apt, pip, conda, r, tools.",
     ):
         PackageFile.model_validate(yaml_data)
+
+
+R_PACKAGES_NO_VERSION_DATA = """
+            r:
+                comment: null
+                packages:
+                - name: ggplot2
+                  comment: install ggplot
+"""
+
+CONDA_PACKAGES_NO_VERSION_DATA = """
+            conda:
+                channels: null
+                comment: null
+                packages:
+                - name: numpy
+                  comment: install numpy
+"""
+
+PIP_PACKAGES_NO_VERSION_DATA = """
+            pip:
+                packages:
+                - name: requests
+                  comment: install requests
+
+"""
+
+APT_PACKAGES_NO_VERSION_DATA = """
+            apt:
+                packages:
+                - name: curl
+                  comment: install curl
+"""
+
+
+@pytest.mark.parametrize(
+    "package_data",
+    [
+        R_PACKAGES_NO_VERSION_DATA,
+        APT_PACKAGES_NO_VERSION_DATA,
+        CONDA_PACKAGES_NO_VERSION_DATA,
+        PIP_PACKAGES_NO_VERSION_DATA,
+    ],
+    ids=["R", "APT", "CONDA", "PIP"],
+)
+def test_no_version(package_data):
+    base_yaml_file = """
+    build_steps:
+      - name: build_step_one
+        validation_cfg:
+          version_mandatory: false          
+        phases:
+          - name: phase_one
+            comment: null
+    """
+    yaml_file = base_yaml_file + package_data
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+
+
+@pytest.mark.parametrize(
+    "package_data",
+    [
+        R_PACKAGES_NO_VERSION_DATA,
+        APT_PACKAGES_NO_VERSION_DATA,
+        CONDA_PACKAGES_NO_VERSION_DATA,
+        PIP_PACKAGES_NO_VERSION_DATA,
+    ],
+    ids=["R", "APT", "CONDA", "PIP"],
+)
+def test_no_version_raises(package_data):
+    base_yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            comment: null
+    """
+    yaml_file = base_yaml_file + package_data
+    yaml_data = yaml.safe_load(yaml_file)
+    with pytest.raises(
+        PackageFileValidationError,
+        match=re.escape(r"Package(s) without version found"),
+    ):
+        PackageFile.model_validate(yaml_data)
+
+
+def test_pip_package_with_url_and_no_version():
+    yaml_file = """
+    build_steps:
+      - name: build_step_one
+        phases:
+          - name: phase_one
+            comment: null
+            pip:
+                packages:
+                - name: requests
+                  url: https://pypi.org/requests
+                  comment: install requests
+    """
+    yaml_data = yaml.safe_load(yaml_file)
+    model = PackageFile.model_validate(yaml_data)
+    assert model
+    assert model.find_build_step("build_step_one").find_phase(
+        "phase_one"
+    ).pip.packages == [
+        PipPackage(
+            name="requests",
+            url="https://pypi.org/requests",
+            version=None,
+            comment="install requests",
+        )
+    ]

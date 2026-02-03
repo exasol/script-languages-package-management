@@ -51,9 +51,14 @@ class ContainsPipPackages:
 
     @staticmethod
     def _compare_package(expected: PipPackage, installed: PipPackage) -> bool:
-        return expected.name.lower() == installed.name.lower() and Version(
-            installed.version
-        ) in SpecifierSet(expected.version)
+
+        name_matches = expected.name.lower() == installed.name.lower()
+        if expected.version:
+            return name_matches and Version(installed.version) in SpecifierSet(
+                expected.version
+            )
+        else:
+            return name_matches
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):
