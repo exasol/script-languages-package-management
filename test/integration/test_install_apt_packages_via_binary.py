@@ -2,9 +2,6 @@ from pathlib import Path
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    apt_package_file_content,
-)
 from test.integration.package_utils import ContainsPackages
 
 import yaml
@@ -20,7 +17,7 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     apt_package_file_yaml = to_yaml_str(apt_package_file_content)
 
     apt_package_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file_01", apt_package_file_yaml
+        Path("/"), "apt_file_01", apt_package_file_yaml.encode("utf-8")
     )
 
     expected_packages = apt_package_file_content.build_steps[0].phases[0].apt.packages
@@ -45,7 +42,7 @@ def test_apt_install_error(docker_container, apt_package_file_content, cli_helpe
     ).apt.packages[0].name = "unknowsoftware"
     apt_package_file_content_yaml = to_yaml_str(apt_package_file_content)
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file_02", apt_package_file_content_yaml
+        Path("/"), "apt_file_02", apt_package_file_content_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(
@@ -73,7 +70,7 @@ def test_history(docker_container, apt_package_file_content, cli_helper):
     apt_package_file_yaml = to_yaml_str(apt_package_file_content)
 
     apt_package_file = docker_container.make_and_upload_file(
-        Path("/"), "apt_file_01", apt_package_file_yaml
+        Path("/"), "apt_file_01", apt_package_file_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(

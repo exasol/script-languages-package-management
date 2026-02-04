@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
+    Micromamba,
     PackageFile,
     Phase,
     Pip,
@@ -140,6 +141,34 @@ def pip_packages_file_content_which_needs_pkg_config() -> PackageFile:
                                 PipPackage(name="pysmbc", version=" == 1.0.25.1"),
                             ]
                         ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def micromamba_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="bzip2",
+                                    version="1.0.8-5.1build0.1",
+                                ),
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        tools=Tools(micromamba=Micromamba(version="2.5.0-1")),
                     ),
                 ],
             ),

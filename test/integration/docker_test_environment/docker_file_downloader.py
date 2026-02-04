@@ -24,12 +24,12 @@ class DockerFileDownloader:
         return f"{prefix}{ts}-{pid}-{rnd}{suffix}"
 
     @contextlib.contextmanager
-    def download_file_to_tmp(self, url: str) -> Iterator[Path]:
+    def download_file_to_tmp(self, url: str, timeout_in_seconds=30) -> Iterator[Path]:
         p = Path("/tmp") / self._make_unique_filename("download", "int-test")
-        r = requests.get(url)
+        r = requests.get(url, timeout=timeout_in_seconds)
         self.docker_test_container.make_and_upload_file(
             target_path_in_container=p.parent,
             file_name=p.name,
-            content=r.content.decode("utf-8"),
+            content=r.content,
         )
         yield p

@@ -1,3 +1,3 @@
 from pathlib import Path
 
-MICROMAMBA_PATH = Path("bin/micromamba")
+MICROMAMBA_PATH = Path("/bin/micromamba")

@@ -27,6 +27,8 @@ import pytest
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
 
+pytest_plugins = ["test.integration.package_fixtures"]
+
 
 def pytest_addoption(parser):
     parser.addoption(

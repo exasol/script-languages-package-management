@@ -124,14 +124,16 @@ def test_install_pip(
         expected_pip_script_arguments.append("--break-system-packages")
 
     assert context_mock.cmd_executor.mock_calls == [
-        call.execute(expected_pip_script_arguments, None),
+        call.execute(expected_pip_script_arguments, env=None),
         call.execute().print_results(),
         call.execute().return_code(),
-        call.execute(["bash", "-c", 'rm -rf "$(/some/path -m pip cache dir)"'], None),
+        call.execute(
+            ["bash", "-c", 'rm -rf "$(/some/path -m pip cache dir)"'], env=None
+        ),
         call.execute().print_results(),
         call.execute().return_code(),
     ]
 
     assert context_mock.file_downloader.mock.mock_calls == [
-        call(url="https://bootstrap.pypa.io/get-pip.py")
+        call(url="https://bootstrap.pypa.io/get-pip.py", timeout_in_seconds=30),
     ]

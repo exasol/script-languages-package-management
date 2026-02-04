@@ -22,6 +22,7 @@
  - #5: Implemented install command for PIP packages
  - #64: Added environment variables to CommandExecutor
  - #62: Added ValidationCfg model and implemented usage of field URL of PipPackage
+ - #8: Implemented install_micromamba command
 
 ## Refactorings
 

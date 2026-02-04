@@ -1,8 +1,5 @@
 from copy import deepcopy
 from pathlib import Path
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    pip_package_file_content,
-)
 
 from exasol.exaslpm.model.serialization import to_yaml_str
 
@@ -11,7 +8,7 @@ def test_install_pip(docker_container, pip_package_file_content, cli_helper):
     pip_package_file_yaml = to_yaml_str(pip_package_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
-        Path("/"), "pip_file_01", pip_package_file_yaml
+        Path("/"), "pip_file_01", pip_package_file_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(
@@ -35,7 +32,7 @@ def test_install_pip_error(docker_container, pip_package_file_content, cli_helpe
     pip_package_file_yaml = to_yaml_str(pip_package_file_content_invalid)
 
     pip_package_file = docker_container.make_and_upload_file(
-        Path("/"), "pip_file_01", pip_package_file_yaml
+        Path("/"), "pip_file_01", pip_package_file_yaml.encode("utf-8")
     )
 
     ret, out = docker_container.run_exaslpm(
