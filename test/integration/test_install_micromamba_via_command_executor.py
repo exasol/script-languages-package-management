@@ -1,4 +1,5 @@
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install

@@ -1,5 +1,6 @@
 from copy import deepcopy
 from pathlib import Path
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 

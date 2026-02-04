@@ -63,7 +63,6 @@ def test_install_conda_packages(
     assert pkgs_after_install == ContainsCondaPackages(expected_packages)
 
 
-
 def test_conda_packages_install_error(
     docker_container, conda_packages_file_content, cli_helper, prepare_micromamba_env
 ):
@@ -86,7 +85,4 @@ def test_conda_packages_install_error(
         False,
     )
     assert ret != 0
-    assert (
-        "unknowsoftware =0.0.0 * does not exist"
-        in out
-    )
+    assert "unknowsoftware =0.0.0 * does not exist" in out
