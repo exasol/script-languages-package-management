@@ -1,8 +1,4 @@
 from pathlib import Path
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    pip_package_file_content,
-    pip_packages_file_content,
-)
 from test.integration.package_utils import ContainsPipPackages
 
 import pytest

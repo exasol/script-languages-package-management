@@ -1,8 +1,5 @@
 from copy import deepcopy
 from pathlib import Path
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    pip_package_file_content,
-)
 
 from exasol.exaslpm.model.serialization import to_yaml_str
 

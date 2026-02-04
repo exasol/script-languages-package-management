@@ -18,7 +18,6 @@ def install_micromamba(phase: Phase, ctx: Context):
         micromamba_machine_mapping = {"x86_64": "64", "aarch64": "aarch64"}
 
         micromamba_machine = micromamba_machine_mapping[platform.machine()]
-        "https://github.com/mamba-org/micromamba-releases/releases/download/2.5.0-1/micromamba-linux-64.tar.bz2"
 
         download_url = f"https://github.com/mamba-org/micromamba-releases/releases/download/{micromamba.version}/micromamba-linux-{micromamba_machine}.tar.bz2"
 
