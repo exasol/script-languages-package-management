@@ -41,7 +41,10 @@ class LogCollector:
         self._result = ""
 
     def log(self, msg: str, **kwargs):
-        self._result += f"{msg} {str(kwargs)}\n"
+        if kwargs:
+            self._result += f"{msg.rstrip()} {str(kwargs)}\n"
+        else:
+            self._result += f"{msg.rstrip()}\n"
 
     @property
     def result(self) -> str:
