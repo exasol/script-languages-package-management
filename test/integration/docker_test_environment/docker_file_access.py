@@ -4,7 +4,7 @@ from test.integration.docker_test_environment.docker_test_container import (
 )
 
 
-class DockerBinaryChecker:
+class DockerFileAccess:
     def __init__(self, docker_test_container: DockerTestContainer):
         self.docker_test_container = docker_test_container
 
@@ -29,8 +29,12 @@ class DockerBinaryChecker:
                 if not is_exec:
                     raise ValueError(f"Binary file {binary_path} is not executable")
             except ValueError as e:
-                raise Value(
+                raise ValueError(
                     f"Failed to parse permissions: {permissions_octal_str}"
                 ) from e
         else:
             raise ValueError(f"Failed to check if {binary_path} is executable")
+        return binary_path
+
+    def copy_file(self, source_path: Path, destination_path: Path) -> None:
+        self.docker_test_container.run(["cp", str(source_path), str(destination_path)])

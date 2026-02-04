@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
+from exasol.exaslpm.pkg_mgmt.context.file_access import FileAccess
 
 
 def _create_binary(binary_path: Path) -> Path:
@@ -22,18 +22,18 @@ def binary_path(tmp_path: Path) -> Path:
     return binary_path
 
 
-def test_binary_checker(binary_path):
-    binary_checker = BinaryChecker()
-    assert binary_checker.check_binary(binary_path) == binary_path
+def test_check_binary(binary_path):
+    file_access = FileAccess()
+    assert file_access.check_binary(binary_path) == binary_path
 
 
-def test_binary_checker_raises_if_not_found():
+def test_check_binary_raises_if_not_found():
     invalid_path = Path("/some_invalid/path")
-    binary_checker = BinaryChecker()
+    file_access = FileAccess()
     with pytest.raises(
         FileNotFoundError, match="Binary file /some_invalid/path does not exist"
     ):
-        binary_checker.check_binary(invalid_path)
+        file_access.check_binary(invalid_path)
 
 
 @pytest.fixture
@@ -43,8 +43,8 @@ def binary_path_not_executable(tmp_path: Path) -> Path:
     return binary_path
 
 
-def test_binary_checker_raises_if_not_executable(binary_path_not_executable):
-    binary_checker = BinaryChecker()
+def test_check_binary_if_not_executable(binary_path_not_executable):
+    file_access = FileAccess()
     expected_error = rf"Binary file {binary_path_not_executable} is not executable"
     with pytest.raises(ValueError, match=re.escape(expected_error)):
-        binary_checker.check_binary(binary_path_not_executable)
+        file_access.check_binary(binary_path_not_executable)

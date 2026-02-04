@@ -63,8 +63,6 @@ class RPackage(Package):
 
 class PPA(BaseModel):
     key_server: str
-    # Note: the key fingerprint is not necessarily unique across PPAs, see https://documentation.ubuntu.com/launchpad/user/reference/packaging/ppas/ppa/index.html#your-ppa-s-key
-    key_fingerprint: str
     ppa: str
     out_file: str
     comment: None | str = None

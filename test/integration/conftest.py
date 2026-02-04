@@ -1,11 +1,11 @@
 from collections.abc import Iterator
 from pathlib import Path
 from test.integration.cli_helper import CliHelper
-from test.integration.docker_test_environment.docker_binary_checker import (
-    DockerBinaryChecker,
-)
 from test.integration.docker_test_environment.docker_command_executor import (
     DockerCommandExecutor,
+)
+from test.integration.docker_test_environment.docker_file_access import (
+    DockerFileAccess,
 )
 from test.integration.docker_test_environment.docker_file_downloader import (
     DockerFileDownloader,
@@ -104,10 +104,10 @@ def docker_file_downloader(
 
 
 @pytest.fixture(scope="function")
-def docker_binary_checker(
+def docker_file_access(
     docker_container: DockerTestContainer,
-) -> DockerBinaryChecker:
-    return DockerBinaryChecker(docker_container)
+) -> DockerFileAccess:
+    return DockerFileAccess(docker_container)
 
 
 @pytest.fixture(scope="function")
@@ -123,14 +123,14 @@ def docker_executor_context(
     temp_history_file_manager,
     test_logger,
     docker_file_downloader,
-    docker_binary_checker,
+    docker_file_access,
     docker_temp_file_provider,
 ):
     return Context(
         cmd_executor=docker_command_executor,
         history_file_manager=temp_history_file_manager,
         cmd_logger=test_logger,
-        binary_checker=docker_binary_checker,
+        file_access=docker_file_access,
         file_downloader=docker_file_downloader,
         temp_file_provider=docker_temp_file_provider,
     )
