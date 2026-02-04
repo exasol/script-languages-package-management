@@ -17,7 +17,7 @@ from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 
 
-def test_install_pip_empty_no_history(context_mock):
+def test_install_micromamba_empty_no_history(context_mock):
     phase = Phase(name="phase-1", apt=AptPackages(packages=[]))
     install_micromamba(phase, context_mock)
 
@@ -92,13 +92,13 @@ def test_install_micromamba(
     assert context_mock.cmd_executor.mock_calls == [
         call.execute(
             expected_micromamba_script_arguments,
-            None,
+            env=None,
         ),
         call.execute().print_results(),
         call.execute().return_code(),
         call.execute(
             expected_micromamba_create_env_arguments,
-            {"MAMBA_ROOT_PREFIX": expected_micromamba_path},
+            env={"MAMBA_ROOT_PREFIX": expected_micromamba_path},
         ),
         call.execute().print_results(),
         call.execute().return_code(),

@@ -43,6 +43,13 @@ def mock_install_pip(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 @pytest.fixture
+def mock_install_micromamba(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_packages, "install_micromamba", mock_function_to_mock)
+    return mock_function_to_mock
+
+
+@pytest.fixture
 def mock_install_pip_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
     monkeypatch.setattr(install_packages, "install_pip_packages", mock_function_to_mock)

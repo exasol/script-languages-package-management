@@ -1,7 +1,4 @@
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    apt_package_file_content,
-)
 from test.integration.package_utils import ContainsPackages
 
 from exasol.exaslpm.model.serialization import to_yaml_str

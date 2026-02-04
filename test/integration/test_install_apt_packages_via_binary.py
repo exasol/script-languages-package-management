@@ -2,9 +2,6 @@ from pathlib import Path
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    apt_package_file_content,
-)
 from test.integration.package_utils import ContainsPackages
 
 import yaml

@@ -44,7 +44,7 @@ def test_cat_command_negative(tmp_path):
 
 def test_env_variable():
     executor = CommandExecutor(StdLogger())
-    result = executor.execute(["env"], env_variables={"FOO": "bar"})
+    result = executor.execute(["env"], env={"FOO": "bar"})
     stdout_lines = []
     stderr_lines = []
 

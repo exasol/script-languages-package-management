@@ -35,7 +35,7 @@ def test_command_executor(monkeypatch, env_variables):
 
     logger = MagicMock(spec=CommandLogger)
     executor = CommandExecutor(logger)
-    result = executor.execute(["cmd1", "cmd2"], env_variables=env_variables)
+    result = executor.execute(["cmd1", "cmd2"], env=env_variables)
     ret_code = result.return_code()
     assert mock_popen.mock_calls == [
         call(["cmd1", "cmd2"], stdout=-1, stderr=-1, text=True, env=env_variables),

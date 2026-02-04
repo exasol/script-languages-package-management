@@ -82,12 +82,12 @@ class CommandExecutor:
         self._log = logger
 
     def execute(
-        self, cmd_args: list[str], env_variables: dict[str, str] | None = None
+        self, cmd_args: list[str], env: dict[str, str] | None = None
     ) -> CommandResult:
         """
         :param cmd_args: command with all its options as a list of individual str
         :return: The result that can be used to access the results
-        :env_variables: environment variables to be set during execution
+        :env: environment variables to be set during execution
         :rtype: CommandResult
         """
         cmd_str = " ".join(cmd_args)
@@ -98,7 +98,7 @@ class CommandExecutor:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env=env_variables,
+            env=env,
         )  # nosec B603
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)

@@ -20,7 +20,7 @@ def check_error(ret_val: int, msg: str, log: Callable[[str], None]) -> bool:
 
 
 def run_cmd(cmd: CommandExecInfo, ctx: Context):
-    cmd_res = ctx.cmd_executor.execute(cmd.cmd, cmd.env)
+    cmd_res = ctx.cmd_executor.execute(cmd.cmd, env=cmd.env)
     cmd_res.print_results()
     if not check_error(cmd_res.return_code(), cmd.err, ctx.cmd_logger.err):
         raise CommandFailedException(cmd.err)
