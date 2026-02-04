@@ -1,8 +1,4 @@
 from pathlib import Path
-from test.integration.package_fixtures import (  # noqa: F401, fixtures to be used
-    conda_packages_file_content,
-    micromamba_file_content,
-)
 from test.integration.package_utils import ContainsCondaPackages
 
 import pytest
@@ -67,30 +63,30 @@ def test_install_conda_packages(
     assert pkgs_after_install == ContainsCondaPackages(expected_packages)
 
 
-#
-# def test_conda_packages_install_error(
-#     docker_container, conda_packages_file_content, cli_helper, prepare_conda_env
-# ):
-#     pkg = (
-#         conda_packages_file_content.find_build_step("build_step_2")
-#         .find_phase("phase_1")
-#         .conda.packages[0]
-#     )
-#     pkg.name = "unknowsoftware"
-#     pkg.version = " == 0.0.0"
-#     conda_package_file_content_yaml = to_yaml_str(conda_packages_file_content)
-#     conda_invalid_pkg_file = docker_container.make_and_upload_file(
-#         Path("/"), "conda_file_02", conda_package_file_content_yaml.encode("utf-8")
-#     )
-#
-#     ret, out = docker_container.run_exaslpm(
-#         cli_helper.install.package_file(conda_invalid_pkg_file)
-#         .build_step("build_step_2")
-#         .args,
-#         False,
-#     )
-#     assert ret != 0
-#     assert (
-#         "Could not find a version that satisfies the requirement unknowsoftware==0.0.0"
-#         in out
-#     )
+
+def test_conda_packages_install_error(
+    docker_container, conda_packages_file_content, cli_helper, prepare_micromamba_env
+):
+    pkg = (
+        conda_packages_file_content.find_build_step("build_step_2")
+        .find_phase("phase_1")
+        .conda.packages[0]
+    )
+    pkg.name = "unknowsoftware"
+    pkg.version = "0.0.0"
+    conda_package_file_content_yaml = to_yaml_str(conda_packages_file_content)
+    conda_invalid_pkg_file = docker_container.make_and_upload_file(
+        Path("/"), "conda_file_02", conda_package_file_content_yaml.encode("utf-8")
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(conda_invalid_pkg_file)
+        .build_step("build_step_2")
+        .args,
+        False,
+    )
+    assert ret != 0
+    assert (
+        "unknowsoftware =0.0.0 * does not exist"
+        in out
+    )
