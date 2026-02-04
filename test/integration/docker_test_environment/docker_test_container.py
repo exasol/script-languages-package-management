@@ -9,6 +9,7 @@ from docker.models.containers import Container
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
+    CondaPackage,
     Micromamba,
     PipPackage,
 )
@@ -104,3 +105,22 @@ class DockerTestContainer:
             check_exit_code=check_exit_code,
             environment=create_mamba_env_variables(micromamba),
         )
+
+    def list_conda_packages(
+        self, binary: Path, micromamba: Micromamba
+    ) -> list[CondaPackage]:
+        _, out = self.run_in_mamba_env(
+            [
+                str(binary),
+                "list",
+                "--json",
+            ],
+            micromamba,
+        )
+        packages = json.loads(out.strip())
+        return [
+            CondaPackage(
+                name=pkg["name"], version=pkg["version"], channel=pkg["channel"]
+            )
+            for pkg in packages
+        ]

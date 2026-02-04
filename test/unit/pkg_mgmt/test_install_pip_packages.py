@@ -141,3 +141,7 @@ def test_install_pip_packages(
         "numpy == 1.2.3\n" + "requests == 2.25.1\n"
         "exasol-db-api @ https://exasol.org/exasol-db-api\n"
     )
+
+    assert context_with_python_env.binary_checker.check_binary.mock_calls == [
+        call(Path("/usr/bin/test-python"))
+    ]

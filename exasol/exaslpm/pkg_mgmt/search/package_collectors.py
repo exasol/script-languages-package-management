@@ -28,6 +28,18 @@ def collect_conda_packages(phases: list[Phase]) -> list[CondaPackage]:
     return _collect_package(phases, get_conda_packages)
 
 
+def collect_conda_channels(phases: list[Phase]) -> set[str]:
+    """
+    Collects all conda channels as set from a list of phases.
+    """
+    return {
+        channel
+        for phase in phases
+        if phase.conda and phase.conda.channels
+        for channel in phase.conda.channels
+    }
+
+
 def collect_pip_packages(phases: list[Phase]) -> list[PipPackage]:
     """
     Collects all Pip packages as flat list from a list of phases.

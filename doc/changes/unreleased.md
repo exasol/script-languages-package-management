@@ -23,6 +23,7 @@
  - #64: Added environment variables to CommandExecutor
  - #62: Added ValidationCfg model and implemented usage of field URL of PipPackage
  - #8: Implemented install_micromamba command
+ - #6: Implemented install_conda_packages command
 
 ## Refactorings
 

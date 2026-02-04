@@ -4,6 +4,7 @@ from packaging.specifiers import SpecifierSet
 from packaging.version import Version
 
 from exasol.exaslpm.model.package_file_config import (
+    CondaPackage,
     Package,
     PipPackage,
 )
@@ -59,6 +60,51 @@ class ContainsPipPackages:
             )
         else:
             return name_matches
+
+    def __eq__(self, installed_packages: Any) -> bool:
+        if not isinstance(installed_packages, list):
+            return False
+
+        # Check that every expected package exists in the installed list
+        return all(
+            any(self._compare_package(exp, inst) for inst in installed_packages)
+            for exp in self.expected_packages
+        )
+
+    def __repr__(self):
+        # This is what shows up in the assertion failure message
+        return f"{self.expected_packages}"
+
+
+class ContainsCondaPackages:
+    """
+    Matcher to check if a list of installed packages contains
+    all expected conda packages (matching name and version).
+    """
+
+    def __init__(self, expected_packages: list[CondaPackage]):
+        self.expected_packages = expected_packages
+
+    @staticmethod
+    def _compare_package(expected: CondaPackage, installed: CondaPackage) -> bool:
+
+        if not expected.name.lower() == installed.name.lower():
+            return False
+
+        if expected.version:
+            # SpecifierSet does not work with specs like "1.2.*", but works with "==1.2.*"
+            version_restriction = (
+                f"=={expected.version}"
+                if expected.version[:1].isdigit()
+                else expected.version
+            )
+            if Version(installed.version) not in SpecifierSet(version_restriction):
+                return False
+
+        if expected.channel and expected.channel != installed.channel:
+            return False
+
+        return True
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):
