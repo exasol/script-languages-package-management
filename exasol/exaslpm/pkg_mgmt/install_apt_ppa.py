@@ -29,7 +29,7 @@ def _run_apt_update(context: Context):
 
 
 def _install_key(context: Context, ppa_name: str, ppa: PPA):
-    with context.file_downloader.download_file_to_tmp(url=ppa.key_url) as tmp:
+    with context.file_downloader.download_file_to_tmp(url=str(ppa.key_url)) as tmp:
         key_file = f"/usr/share/keyrings/{ppa_name}.gpg"
         context.cmd_logger.info(f"Installing key of '{ppa_name}' to {key_file}")
         gpg_cmd = CommandExecInfo(
