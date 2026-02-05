@@ -24,6 +24,8 @@ from exasol.exaslpm.model.package_file_config import (
     Pip,
     PipPackage,
     PipPackages,
+    RPackage,
+    RPackages,
     Tools,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
@@ -77,6 +79,13 @@ def mock_install_conda_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     monkeypatch.setattr(
         install_packages, "install_conda_packages", mock_function_to_mock
     )
+    return mock_function_to_mock
+
+
+@pytest.fixture
+def mock_install_r_packages(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_packages, "install_r_packages", mock_function_to_mock)
     return mock_function_to_mock
 
 
@@ -150,6 +159,18 @@ def _build_conda_packages(enable_conda_packages: bool = False) -> CondaPackages 
     )
 
 
+def _build_r_packages(enable_r_packages: bool = False) -> CondaPackages | None:
+    return (
+        RPackages(
+            packages=[
+                RPackage(name="tidyr", version="1.3.2"),
+            ]
+        )
+        if enable_r_packages
+        else None
+    )
+
+
 def _build_phase(
     phase_name: str = "phase-1",
     enable_apt: bool = False,
@@ -157,6 +178,7 @@ def _build_phase(
     tools_settings: ToolsSettings = ToolsSettings.disabled(),
     enable_pip_packages: bool = False,
     enable_conda_packages: bool = False,
+    enable_r_packages: bool = False,
 ) -> Phase:
     return Phase(
         name=phase_name,
@@ -165,6 +187,7 @@ def _build_phase(
         tools=_build_tools_package(tools_settings=tools_settings),
         pip=_build_pip_packages(enable_pip_packages=enable_pip_packages),
         conda=_build_conda_packages(enable_conda_packages=enable_conda_packages),
+        r=_build_r_packages(enable_r_packages=enable_r_packages),
     )
 
 
@@ -326,6 +349,23 @@ def test_install_conda_packages(
     ]
 
 
+def test_install_r_packages(context_mock, mock_install_r_packages, package_file):
+    phase_r_packages = _build_phase(
+        phase_name="phase-1",
+        enable_r_packages=True,
+    )
+    package_file_config = _build_package_config([phase_r_packages])
+    with package_file(package_file_config) as package_file_path:
+        install_packages.package_install(
+            package_file=package_file_path,
+            build_step_name="build-step-1",
+            context=context_mock,
+        )
+    assert mock_install_r_packages.mock_calls == [
+        call(ANY, phase_r_packages, context_mock)
+    ]
+
+
 def test_install_packages_multiple(
     context_mock,
     mock_install_apt_repos,
@@ -334,6 +374,7 @@ def test_install_packages_multiple(
     mock_install_micromamba,
     mock_install_pip_packages,
     mock_install_conda_packages,
+    mock_install_r_packages,
     package_file,
 ):
     phases = [
@@ -377,6 +418,10 @@ def test_install_packages_multiple(
             name="phase-8",
             conda=_build_conda_packages(enable_conda_packages=True),
         ),
+        Phase(
+            name="phase-9",
+            r=_build_r_packages(enable_r_packages=True),
+        ),
     ]
     package_file_config = _build_package_config(phases)
     with package_file(package_file_config) as package_file_path:
@@ -401,3 +446,4 @@ def test_install_packages_multiple(
     assert mock_install_conda_packages.mock_calls == [
         call(ANY, phases[7], context_mock)
     ]
+    assert mock_install_r_packages.mock_calls == [call(ANY, phases[8], context_mock)]

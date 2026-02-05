@@ -11,7 +11,7 @@ from exasol.exaslpm.pkg_mgmt.install_conda_packages import install_conda_package
 from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
 from exasol.exaslpm.pkg_mgmt.install_pip_packages import install_pip_packages
-from exasol.exaslpm.pkg_mgmt.install_r import install_r
+from exasol.exaslpm.pkg_mgmt.install_r_packages import install_r_packages
 from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
 from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
@@ -38,7 +38,7 @@ def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> Non
     if phase.conda is not None:
         install_conda_packages(search_cache, phase, context)
     if phase.r is not None:
-        install_r(search_cache, phase, context)
+        install_r_packages(search_cache, phase, context)
 
 
 def package_install(package_file: pathlib.Path, build_step_name: str, context: Context):

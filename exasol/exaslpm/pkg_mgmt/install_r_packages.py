@@ -32,7 +32,6 @@ install_or_fail <- function(package_name, version){
 """
 
 VALIDATE_METHOD = """
-
 library(remotes)
 installed_packages <- installed.packages()
 installed_package_names <- installed_packages[, "Package"]
@@ -115,7 +114,7 @@ def _validate_packages(
         run_cmd(cmd, context)
 
 
-def install_r(search_cache: SearchCache, phase: Phase, context: Context):
+def install_r_packages(search_cache: SearchCache, phase: Phase, context: Context):
     if phase.r and phase.r.packages:
         _prepare_remotes_library(search_cache, context)
         _install_packages(phase.r.packages, search_cache, context)
