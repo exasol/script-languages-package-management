@@ -94,8 +94,8 @@ class ContainsCondaPackages:
         if expected.version:
             # SpecifierSet does not work with specs like "1.2.*", but works with "==1.2.*"
             version_restriction = (
-                f"=={expected.version}"
-                if expected.version[:1].isdigit()
+                f"={expected.version}"
+                if expected.version[0] == "=" and expected.version[1].isdigit()
                 else expected.version
             )
             if Version(installed.version) not in SpecifierSet(version_restriction):
