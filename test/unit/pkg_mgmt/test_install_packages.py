@@ -15,10 +15,14 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
+    CondaPackage,
+    CondaPackages,
     Micromamba,
     PackageFile,
     Phase,
     Pip,
+    PipPackage,
+    PipPackages,
     Tools,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
@@ -42,6 +46,29 @@ def mock_install_pip(monkeypatch: MonkeyPatch) -> MagicMock:
 def mock_install_micromamba(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
     monkeypatch.setattr(install_packages, "install_micromamba", mock_function_to_mock)
+    return mock_function_to_mock
+
+
+@pytest.fixture
+def mock_install_pip_packages(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_packages, "install_pip_packages", mock_function_to_mock)
+    return mock_function_to_mock
+
+
+@pytest.fixture
+def mock_install_micromamba(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_packages, "install_micromamba", mock_function_to_mock)
+    return mock_function_to_mock
+
+
+@pytest.fixture
+def mock_install_conda_packages(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(
+        install_packages, "install_conda_packages", mock_function_to_mock
+    )
     return mock_function_to_mock
 
 
@@ -82,15 +109,35 @@ def _build_tools_package(
     )
 
 
+def _build_pip_packages(enable_pip_packages: bool = False) -> CondaPackages | None:
+    return (
+        PipPackages(packages=[PipPackage(name="numpy", version="1.2.3")])
+        if enable_pip_packages
+        else None
+    )
+
+
+def _build_conda_packages(enable_conda_packages: bool = False) -> CondaPackages | None:
+    return (
+        CondaPackages(packages=[CondaPackage(name="numpy", version="1.2.3")])
+        if enable_conda_packages
+        else None
+    )
+
+
 def _build_phase(
     phase_name: str = "phase-1",
     enable_apt: bool = False,
     tools_settings: ToolsSettings = ToolsSettings.disabled(),
+    enable_pip_packages: bool = False,
+    enable_conda_packages: bool = False,
 ) -> Phase:
     return Phase(
         name=phase_name,
         apt=_build_apt_package(enable_apt=enable_apt),
         tools=_build_tools_package(tools_settings=tools_settings),
+        pip=_build_pip_packages(enable_pip_packages=enable_pip_packages),
+        conda=_build_conda_packages(enable_conda_packages=enable_conda_packages),
     )
 
 
@@ -183,6 +230,23 @@ def test_install_pip(context_mock, mock_install_pip, package_file):
     assert mock_install_pip.mock_calls == [call(ANY, phase_pip, context_mock)]
 
 
+def test_install_pip_packages(context_mock, mock_install_pip_packages, package_file):
+    phase_conda_packages = _build_phase(
+        phase_name="phase-1",
+        enable_pip_packages=True,
+    )
+    package_file_config = _build_package_config([phase_conda_packages])
+    with package_file(package_file_config) as package_file_path:
+        install_packages.package_install(
+            package_file=package_file_path,
+            build_step_name="build-step-1",
+            context=context_mock,
+        )
+    assert mock_install_pip_packages.mock_calls == [
+        call(ANY, phase_conda_packages, context_mock)
+    ]
+
+
 def test_install_micromamba(context_mock, mock_install_micromamba, package_file):
     phase_micromamba = _build_phase(
         phase_name="phase-1",
@@ -198,11 +262,32 @@ def test_install_micromamba(context_mock, mock_install_micromamba, package_file)
     assert mock_install_micromamba.mock_calls == [call(phase_micromamba, context_mock)]
 
 
+def test_install_conda_packages(
+    context_mock, mock_install_conda_packages, package_file
+):
+    phase_conda_packages = _build_phase(
+        phase_name="phase-1",
+        enable_conda_packages=True,
+    )
+    package_file_config = _build_package_config([phase_conda_packages])
+    with package_file(package_file_config) as package_file_path:
+        install_packages.package_install(
+            package_file=package_file_path,
+            build_step_name="build-step-1",
+            context=context_mock,
+        )
+    assert mock_install_conda_packages.mock_calls == [
+        call(ANY, phase_conda_packages, context_mock)
+    ]
+
+
 def test_install_packages_multiple(
     context_mock,
     mock_install_apt_packages,
     mock_install_pip,
     mock_install_micromamba,
+    mock_install_pip_packages,
+    mock_install_conda_packages,
     package_file,
 ):
     phases = [
@@ -234,6 +319,14 @@ def test_install_packages_multiple(
                 tools_settings=ToolsSettings(micromamba=Micromamba(version="2.5.0"))
             ),
         ),
+        Phase(
+            name="phase-6",
+            pip=_build_pip_packages(enable_pip_packages=True),
+        ),
+        Phase(
+            name="phase-7",
+            conda=_build_conda_packages(enable_conda_packages=True),
+        ),
     ]
     package_file_config = _build_package_config(phases)
     with package_file(package_file_config) as package_file_path:
@@ -248,3 +341,7 @@ def test_install_packages_multiple(
     ]
     assert mock_install_pip.mock_calls == [call(ANY, phases[2], context_mock)]
     assert mock_install_micromamba.mock_calls == [call(phases[4], context_mock)]
+    assert mock_install_pip_packages.mock_calls == [call(ANY, phases[5], context_mock)]
+    assert mock_install_conda_packages.mock_calls == [
+        call(ANY, phases[6], context_mock)
+    ]
