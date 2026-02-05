@@ -1,3 +1,5 @@
+from test.unit.pkg_mgmt.utils import _named_params
+
 import pytest
 import yaml
 
@@ -14,6 +16,7 @@ from exasol.exaslpm.model.package_file_config import (
     RPackages,
 )
 from exasol.exaslpm.pkg_mgmt.search.package_collectors import (
+    collect_conda_channels,
     collect_conda_packages,
     collect_pip_packages,
 )
@@ -152,3 +155,86 @@ def test_collect_multi_phases(collector, package_variable, packages_model, packa
     phase_one = Phase(name="phase_one", **d_one)
     phase_two = Phase(name="phase_two", **d_two)
     assert collector([phase_one, phase_two]) == packages
+
+
+def test_collect_conda_channels_empty():
+    result = collect_conda_channels([])
+    assert result == set()
+
+
+@pytest.mark.parametrize(
+    "phases, expected",
+    [
+        pytest.param(
+            *_named_params(
+                phases=[
+                    Phase(
+                        name="phase-1",
+                        conda=CondaPackages(channels={"my-channel"}, packages=[]),
+                    ),
+                ],
+                expected={"my-channel"},
+            ),
+            id="single-channel",
+        ),
+        pytest.param(
+            *_named_params(
+                phases=[
+                    Phase(
+                        name="phase-1",
+                        conda=CondaPackages(
+                            channels={"my-channel-1", "my-channel-2"}, packages=[]
+                        ),
+                    ),
+                ],
+                expected={"my-channel-1", "my-channel-2"},
+            ),
+            id="two channels, one phase",
+        ),
+        pytest.param(
+            *_named_params(
+                phases=[
+                    Phase(
+                        name="phase-1",
+                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                    ),
+                    Phase(
+                        name="phase-2",
+                        conda=CondaPackages(channels={"my-channel-2"}, packages=[]),
+                    ),
+                ],
+                expected={"my-channel-1", "my-channel-2"},
+            ),
+            id="two channels, two phases",
+        ),
+        pytest.param(
+            *_named_params(
+                phases=[
+                    Phase(
+                        name="phase-1",
+                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                    ),
+                    Phase(name="phase-2", apt=AptPackages(packages=[TEST_PACKAGE_APT])),
+                ],
+                expected={"my-channel-1"},
+            ),
+            id="one conda phase, one apt phase",
+        ),
+        pytest.param(
+            *_named_params(
+                phases=[
+                    Phase(
+                        name="phase-1",
+                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                    ),
+                    Phase(name="phase-2", conda=CondaPackages(packages=[])),
+                ],
+                expected={"my-channel-1"},
+            ),
+            id="one conda phase, one conda phase without channels",
+        ),
+    ],
+)
+def test_collect_conda_channels(phases: list[Phase], expected):
+    result = collect_conda_channels(phases)
+    assert result == expected

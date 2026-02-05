@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_apt_packages import install_apt_packages
+from exasol.exaslpm.pkg_mgmt.install_conda_packages import install_conda_packages
 from exasol.exaslpm.pkg_mgmt.install_apt_ppa import install_ppas
 from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
@@ -33,6 +34,8 @@ def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> Non
         _process_tools(context, search_cache, phase)
     if phase.pip is not None:
         install_pip_packages(search_cache, phase, context)
+    if phase.conda is not None:
+        install_conda_packages(search_cache, phase, context)
 
 
 def package_install(package_file: pathlib.Path, build_step_name: str, context: Context):
