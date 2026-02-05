@@ -7,6 +7,7 @@ from typing import (
 
 from pydantic import (
     BaseModel,
+    Field,
     HttpUrl,
     model_validator,
 )
@@ -62,15 +63,15 @@ class RPackage(Package):
     """
 
 
-class PPA(BaseModel):
-    key_url: HttpUrl
-    apt_repo_entry: str
+class AptRepo(BaseModel):
+    key_url: HttpUrl = Field(frozen=True)
+    entry: str
     out_file: str
     comment: None | str = None
 
 
 class AptPackages(BaseModel):
-    ppas: dict[str, PPA] | None = None
+    repos: dict[str, AptRepo] | None = None
     packages: list[AptPackage]
     comment: None | str = None
 

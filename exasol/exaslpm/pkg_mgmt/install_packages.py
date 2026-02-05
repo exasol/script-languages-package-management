@@ -26,7 +26,7 @@ def _process_tools(context: Context, search_cache: SearchCache, phase: Phase):
 
 def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> None:
     search_cache = SearchCache(build_step, phase, context)
-    if phase.apt and phase.apt.ppas:
+    if phase.apt and phase.apt.repos:
         install_ppas(phase.apt, context)
     if phase.apt and phase.apt.packages:
         install_apt_packages(phase.apt, context)

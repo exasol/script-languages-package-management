@@ -3,7 +3,7 @@ from unittest.mock import (
     call,
 )
 
-from exasol.exaslpm.model.package_file_config import PPA
+from exasol.exaslpm.model.package_file_config import AptRepo
 from exasol.exaslpm.pkg_mgmt.install_apt_packages import *
 from exasol.exaslpm.pkg_mgmt.install_apt_ppa import install_ppas
 
@@ -16,9 +16,9 @@ def test_empty_packages(context_mock):
 def test_install_ppas(context_mock):
     aptPackages = AptPackages(
         packages=[],
-        ppas={
-            "some_ppa": PPA(
-                apt_repo_entry="deb some_ppa",
+        repos={
+            "some_ppa": AptRepo(
+                entry="deb some_ppa",
                 key_url="https://some.key.server",
                 out_file="some_ppa.list",
             )

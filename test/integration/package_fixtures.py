@@ -3,9 +3,9 @@ from pathlib import Path
 import pytest
 
 from exasol.exaslpm.model.package_file_config import (
-    PPA,
     AptPackage,
     AptPackages,
+    AptRepo,
     BuildStep,
     CondaBinary,
     CondaPackage,
@@ -272,10 +272,10 @@ def apt_trivy_with_ppa() -> PackageFile:
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
-                            ppas={
-                                "trivy": PPA(
+                            repos={
+                                "trivy": AptRepo(
                                     key_url="https://aquasecurity.github.io/trivy-repo/deb/public.key",
-                                    apt_repo_entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
+                                    entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
                                     out_file="trivy.list",
                                 )
                             },
@@ -303,10 +303,10 @@ def apt_r_with_ppa() -> PackageFile:
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
-                            ppas={
-                                "cran-r": PPA(
+                            repos={
+                                "cran-r": AptRepo(
                                     key_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
-                                    apt_repo_entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
+                                    entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
                                     out_file="noble-cran40.list",
                                 )
                             },

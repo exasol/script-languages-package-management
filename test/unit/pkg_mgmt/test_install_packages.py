@@ -12,9 +12,9 @@ from _pytest.monkeypatch import MonkeyPatch
 
 import exasol.exaslpm.pkg_mgmt.install_packages as install_packages
 from exasol.exaslpm.model.package_file_config import (
-    PPA,
     AptPackage,
     AptPackages,
+    AptRepo,
     BuildStep,
     CondaPackage,
     CondaPackages,
@@ -105,9 +105,9 @@ def _build_apt_ppa_package(enable_apt_ppa: bool = False) -> AptPackages | None:
     return (
         AptPackages(
             packages=[],
-            ppas={
-                "some_ppa": PPA(
-                    apt_repo_entry="deb some_ppa",
+            repos={
+                "some_ppa": AptRepo(
+                    entry="deb some_ppa",
                     key_url="https://some.key.server",
                     out_file="some_ppa.list",
                 )
