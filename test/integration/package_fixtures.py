@@ -261,7 +261,7 @@ def apt_gpg() -> PackageFile:
 
 
 @pytest.fixture
-def apt_trivy_with_ppa() -> PackageFile:
+def apt_trivy_with_repo() -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -292,7 +292,7 @@ def apt_trivy_with_ppa() -> PackageFile:
 
 
 @pytest.fixture
-def apt_r_with_ppa() -> PackageFile:
+def apt_r_with_repo() -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(

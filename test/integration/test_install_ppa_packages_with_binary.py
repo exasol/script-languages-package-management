@@ -25,14 +25,14 @@ def prepare_gpg(docker_container, apt_gpg, cli_helper):
     assert ret == 0
 
 
-def test_install_trivy(docker_container, prepare_gpg, apt_trivy_with_ppa, cli_helper):
-    apt_package_file_yaml = to_yaml_str(apt_trivy_with_ppa)
+def test_install_trivy(docker_container, prepare_gpg, apt_trivy_with_repo, cli_helper):
+    apt_package_file_yaml = to_yaml_str(apt_trivy_with_repo)
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml.encode("utf-8")
     )
 
-    expected_packages = apt_trivy_with_ppa.build_steps[0].phases[0].apt.packages
+    expected_packages = apt_trivy_with_repo.build_steps[0].phases[0].apt.packages
 
     pkgs_before_install = docker_container.list_apt()
     assert pkgs_before_install != ContainsPackages(expected_packages)
@@ -51,14 +51,14 @@ def test_install_trivy(docker_container, prepare_gpg, apt_trivy_with_ppa, cli_he
     assert ret == 0, out
 
 
-def test_install_r(docker_container, prepare_gpg, apt_r_with_ppa, cli_helper):
-    apt_package_file_yaml = to_yaml_str(apt_r_with_ppa)
+def test_install_r(docker_container, prepare_gpg, apt_r_with_repo, cli_helper):
+    apt_package_file_yaml = to_yaml_str(apt_r_with_repo)
 
     apt_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_01", apt_package_file_yaml.encode("utf-8")
     )
 
-    expected_packages = apt_r_with_ppa.build_steps[0].phases[0].apt.packages
+    expected_packages = apt_r_with_repo.build_steps[0].phases[0].apt.packages
 
     pkgs_before_install = docker_container.list_apt()
     assert pkgs_before_install != ContainsPackages(expected_packages)

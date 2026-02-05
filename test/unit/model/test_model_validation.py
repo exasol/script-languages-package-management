@@ -210,7 +210,7 @@ def test_unique_apt_packages():
         PackageFile.model_validate(yaml_data)
 
 
-def test_ppa():
+def test_apt_repo():
     yaml_file = """
     build_steps:
       - name: build_step_one
@@ -236,14 +236,12 @@ def test_ppa():
     model = PackageFile.model_validate(yaml_data)
     expected_first_ppa = AptRepo(
         key_url="http://some_key_server",
-        key_fingerprint="some_key",
         entry="deb http://some_ppa_server/some_ppa some_ppa/",
         out_file="some_out_file",
         comment="This is a sample PPA",
     )
     expected_second_ppa = AptRepo(
         key_url="http://some_key_server",
-        key_fingerprint="some_other_key",
         entry="deb http://some_other_ppa_server/some_ppa some_ppa/",
         out_file="some_other_out_file",
         comment="This is a sample PPA",

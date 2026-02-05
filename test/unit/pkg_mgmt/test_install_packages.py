@@ -37,9 +37,9 @@ def mock_install_apt_packages(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 @pytest.fixture
-def mock_install_apt_ppa_packages(monkeypatch: MonkeyPatch) -> MagicMock:
+def mock_install_apt_repos(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
-    monkeypatch.setattr(install_packages, "install_ppas", mock_function_to_mock)
+    monkeypatch.setattr(install_packages, "install_apt_repos", mock_function_to_mock)
     return mock_function_to_mock
 
 
@@ -101,7 +101,7 @@ def _build_apt_package(
     return AptPackages(packages=[apt_package]) if enable_apt else None
 
 
-def _build_apt_ppa_package(enable_apt_ppa: bool = False) -> AptPackages | None:
+def _build_apt_rep_package(enable_apt_repo: bool = False) -> AptPackages | None:
     return (
         AptPackages(
             packages=[],
@@ -113,7 +113,7 @@ def _build_apt_ppa_package(enable_apt_ppa: bool = False) -> AptPackages | None:
                 )
             },
         )
-        if enable_apt_ppa
+        if enable_apt_repo
         else None
     )
 
@@ -153,7 +153,7 @@ def _build_conda_packages(enable_conda_packages: bool = False) -> CondaPackages 
 def _build_phase(
     phase_name: str = "phase-1",
     enable_apt: bool = False,
-    enable_apt_ppa: bool = False,
+    enable_apt_repo: bool = False,
     tools_settings: ToolsSettings = ToolsSettings.disabled(),
     enable_pip_packages: bool = False,
     enable_conda_packages: bool = False,
@@ -161,7 +161,7 @@ def _build_phase(
     return Phase(
         name=phase_name,
         apt=_build_apt_package(enable_apt=enable_apt)
-        or _build_apt_ppa_package(enable_apt_ppa=enable_apt_ppa),
+        or _build_apt_rep_package(enable_apt_repo=enable_apt_repo),
         tools=_build_tools_package(tools_settings=tools_settings),
         pip=_build_pip_packages(enable_pip_packages=enable_pip_packages),
         conda=_build_conda_packages(enable_conda_packages=enable_conda_packages),
@@ -240,17 +240,15 @@ def test_install_packages_apt(context_mock, mock_install_apt_packages, package_f
     ]
 
 
-def test_install_packages_apt_ppa(
-    context_mock, mock_install_apt_ppa_packages, package_file
-):
-    package_file_config = _build_package_config([_build_phase(enable_apt_ppa=True)])
+def test_install_packages_apt_repo(context_mock, mock_install_apt_repos, package_file):
+    package_file_config = _build_package_config([_build_phase(enable_apt_repo=True)])
     with package_file(package_file_config) as package_file_path:
         install_packages.package_install(
             package_file=package_file_path,
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_apt_ppa_packages.mock_calls == [
+    assert mock_install_apt_repos.mock_calls == [
         call(
             package_file_config.find_build_step("build-step-1")
             .find_phase("phase-1")
@@ -330,7 +328,7 @@ def test_install_conda_packages(
 
 def test_install_packages_multiple(
     context_mock,
-    mock_install_apt_ppa_packages,
+    mock_install_apt_repos,
     mock_install_apt_packages,
     mock_install_pip,
     mock_install_micromamba,
@@ -341,7 +339,7 @@ def test_install_packages_multiple(
     phases = [
         Phase(
             name="phase-1",
-            apt=_build_apt_ppa_package(enable_apt_ppa=True),
+            apt=_build_apt_rep_package(enable_apt_repo=True),
         ),
         Phase(
             name="phase-2",
@@ -387,7 +385,7 @@ def test_install_packages_multiple(
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_apt_ppa_packages.mock_calls == [
+    assert mock_install_apt_repos.mock_calls == [
         call(
             phases[0].apt,
             context_mock,
