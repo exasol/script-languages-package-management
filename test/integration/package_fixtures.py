@@ -69,16 +69,17 @@ def pip_package_file_content(request) -> PackageFile:
         build_steps=[
             BuildStep(
                 name="build_step_1",
+                validation_cfg=ValidationConfig(version_mandatory=False),
                 phases=[
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
                                 AptPackage(
-                                    name="python3.12-dev", version="3.12.3-1ubuntu0.10"
+                                    name="python3.12-dev"
                                 ),
-                                AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
-                                AptPackage(name="ca-certificates", version="20240203"),
+                                AptPackage(name="git"),
+                                AptPackage(name="ca-certificates"),
                             ]
                         ),
                     ),
