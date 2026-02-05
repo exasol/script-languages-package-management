@@ -75,9 +75,7 @@ def pip_package_file_content(request) -> PackageFile:
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                AptPackage(
-                                    name="python3.12-dev"
-                                ),
+                                AptPackage(name="python3.12-dev"),
                                 AptPackage(name="git"),
                                 AptPackage(name="ca-certificates"),
                             ]
