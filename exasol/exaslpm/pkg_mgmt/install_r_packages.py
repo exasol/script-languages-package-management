@@ -56,7 +56,6 @@ validate_or_fail <- function(package_name, version){
 
 
 def _prepare_remotes_library(search_cache: SearchCache, context: Context):
-    '$rscript_binary -e \'install.packages("remotes",repos="https://cloud.r-project.org")\' '
     cmd = CommandExecInfo(
         cmd=[
             str(search_cache.r_binary_path),

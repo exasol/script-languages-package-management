@@ -159,7 +159,7 @@ def _build_conda_packages(enable_conda_packages: bool = False) -> CondaPackages 
     )
 
 
-def _build_r_packages(enable_r_packages: bool = False) -> CondaPackages | None:
+def _build_r_packages(enable_r_packages: bool = False) -> RPackages | None:
     return (
         RPackages(
             packages=[
