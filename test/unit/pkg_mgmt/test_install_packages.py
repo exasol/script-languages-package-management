@@ -372,11 +372,11 @@ def test_install_packages_multiple(
             ),
         ),
         Phase(
-            name="phase-6",
+            name="phase-7",
             pip=_build_pip_packages(enable_pip_packages=True),
         ),
         Phase(
-            name="phase-7",
+            name="phase-8",
             conda=_build_conda_packages(enable_conda_packages=True),
         ),
     ]
@@ -399,7 +399,7 @@ def test_install_packages_multiple(
     ]
     assert mock_install_pip.mock_calls == [call(ANY, phases[3], context_mock)]
     assert mock_install_micromamba.mock_calls == [call(phases[5], context_mock)]
-    assert mock_install_pip_packages.mock_calls == [call(ANY, phases[5], context_mock)]
+    assert mock_install_pip_packages.mock_calls == [call(ANY, phases[6], context_mock)]
     assert mock_install_conda_packages.mock_calls == [
-        call(ANY, phases[6], context_mock)
+        call(ANY, phases[7], context_mock)
     ]

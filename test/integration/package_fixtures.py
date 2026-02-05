@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import pytest
-from pydantic import HttpUrl
 
 from exasol.exaslpm.model.package_file_config import (
     PPA,

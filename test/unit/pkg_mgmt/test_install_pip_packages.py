@@ -142,6 +142,6 @@ def test_install_pip_packages(
         "exasol-db-api @ https://exasol.org/exasol-db-api\n"
     )
 
-    assert context_with_python_env.binary_checker.check_binary.mock_calls == [
+    assert context_with_python_env.file_access.check_binary.mock_calls == [
         call(Path("/usr/bin/test-python"))
     ]
