@@ -72,7 +72,7 @@ def test_conda_packages_install_error(
         .conda.packages[0]
     )
     pkg.name = "unknowsoftware"
-    pkg.version = "0.0.0"
+    pkg.version = "=0.0.0"
     conda_package_file_content_yaml = to_yaml_str(conda_packages_file_content)
     conda_invalid_pkg_file = docker_container.make_and_upload_file(
         Path("/"), "conda_file_02", conda_package_file_content_yaml.encode("utf-8")
