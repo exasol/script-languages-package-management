@@ -7,7 +7,7 @@ from exasol.exaslpm.model.serialization import to_yaml_str
 
 
 @pytest.fixture
-def prepare_gpg_env(docker_container, apt_gpg, apt_r_with_ppa, cli_helper):
+def prepare_gpg_env(docker_container, apt_gpg, cli_helper):
     apt_gpg_package_file_yaml = to_yaml_str(apt_gpg)
 
     apt_gpg_package_file = docker_container.make_and_upload_file(
@@ -23,8 +23,8 @@ def prepare_gpg_env(docker_container, apt_gpg, apt_r_with_ppa, cli_helper):
 
 
 @pytest.fixture
-def prepare_r_env(docker_container, prepare_gpg_env, apt_r_with_ppa, cli_helper):
-    apt_r_package_file_yaml = to_yaml_str(apt_r_with_ppa)
+def prepare_r_env(docker_container, prepare_gpg_env, apt_r_with_repo, cli_helper):
+    apt_r_package_file_yaml = to_yaml_str(apt_r_with_repo)
 
     apt_gpg_package_file = docker_container.make_and_upload_file(
         Path("/"), "apt_r_file_01", apt_r_package_file_yaml.encode("utf-8")
@@ -45,7 +45,7 @@ def test_install_r_packages(docker_container, packages_r, cli_helper, prepare_r_
         Path("/"), "r_file_01", r_packages_file_yaml.encode("utf-8")
     )
 
-    expected_packages = packages_r.build_steps[0].phases[1].r.packages
+    expected_packages = packages_r.build_steps[0].phases[2].r.packages
 
     pkgs_before_install = docker_container.list_r()
     assert pkgs_before_install != ContainsPackages(expected_packages)
@@ -59,30 +59,22 @@ def test_install_r_packages(docker_container, packages_r, cli_helper, prepare_r_
     assert pkgs_after_install == ContainsPackages(expected_packages)
 
 
-#
-# def test_pip_packages_install_error(
-#     docker_container, pip_packages_file_content, cli_helper, prepare_pip_env
-# ):
-#     pkg = (
-#         pip_packages_file_content.find_build_step("build_step_2")
-#         .find_phase("phase_1")
-#         .pip.packages[0]
-#     )
-#     pkg.name = "unknowsoftware"
-#     pkg.version = " == 0.0.0"
-#     pip_package_file_content_yaml = to_yaml_str(pip_packages_file_content)
-#     pip_invalid_pkg_file = docker_container.make_and_upload_file(
-#         Path("/"), "pip_file_02", pip_package_file_content_yaml.encode("utf-8")
-#     )
-#
-#     ret, out = docker_container.run_exaslpm(
-#         cli_helper.install.package_file(pip_invalid_pkg_file)
-#         .build_step("build_step_2")
-#         .args,
-#         False,
-#     )
-#     assert ret != 0
-#     assert (
-#         "Could not find a version that satisfies the requirement unknowsoftware==0.0.0"
-#         in out
-#     )
+def test_r_packages_install_error(
+    docker_container, packages_r, cli_helper, prepare_r_env
+):
+    pkg = packages_r.find_build_step("build_step_3").find_phase("phase_3").r.packages[0]
+    pkg.name = "unknowsoftware"
+    pkg.version = "0.0.0"
+    r_package_file_content_yaml = to_yaml_str(packages_r)
+    r_invalid_pkg_file = docker_container.make_and_upload_file(
+        Path("/"), "r_file_02", r_package_file_content_yaml.encode("utf-8")
+    )
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(r_invalid_pkg_file)
+        .build_step("build_step_3")
+        .args,
+        False,
+    )
+    assert ret != 0
+    assert "couldn't find package 'unknowsoftware'" in out

@@ -10,7 +10,6 @@ from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 def prepare_gpg_env(
     docker_container,
     apt_gpg,
-    apt_r_with_ppa,
     local_package_path,
     docker_executor_context,
 ):
@@ -29,11 +28,11 @@ def prepare_gpg_env(
 def prepare_r_env(
     docker_container,
     prepare_gpg_env,
-    apt_r_with_ppa,
+    apt_r_with_repo,
     local_package_path,
     docker_executor_context,
 ):
-    apt_r_package_file_yaml = to_yaml_str(apt_r_with_ppa)
+    apt_r_package_file_yaml = to_yaml_str(apt_r_with_repo)
 
     local_package_path.write_text(apt_r_package_file_yaml)
 
@@ -44,7 +43,7 @@ def prepare_r_env(
     )
 
 
-def test_install_pip_packages(
+def test_install_r_packages(
     docker_container,
     packages_r,
     docker_executor_context,

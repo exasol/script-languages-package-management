@@ -69,18 +69,28 @@ def _prepare_remotes_library(search_cache: SearchCache, context: Context):
     run_cmd(cmd, context)
 
 
+def _add_r_function_call_for_pkg(function_call: str, pkg: RPackage) -> str:
+    version_str = f'"{pkg.version}"' if pkg.version else "NULL"
+    pkg_str = f'"{pkg.name}"'
+    return f"{function_call}({pkg_str},{version_str})"
+
+
+def _install_r_function_call(pkg: RPackage) -> str:
+    return _add_r_function_call_for_pkg("install_or_fail", pkg)
+
+
+def _validate_r_function_call(pkg: RPackage) -> str:
+    return _add_r_function_call_for_pkg("validate_or_fail", pkg)
+
+
 def _install_packages(
     packages: list[RPackage], search_cache: SearchCache, context: Context
 ):
     with context.temp_file_provider.create() as temp_file:
         with temp_file.open() as f:
             print(INSTALL_METHOD, file=f)
-
             for pkg in packages:
-                version_str = f'"{pkg.version}"' if pkg.version else "NULL"
-                pkg_str = f'"{pkg.name}"'
-                pkg_install_str = f"install_or_fail({pkg_str},{version_str})"
-                print(pkg_install_str, file=f)
+                print(_install_r_function_call(pkg), file=f)
 
         cmd = CommandExecInfo(
             cmd=[str(search_cache.r_binary_path), str(temp_file.path)],
@@ -95,12 +105,8 @@ def _validate_packages(
     with context.temp_file_provider.create() as temp_file:
         with temp_file.open() as f:
             print(VALIDATE_METHOD, file=f)
-
             for pkg in packages:
-                version_str = f'"{pkg.version}"' if pkg.version else "NULL"
-                pkg_str = f'"{pkg.name}"'
-                pkg_validate_str = f"validate_or_fail({pkg_str},{version_str})"
-                print(pkg_validate_str, file=f)
+                print(_validate_r_function_call(pkg), file=f)
 
         cmd = CommandExecInfo(
             cmd=[str(search_cache.r_binary_path), str(temp_file.path)],
