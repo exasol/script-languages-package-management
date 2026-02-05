@@ -1,3 +1,4 @@
+import re
 from typing import Any
 
 from packaging.specifiers import SpecifierSet
@@ -104,8 +105,10 @@ class ContainsCondaPackages:
         if expected.channel and expected.channel != installed.channel:
             return False
 
-        if expected.build and expected.build != installed.build:
-            return False
+        if expected.build:
+            build_regex = expected.build.replace("*", ".*")
+            if not re.match(build_regex, installed.build):
+                return False
 
         return True
 

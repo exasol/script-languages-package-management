@@ -216,7 +216,7 @@ def conda_packages_file_content() -> PackageFile:
                         conda=CondaPackages(
                             packages=[
                                 CondaPackage(
-                                    name="numpy", version=">=2.3.0,<3", channel="main"
+                                    name="numpy", version=">=2.3.0,<3", channel="main", build="py314*"
                                 ),
                                 CondaPackage(name="pydantic", version="=2.*"),
                             ],
