@@ -80,8 +80,8 @@ def _build_apt_ppa_package(enable_apt_ppa: bool = False) -> AptPackages | None:
             packages=[],
             ppas={
                 "some_ppa": PPA(
-                    ppa="deb some_ppa",
-                    key_server="https://some.key.server",
+                    apt_repo_entry="deb some_ppa",
+                    key_url="https://some.key.server",
                     out_file="some_ppa.list",
                 )
             },

@@ -7,6 +7,7 @@ from typing import (
 
 from pydantic import (
     BaseModel,
+    HttpUrl,
     model_validator,
 )
 
@@ -62,8 +63,8 @@ class RPackage(Package):
 
 
 class PPA(BaseModel):
-    key_server: str
-    ppa: str
+    key_url: HttpUrl
+    apt_repo_entry: str
     out_file: str
     comment: None | str = None
 

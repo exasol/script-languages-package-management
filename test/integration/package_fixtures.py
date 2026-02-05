@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import HttpUrl
 
 from exasol.exaslpm.model.package_file_config import (
     PPA,
@@ -218,8 +219,8 @@ def apt_trivy_with_ppa() -> PackageFile:
                         apt=AptPackages(
                             ppas={
                                 "trivy": PPA(
-                                    key_server="https://aquasecurity.github.io/trivy-repo/deb/public.key",
-                                    ppa="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
+                                    key_url="https://aquasecurity.github.io/trivy-repo/deb/public.key",
+                                    apt_repo_entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
                                     out_file="trivy.list",
                                 )
                             },
@@ -249,8 +250,8 @@ def apt_r_with_ppa() -> PackageFile:
                         apt=AptPackages(
                             ppas={
                                 "cran-r": PPA(
-                                    key_server="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
-                                    ppa="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
+                                    key_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
+                                    apt_repo_entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
                                     out_file="noble-cran40.list",
                                 )
                             },

@@ -29,7 +29,7 @@ def _run_apt_update(context: Context):
 
 
 def _install_key(context: Context, ppa_name: str, ppa: PPA):
-    with context.file_downloader.download_file_to_tmp(url=ppa.key_server) as tmp:
+    with context.file_downloader.download_file_to_tmp(url=ppa.key_url) as tmp:
         key_file = f"/usr/share/keyrings/{ppa_name}.gpg"
         context.cmd_logger.info(f"Installing key of '{ppa_name}' to {key_file}")
         gpg_cmd = CommandExecInfo(
@@ -42,7 +42,7 @@ def _install_key(context: Context, ppa_name: str, ppa: PPA):
 def _install_repository(context: Context, ppa_name: str, ppa: PPA):
     with context.temp_file_provider.create() as tmp:
         with tmp.open() as fp:
-            print(ppa.ppa, file=fp)
+            print(ppa.apt_repo_entry, file=fp)
         list_file_path = Path("/etc") / "apt" / "sources.list.d" / ppa.out_file
         context.cmd_logger.info(
             f"Installing ppa list file of '{ppa_name}' to {list_file_path}"
