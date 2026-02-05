@@ -24,6 +24,7 @@
  - #62: Added ValidationCfg model and implemented usage of field URL of PipPackage
  - #8: Implemented install_micromamba command
  - #6: Implemented install_conda_packages command
+ - #9: Implemented install_ppa
 
 ## Refactorings
 

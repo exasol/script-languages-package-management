@@ -8,8 +8,8 @@ import yaml
 from pydantic import ValidationError
 
 from exasol.exaslpm.model.package_file_config import (
-    PPA,
     AptPackage,
+    AptRepo,
     Bazel,
     CondaBinary,
     Micromamba,
@@ -210,24 +210,22 @@ def test_unique_apt_packages():
         PackageFile.model_validate(yaml_data)
 
 
-def test_ppa():
+def test_apt_repo():
     yaml_file = """
     build_steps:
       - name: build_step_one
         phases:
           - name: phase_one
             apt:
-                ppas:
+                repos:
                   some_ppa:
-                     key_server: http://some_key_server
-                     key_fingerprint: some_key
-                     ppa: deb http://some_ppa_server/some_ppa some_ppa/
+                     key_url: http://some_key_server
+                     entry: deb http://some_ppa_server/some_ppa some_ppa/
                      out_file: some_out_file
                      comment: This is a sample PPA
                   some_other_ppa:
-                     key_server: http://some_key_server
-                     key_fingerprint: some_other_key
-                     ppa: deb http://some_other_ppa_server/some_ppa some_ppa/
+                     key_url: http://some_key_server
+                     entry: deb http://some_other_ppa_server/some_ppa some_ppa/
                      out_file: some_other_out_file
                      comment: This is a sample PPA
                 packages:
@@ -236,22 +234,22 @@ def test_ppa():
     """
     yaml_data = yaml.safe_load(yaml_file)
     model = PackageFile.model_validate(yaml_data)
-    expected_first_ppa = PPA(
-        key_server="http://some_key_server",
-        key_fingerprint="some_key",
-        ppa="deb http://some_ppa_server/some_ppa some_ppa/",
+    expected_first_ppa = AptRepo(
+        key_url="http://some_key_server",
+        entry="deb http://some_ppa_server/some_ppa some_ppa/",
         out_file="some_out_file",
         comment="This is a sample PPA",
     )
-    expected_second_ppa = PPA(
-        key_server="http://some_key_server",
-        key_fingerprint="some_other_key",
-        ppa="deb http://some_other_ppa_server/some_ppa some_ppa/",
+    expected_second_ppa = AptRepo(
+        key_url="http://some_key_server",
+        entry="deb http://some_other_ppa_server/some_ppa some_ppa/",
         out_file="some_other_out_file",
         comment="This is a sample PPA",
     )
     assert model
-    assert model.find_build_step("build_step_one").find_phase("phase_one").apt.ppas == {
+    assert model.find_build_step("build_step_one").find_phase(
+        "phase_one"
+    ).apt.repos == {
         "some_ppa": expected_first_ppa,
         "some_other_ppa": expected_second_ppa,
     }

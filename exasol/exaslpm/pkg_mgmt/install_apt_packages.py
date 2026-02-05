@@ -21,7 +21,10 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
     if apt_packages.packages is None:
         raise ValueError("no apt packages defined")
     for package in apt_packages.packages:
-        install_cmd.append(f"{package.name}={package.version}")
+        apt_cmd = (
+            f"{package.name}={package.version}" if package.version else package.name
+        )
+        install_cmd.append(apt_cmd)
     all_cmds.append(
         CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")
     )

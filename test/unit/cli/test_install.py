@@ -40,10 +40,10 @@ def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 @pytest.fixture
-def mock_binary_checker(monkeypatch: MonkeyPatch) -> MagicMock:
+def mock_file_access(monkeypatch: MonkeyPatch) -> MagicMock:
     return_mock = MagicMock()
     mock_function_to_mock = MagicMock(return_value=return_mock)
-    monkeypatch.setattr(cli, "BinaryChecker", mock_function_to_mock)
+    monkeypatch.setattr(cli, "FileAccess", mock_function_to_mock)
     return return_mock
 
 
@@ -63,7 +63,7 @@ def test_mock_all_options(
     some_package_file,
     mock_context,
     mock_history_manager,
-    mock_binary_checker,
+    mock_file_access,
 ):
     ret = cliRunner.run(
         "--package-file",

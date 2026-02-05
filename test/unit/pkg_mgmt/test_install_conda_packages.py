@@ -129,7 +129,7 @@ def test_install_conda_packages(
     ]
     assert context_with_conda_env.cmd_executor.mock_calls == expected_calls
 
-    assert context_with_conda_env.binary_checker.check_binary.mock_calls == [
+    assert context_with_conda_env.file_access.check_binary.mock_calls == [
         call(expected_binary_path)
     ]
 

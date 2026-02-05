@@ -37,7 +37,7 @@ class SearchCache:
         if binary not in self._binary_paths:
             binary_path = find_binary(binary, self._all_phases)
             self._binary_paths[binary] = binary_path
-            self._context.binary_checker.check_binary(binary_path)
+            self._context.file_access.check_binary(binary_path)
         return self._binary_paths[binary]
 
     @property

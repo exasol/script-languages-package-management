@@ -8,13 +8,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from exasol.exaslpm.pkg_mgmt.context.binary_checker import BinaryChecker
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandExecutor,
     CommandResult,
 )
 from exasol.exaslpm.pkg_mgmt.context.cmd_logger import CommandLogger
 from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.file_access import FileAccess
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def context_mock():
     mock_logger = MagicMock(spec=CommandLogger)
     mock_executor = MagicMock(spec=CommandExecutor)
     mock_history_file_manager = HistoryFileManagerMock()
-    mock_binary_checker = MagicMock(spec=BinaryChecker)
+    mock_file_access = MagicMock(spec=FileAccess)
     mock_file_downloader = FileDownloaderMock(path=Path("path/to/file"))
     mock_temp_file_provider = TempFileProviderMock(path=Path("path/to/temp/file"))
 
@@ -34,7 +34,7 @@ def context_mock():
         cmd_logger=mock_logger,
         cmd_executor=mock_executor,
         history_file_manager=mock_history_file_manager,
-        binary_checker=mock_binary_checker,
+        file_access=mock_file_access,
         file_downloader=mock_file_downloader,
         temp_file_provider=mock_temp_file_provider,
     )

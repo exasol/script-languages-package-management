@@ -5,6 +5,7 @@ import pytest
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
+    AptRepo,
     BuildStep,
     CondaBinary,
     CondaPackage,
@@ -16,6 +17,7 @@ from exasol.exaslpm.model.package_file_config import (
     PipPackage,
     PipPackages,
     Tools,
+    ValidationConfig,
 )
 
 
@@ -67,16 +69,15 @@ def pip_package_file_content(request) -> PackageFile:
         build_steps=[
             BuildStep(
                 name="build_step_1",
+                validation_cfg=ValidationConfig(version_mandatory=False),
                 phases=[
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                AptPackage(
-                                    name="python3.12-dev", version="3.12.3-1ubuntu0.10"
-                                ),
-                                AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
-                                AptPackage(name="ca-certificates", version="20240203"),
+                                AptPackage(name="python3.12-dev"),
+                                AptPackage(name="git"),
+                                AptPackage(name="ca-certificates"),
                             ]
                         ),
                     ),
@@ -224,6 +225,96 @@ def conda_packages_file_content() -> PackageFile:
                                 CondaPackage(name="pydantic", version="=2.*"),
                             ],
                             binary=CondaBinary.Conda,
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def apt_gpg() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                validation_cfg=ValidationConfig(version_mandatory=False),
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="gpg",
+                                ),
+                                AptPackage(
+                                    name="ca-certificates",
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def apt_trivy_with_repo() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                validation_cfg=ValidationConfig(version_mandatory=False),
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            repos={
+                                "trivy": AptRepo(
+                                    key_url="https://aquasecurity.github.io/trivy-repo/deb/public.key",
+                                    entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
+                                    out_file="trivy.list",
+                                )
+                            },
+                            packages=[
+                                AptPackage(
+                                    name="trivy",
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def apt_r_with_repo() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                validation_cfg=ValidationConfig(version_mandatory=False),
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            repos={
+                                "cran-r": AptRepo(
+                                    key_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
+                                    entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
+                                    out_file="noble-cran40.list",
+                                )
+                            },
+                            packages=[
+                                AptPackage(
+                                    name="r-base-core",
+                                    version="4.5.2-1.2404.0",
+                                ),
+                            ],
                         ),
                     ),
                 ],

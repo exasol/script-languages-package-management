@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_apt_packages import install_apt_packages
+from exasol.exaslpm.pkg_mgmt.install_apt_repos import install_apt_repos
 from exasol.exaslpm.pkg_mgmt.install_conda_packages import install_conda_packages
 from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
@@ -25,7 +26,9 @@ def _process_tools(context: Context, search_cache: SearchCache, phase: Phase):
 
 def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> None:
     search_cache = SearchCache(build_step, phase, context)
-    if phase.apt is not None:
+    if phase.apt and phase.apt.repos:
+        install_apt_repos(phase.apt, context)
+    if phase.apt and phase.apt.packages:
         install_apt_packages(phase.apt, context)
     if phase.tools is not None:
         _process_tools(context, search_cache, phase)
@@ -68,7 +71,9 @@ def package_install(package_file: pathlib.Path, build_step_name: str, context: C
             _process_phase(context, build_step, phase)
         except Exception as e:
             logger.err(
-                "Failed to process phase.", package_file=package_file, exception=e
+                f"Failed to process phase '{phase.name} of build-step '{build_step.name}''.",
+                package_file=package_file,
+                exception=e,
             )
             raise
 

@@ -22,10 +22,10 @@ class ContainsPackages:
 
     @staticmethod
     def _compare_package(expected: Package, installed: Package) -> bool:
-        return (
-            expected.name.lower() == installed.name.lower()
-            and installed.version == expected.version
-        )
+        if expected.version and expected.version != installed.version:
+            return False
+
+        return expected.name.lower() == installed.name.lower()
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):
