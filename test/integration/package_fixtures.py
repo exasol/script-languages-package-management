@@ -16,6 +16,8 @@ from exasol.exaslpm.model.package_file_config import (
     Pip,
     PipPackage,
     PipPackages,
+    RPackage,
+    RPackages,
     Tools,
     ValidationConfig,
 )
@@ -316,6 +318,38 @@ def apt_r_with_repo() -> PackageFile:
                                 ),
                             ],
                         ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def packages_r() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_3",
+                validation_cfg=ValidationConfig(version_mandatory=False),
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        tools=Tools(r_binary_path=Path("/usr/bin/Rscript")),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="build-essential", version="12.10ubuntu1"
+                                )
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="phase_3",
+                        r=RPackages(packages=[RPackage(name="dplyr", version="1.2.0")]),
                     ),
                 ],
             ),

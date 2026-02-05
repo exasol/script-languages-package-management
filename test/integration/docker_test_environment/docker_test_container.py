@@ -12,6 +12,7 @@ from exasol.exaslpm.model.package_file_config import (
     CondaPackage,
     Micromamba,
     PipPackage,
+    RPackage,
 )
 from exasol.exaslpm.pkg_mgmt.micromamba_env import create_mamba_env_variables
 
@@ -126,4 +127,22 @@ class DockerTestContainer:
                 build=pkg["build_string"],
             )
             for pkg in packages
+        ]
+
+    def list_r(self) -> list[RPackage]:
+        r_cmd = (
+            r"""ip <- installed.packages()[,c("Package","Version")];"""
+            + r"""cat("[", paste(apply(ip,1,function(x) sprintf("{\"Package\":\"%s\",\"Version\":\"%s\"}", """
+            + r"""x[1], x[2])), collapse=","), "]", sep="")"""
+        )
+        _, out = self.run(
+            [
+                "Rscript",
+                "-e",
+                r_cmd,
+            ]
+        )
+        packages = json.loads(out.strip())
+        return [
+            RPackage(name=pkg["Package"], version=pkg["Version"]) for pkg in packages
         ]
