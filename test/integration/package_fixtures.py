@@ -166,6 +166,7 @@ def micromamba_file_content() -> PackageFile:
                                     name="bzip2",
                                     version="1.0.8-5.1build0.1",
                                 ),
+                                # Need certificates for Conda
                                 AptPackage(name="ca-certificates", version="20240203"),
                             ]
                         ),
@@ -190,7 +191,7 @@ def conda_packages_file_content() -> PackageFile:
                     Phase(
                         name="phase_1",
                         conda=CondaPackages(
-                            packages=[CondaPackage(name="mamba", version="2.3.*")],
+                            packages=[CondaPackage(name="mamba", version="=2.3.*")],
                             binary=CondaBinary.Micromamba,
                             channels={"conda-forge"},
                         ),
@@ -202,7 +203,7 @@ def conda_packages_file_content() -> PackageFile:
                     Phase(
                         name="phase_3",
                         conda=CondaPackages(
-                            packages=[CondaPackage(name="conda", version="26.1.*")],
+                            packages=[CondaPackage(name="conda", version="=26.1.*")],
                             binary=CondaBinary.Mamba,
                         ),
                     ),
@@ -217,7 +218,7 @@ def conda_packages_file_content() -> PackageFile:
                                 CondaPackage(
                                     name="numpy", version=">=2.3.0,<3", channel="main"
                                 ),
-                                CondaPackage(name="pydantic", version="2.*"),
+                                CondaPackage(name="pydantic", version="=2.*"),
                             ],
                             binary=CondaBinary.Conda,
                         ),

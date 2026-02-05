@@ -1,3 +1,4 @@
+from io import StringIO
 from pathlib import Path
 from unittest.mock import (
     call,
@@ -15,7 +16,10 @@ from exasol.exaslpm.model.package_file_config import (
     Tools,
 )
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
-from exasol.exaslpm.pkg_mgmt.install_conda_packages import install_conda_packages
+from exasol.exaslpm.pkg_mgmt.install_conda_packages import (
+    _write_conda_spec,
+    install_conda_packages,
+)
 from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
 ROOT_PREFIX = Path("/some/root/prefix")
@@ -80,8 +84,7 @@ def test_install_conda_packages(
     tmp_file_provider = context_with_conda_env.temp_file_provider
 
     pkgs = [
-        CondaPackage(name="numpy", version="1.2.3", channel="main"),
-        CondaPackage(name="requests", version="2.25.*", build="something"),
+        CondaPackage(name="numpy", version="=1.2.3"),
     ]
 
     phase_one = Phase(
@@ -126,10 +129,19 @@ def test_install_conda_packages(
     ]
     assert context_with_conda_env.cmd_executor.mock_calls == expected_calls
 
-    assert tmp_file_provider.result == (
-        "main::numpy=1.2.3\n" "requests=2.25.*=something\n"
-    )
-
     assert context_with_conda_env.binary_checker.check_binary.mock_calls == [
         call(expected_binary_path)
     ]
+
+
+def test_install_conda_packages_spec(context_with_conda_env):
+
+    pkgs = [
+        CondaPackage(name="numpy", version="=1.2.3", channel="main"),
+        CondaPackage(name="requests", version="=2.25.*", build="something"),
+    ]
+
+    output = StringIO()
+    _write_conda_spec(output, pkgs)
+
+    assert output.getvalue() == ("main::numpy=1.2.3\n" "requests=2.25.*=something\n")

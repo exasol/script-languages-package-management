@@ -120,7 +120,10 @@ class DockerTestContainer:
         packages = json.loads(out.strip())
         return [
             CondaPackage(
-                name=pkg["name"], version=pkg["version"], channel=pkg["channel"]
+                name=pkg["name"],
+                version=pkg["version"],
+                channel=pkg["channel"],
+                build=pkg["build_string"],
             )
             for pkg in packages
         ]

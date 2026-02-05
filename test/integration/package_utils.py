@@ -104,6 +104,9 @@ class ContainsCondaPackages:
         if expected.channel and expected.channel != installed.channel:
             return False
 
+        if expected.build and expected.build != installed.build:
+            return False
+
         return True
 
     def __eq__(self, installed_packages: Any) -> bool:
