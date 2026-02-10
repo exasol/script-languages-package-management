@@ -15,6 +15,7 @@ jobs:
     name: Run Slow Tests?
     runs-on: "ubuntu-24.04"
     permissions:
+      id-token: write
       contents: read
 
     # Even though the environment "manual-approval" will be created automatically,
