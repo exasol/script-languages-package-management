@@ -19,7 +19,7 @@ from exasol.exaslpm.model.package_file_config import (
     RPackage,
     RPackages,
     Tools,
-    ValidationConfig,
+    ValidationConfig, Bazel,
 )
 
 
@@ -350,6 +350,35 @@ def packages_r() -> PackageFile:
                     Phase(
                         name="phase_3",
                         r=RPackages(packages=[RPackage(name="dplyr", version="1.2.0")]),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def bazel_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="build-essential", version="12.10ubuntu1"
+                                ),
+                                AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
+                                AptPackage(name="ca-certificates", version="20240203"),
+                            ],
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        tools=Tools(bazel=Bazel(version="8.3.1"))
                     ),
                 ],
             ),
