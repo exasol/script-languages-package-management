@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: ubuntu-24.04
+          - runner: "ubuntu-24.04"
             binary-suffix: x86-64
           - runner: ubuntu-24.04-arm
             binary-suffix: arm64
@@ -28,10 +28,13 @@ jobs:
       BINARY_NAME: "exaslpm_linux_${{matrix.binary-suffix}}"
     steps:
       - name: SCM Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v4
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
 
       - name: Build standalone executable
         run: poetry run -- nox -s build-standalone-binary -- --executable-name "$BINARY_NAME"
