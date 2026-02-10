@@ -15,7 +15,7 @@ def install_bazel(phase: Phase, ctx: Context):
         bazel_machine = bazel_machine_mapping[platform.machine()]
         url = f"https://github.com/bazelbuild/bazel/releases/download/{bazel.version}/bazel-{bazel.version}-linux-{bazel_machine}"
         with ctx.file_downloader.download_file_to_tmp(
-            url=url
+            url=url, timeout_in_seconds=120
         ) as get_bazel:
             ctx.file_access.chmod(get_bazel, stat.S_IXUSR)
             ctx.file_access.copy_file(get_bazel, Path("/usr/bin/bazel"))
