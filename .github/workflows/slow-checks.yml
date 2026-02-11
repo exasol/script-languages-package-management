@@ -18,7 +18,9 @@ jobs:
 
   tests:
     name: Integration-Tests (Python-${{ matrix.python-version }} ${{ matrix.runner }})
-    needs: [ build-matrix-python, build-matrix-runner ]
+    needs:
+      - build-matrix-python
+      - build-matrix-runner
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
@@ -27,23 +29,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ${{ fromJson(needs.build-matrix-python.outputs.matrix).python-version }}
+        python-version: ${{ fromJson(needs.build-matrix-python.outputs.matrix).python-version}}
         runner: ${{ fromJson(needs.build-matrix-runner.outputs.matrix) }}
 
     steps:
       - name: SCM Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v4
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
         with:
           python-version: ${{ matrix.python-version }}
+          poetry-version: "2.3.0"
 
       - name: Run Tests and Collect Coverage
         run: poetry run -- nox -s test:integration -- --coverage
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-slow
           path: .coverage

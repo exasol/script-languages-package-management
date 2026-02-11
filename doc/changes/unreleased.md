@@ -34,3 +34,4 @@
  - #46: Refactored injection of classes which implement external dependencies
  - #49: Updated install_packages to process all phases of a build step
  - #36: Added unit tests for exasol.exaslpm.pkg_mgmt.install_packages.package_install
+ - #73: Updated to PTB 5.1.1 and relocked dependencies
