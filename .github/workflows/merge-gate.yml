@@ -12,9 +12,10 @@ jobs:
       contents: read
 
   run-slow-tests:
-    name: Run Slow Tests
-    runs-on: ubuntu-24.04
+    name: Run Slow Tests?
+    runs-on: "ubuntu-24.04"
     permissions:
+      id-token: write
       contents: read
 
     # Even though the environment "manual-approval" will be created automatically,
@@ -27,7 +28,8 @@ jobs:
 
   slow-checks:
     name: Slow
-    needs: [ run-slow-tests ]
+    needs:
+      - run-slow-tests
     uses: ./.github/workflows/slow-checks.yml
     secrets: inherit
     permissions:
@@ -36,14 +38,15 @@ jobs:
   # This job ensures inputs have been executed successfully.
   approve-merge:
     name: Allow Merge
-    runs-on: ubuntu-24.04
+    runs-on: "ubuntu-24.04"
     permissions:
       contents: read
     # If you need additional jobs to be part of the merge gate, add them below
-    needs: [ fast-checks, slow-checks ]
+    needs:
+      - fast-checks
+      - slow-checks
 
     # Each job requires a step, so we added this dummy step.
     steps:
       - name: Approve
-        run: |
-          echo "Merge Approved"
+        run: echo "Merge Approved"
