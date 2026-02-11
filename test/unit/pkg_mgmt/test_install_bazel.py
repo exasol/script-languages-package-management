@@ -39,7 +39,7 @@ def _make_build_step(
     return build_step
 
 
-def test_install_micromamba(
+def test_install_bazel(
     context_mock,
 ):
 
