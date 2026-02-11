@@ -48,6 +48,6 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: coverage-python${{ matrix.python-version }}-slow
+          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-slow
           path: .coverage
           include-hidden-files: true
