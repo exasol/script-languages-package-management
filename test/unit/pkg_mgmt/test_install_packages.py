@@ -15,6 +15,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     AptRepo,
+    Bazel,
     BuildStep,
     CondaPackage,
     CondaPackages,
@@ -26,7 +27,7 @@ from exasol.exaslpm.model.package_file_config import (
     PipPackages,
     RPackage,
     RPackages,
-    Tools, Bazel,
+    Tools,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
 
@@ -87,6 +88,7 @@ def mock_install_r_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
     monkeypatch.setattr(install_packages, "install_r_packages", mock_function_to_mock)
     return mock_function_to_mock
+
 
 @pytest.fixture
 def mock_install_bazel(monkeypatch: MonkeyPatch) -> MagicMock:
@@ -374,7 +376,6 @@ def test_install_r_packages(context_mock, mock_install_r_packages, package_file)
     ]
 
 
-
 def test_install_bazel(context_mock, mock_install_bazel, package_file):
     phase_bazel = _build_phase(
         phase_name="phase-1",
@@ -387,9 +388,8 @@ def test_install_bazel(context_mock, mock_install_bazel, package_file):
             build_step_name="build-step-1",
             context=context_mock,
         )
-    assert mock_install_bazel.mock_calls == [
-        call(phase_bazel, context_mock)
-    ]
+    assert mock_install_bazel.mock_calls == [call(phase_bazel, context_mock)]
+
 
 def test_install_packages_multiple(
     context_mock,
@@ -450,7 +450,9 @@ def test_install_packages_multiple(
         ),
         Phase(
             name="phase-10",
-            tools=_build_tools_package(tools_settings=ToolsSettings(bazel=Bazel(version="2.5.0"))),
+            tools=_build_tools_package(
+                tools_settings=ToolsSettings(bazel=Bazel(version="2.5.0"))
+            ),
         ),
     ]
     package_file_config = _build_package_config(phases)
@@ -477,6 +479,4 @@ def test_install_packages_multiple(
         call(ANY, phases[7], context_mock)
     ]
     assert mock_install_r_packages.mock_calls == [call(ANY, phases[8], context_mock)]
-    assert mock_install_bazel.mock_calls == [
-        call(phases[9], context_mock)
-    ]
+    assert mock_install_bazel.mock_calls == [call(phases[9], context_mock)]

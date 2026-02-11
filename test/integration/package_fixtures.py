@@ -1,11 +1,13 @@
 from pathlib import Path
 
 import pytest
+from pydantic import HttpUrl
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     AptRepo,
+    Bazel,
     BuildStep,
     CondaBinary,
     CondaPackage,
@@ -19,7 +21,7 @@ from exasol.exaslpm.model.package_file_config import (
     RPackage,
     RPackages,
     Tools,
-    ValidationConfig, Bazel,
+    ValidationConfig,
 )
 
 
@@ -275,7 +277,7 @@ def apt_trivy_with_repo() -> PackageFile:
                         apt=AptPackages(
                             repos={
                                 "trivy": AptRepo(
-                                    key_url="https://aquasecurity.github.io/trivy-repo/deb/public.key",
+                                    key_url=HttpUrl("https://aquasecurity.github.io/trivy-repo/deb/public.key"),
                                     entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
                                     out_file="trivy.list",
                                 )
@@ -306,7 +308,7 @@ def apt_r_with_repo() -> PackageFile:
                         apt=AptPackages(
                             repos={
                                 "cran-r": AptRepo(
-                                    key_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
+                                    key_url=HttpUrl("https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9"),
                                     entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
                                     out_file="noble-cran40.list",
                                 )
@@ -376,10 +378,7 @@ def bazel_file_content() -> PackageFile:
                             ],
                         ),
                     ),
-                    Phase(
-                        name="phase_2",
-                        tools=Tools(bazel=Bazel(version="8.3.1"))
-                    ),
+                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.3.1"))),
                 ],
             ),
         ]

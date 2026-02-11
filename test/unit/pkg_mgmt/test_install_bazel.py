@@ -1,23 +1,17 @@
 import stat
 from pathlib import Path
-
-from exasol.exaslpm.pkg_mgmt.install_bazel import install_bazel
-from test.unit.pkg_mgmt.utils import _named_params
 from unittest.mock import (
     call,
 )
 
-import pytest
-
 from exasol.exaslpm.model.package_file_config import (
     AptPackages,
+    Bazel,
     BuildStep,
-    Micromamba,
     Phase,
-    Tools, Bazel,
+    Tools,
 )
-from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
-from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
+from exasol.exaslpm.pkg_mgmt.install_bazel import install_bazel
 
 
 def test_install_bazel_empty_no_history(context_mock):
@@ -33,8 +27,8 @@ def _make_build_step(
     bazel_version: str,
 ) -> BuildStep:
     bazel = Bazel(
-            version=bazel_version,
-        )
+        version=bazel_version,
+    )
 
     phase = Phase(
         name="phase-1",
@@ -43,6 +37,7 @@ def _make_build_step(
     phases = [phase]
     build_step = BuildStep(name=name, phases=phases)
     return build_step
+
 
 def test_install_micromamba(
     context_mock,
@@ -59,7 +54,7 @@ def test_install_micromamba(
     assert context_mock.file_downloader.mock.mock_calls == [
         call(
             url="https://github.com/bazelbuild/bazel/releases/download/2.5.0/bazel-2.5.0-linux-x86_64",
-            timeout_in_seconds=120
+            timeout_in_seconds=120,
         )
     ]
 
