@@ -1,11 +1,13 @@
 from pathlib import Path
 
 import pytest
+from pydantic import HttpUrl
 
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     AptRepo,
+    Bazel,
     BuildStep,
     CondaBinary,
     CondaPackage,
@@ -275,7 +277,9 @@ def apt_trivy_with_repo() -> PackageFile:
                         apt=AptPackages(
                             repos={
                                 "trivy": AptRepo(
-                                    key_url="https://aquasecurity.github.io/trivy-repo/deb/public.key",
+                                    key_url=HttpUrl(
+                                        "https://aquasecurity.github.io/trivy-repo/deb/public.key"
+                                    ),
                                     entry="deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main",
                                     out_file="trivy.list",
                                 )
@@ -306,7 +310,9 @@ def apt_r_with_repo() -> PackageFile:
                         apt=AptPackages(
                             repos={
                                 "cran-r": AptRepo(
-                                    key_url="https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9",
+                                    key_url=HttpUrl(
+                                        "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE298A3A825C0D65DFD57CBB651716619E084DAB9"
+                                    ),
                                     entry="deb [signed-by=/usr/share/keyrings/cran-r.gpg] https://cloud.r-project.org/bin/linux/ubuntu noble-cran40/",
                                     out_file="noble-cran40.list",
                                 )
@@ -351,6 +357,32 @@ def packages_r() -> PackageFile:
                         name="phase_3",
                         r=RPackages(packages=[RPackage(name="dplyr", version="1.2.0")]),
                     ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def bazel_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(
+                                    name="build-essential", version="12.10ubuntu1"
+                                ),
+                                AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
+                                AptPackage(name="ca-certificates", version="20240203"),
+                            ],
+                        ),
+                    ),
+                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.3.1"))),
                 ],
             ),
         ]

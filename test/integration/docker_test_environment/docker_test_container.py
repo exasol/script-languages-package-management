@@ -27,9 +27,10 @@ class DockerTestContainer:
         param_list: list[str],
         check_exit_code: bool = True,
         environment: dict[str, str] | None = None,
+        workdir: str = None,
     ) -> tuple[int, str]:
         (exit_code, output) = self.container.exec_run(
-            param_list, environment=environment
+            param_list, environment=environment, workdir=workdir
         )
         if check_exit_code:
             assert exit_code == 0, output.decode("utf-8")

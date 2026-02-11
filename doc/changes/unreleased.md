@@ -26,6 +26,7 @@
  - #6: Implemented install_conda_packages command
  - #9: Implemented install_ppa
  - #4: Implement install command for R
+ - #70: Added Bazel install
 
 ## Refactorings
 

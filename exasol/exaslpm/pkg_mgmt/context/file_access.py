@@ -1,5 +1,6 @@
 import os
 import shutil
+import stat
 from pathlib import Path
 
 
@@ -15,3 +16,7 @@ class FileAccess:
 
     def copy_file(self, source_path: Path, destination_path: Path) -> None:
         shutil.copy(str(source_path), str(destination_path))
+
+    def chmod(self, file: Path, mode: int = stat.S_IXUSR) -> None:
+        st = os.stat(file)
+        os.chmod(file, st.st_mode | mode)
