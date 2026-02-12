@@ -82,8 +82,8 @@ def matrix_runner(session: nox.Session):
     print(json.dumps(runners))
 
 
-def _build_docker_tag(tag: str, docker_tag_suffix: str):
-    return f"{tag}-{docker_tag_suffix}"
+def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
+    return f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}-{docker_tag_suffix}"
 
 
 @nox.session(name="matrix:docker-image-config", python=False)
@@ -94,7 +94,7 @@ def docker_image_config(session: nox.Session):
         return {
             "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
             "base_img": f"ubuntu:{ubuntu_version}",
-            "complete_docker_tag": _build_docker_tag(ubuntu_version, docker_tag_suffix),
+            "complete_docker_tag": _build_docker_img_tag(ubuntu_version, docker_tag_suffix),
         }
 
     docker_image_config = [
@@ -223,13 +223,14 @@ def build_docker_manifests(session: nox.Session):
     #             --amend exasol/script-languages-container:22.04-x86_64
     #           docker manifest push exasol/script-languages-container:22.04
     for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions:
-        cmd = ["docker", "manifest", "create", f"{repository}:{ubuntu_version}"]
+        manifest_tag = f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}"
+        cmd = ["docker", "manifest", "create", f"{repository}:{manifest_tag}"]
 
         for platform in PROJECT_CONFIG.supported_platforms:
-            complete_docker_tag = _build_docker_tag(
+            complete_docker_tag = _build_docker_img_tag(
                 ubuntu_version, platform.docker_tag_suffix
             )
             cmd.extend(["--amend", f"{repository}:{complete_docker_tag}"])
 
         session.run(*cmd)
-        session.run("docker", "manifest", "push", f"{repository}:{ubuntu_version}")
+        session.run("docker", "manifest", "push", f"{repository}:{manifest_tag}")
