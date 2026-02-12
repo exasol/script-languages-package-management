@@ -218,10 +218,10 @@ def build_docker_manifests(session: nox.Session):
     )
 
     # Create a manifest for every supported Ubuntu version, e.g.
-    #           docker manifest create exasol/script-languages-container:22.04 \
-    #             --amend exasol/script-languages-container:22.04-aarch64 \
-    #             --amend exasol/script-languages-container:22.04-x86_64
-    #           docker manifest push exasol/script-languages-container:22.04
+    #           docker manifest create exasol/script-languages-container:exaslpm-ubuntu-22.04 \
+    #             --amend exasol/script-languages-container:exaslpm-ubuntu-22.04-arm64 \
+    #             --amend exasol/script-languages-container:exaslpm-ubuntu-22.04-x86_64
+    #           docker manifest push exasol/script-languages-container:exaslpm-ubuntu-22.04
     for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions:
         manifest_tag = f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}"
         cmd = ["docker", "manifest", "create", f"{repository}:{manifest_tag}"]
