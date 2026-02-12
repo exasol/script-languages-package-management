@@ -108,7 +108,7 @@ def build_docker_image(session: nox.Session):
     p.add_argument("--tag")
     args = p.parse_args(session.posargs)
     base_img = args.base_img
-    tag = args.tag
+    tag_with_platform = f"{args.tag}-{platform.machine().lower()}"
     repository = args.repository
     _build_binary("exaslpm", True, session)
 
@@ -126,7 +126,6 @@ def build_docker_image(session: nox.Session):
 
         dockerfile_path.write_text(dockerfile_content)
 
-        tag_with_platform = f"{tag}-{platform.machine().lower()}"
 
         docker_client.images.build(path=str(tmp_dir), tag=f"{repository}:{tag_with_platform}")
     if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
@@ -137,4 +136,4 @@ def build_docker_image(session: nox.Session):
         "username": os.environ["DOCKER_USERNAME"],
         "password": os.environ["DOCKER_PASSWORD"],
     }
-    push_image_safe(docker_client, repository, tag, auth_config=auth_config)
+    push_image_safe(docker_client, repository, tag_with_platform, auth_config=auth_config)
