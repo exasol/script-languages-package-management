@@ -171,23 +171,23 @@ def build_docker_image(session: nox.Session):
         "password": docker_pwd,
     }
     # Test exaslpm before we push the image to Dockerhub
+    session.log("Checking exaslpm in new docker image.")
     exaslpm_help_string = session.run(
         "docker",
         "run",
         f"{repository}:{complete_docker_tag}",
         "exaslpm",
-        "--error",
+        "--help",
         silent=True,
     )
-
-    if (
+    if ( not exaslpm_help_string or
         "EXASLPM - Exasol Script Languages Package Management"
         not in exaslpm_help_string
     ):
         raise RuntimeError(
-            f"Running exaslpm using new docker image did not succeed. \nstdout:\n'{exaslpm_help_string}'"
+            f"Running exaslpm using new docker image did not succeed. \noutput:\n'{exaslpm_help_string}'"
         )
-    session.log(f"Running exaslpm succeeded.\nstdout:\n'{exaslpm_help_string}'")
+    session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
     session.log(f"Pushing now new image to Docker Hub.")
     push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
