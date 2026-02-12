@@ -1,8 +1,7 @@
 name: Build Docker Images
 
 env:
-  #REPO_NAME: ${{ inputs.repository_name || 'exasol/script-language-container' }}
-  REPO_NAME: ${{ inputs.repository_name || 'thomasuben/exaslpm' }}
+  REPO_NAME: ${{ inputs.repository_name || 'exasol/script-language-container' }}
 
 on:
   workflow_dispatch:
@@ -50,8 +49,8 @@ jobs:
       - name: Build and Push "${{env.REPO_NAME}}:${{matrix.complete_docker_tag}}"
         run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
 
 
   build-manifest:
@@ -77,8 +76,8 @@ jobs:
       - name: Build Manifest
         run: poetry run -- nox -s build-docker-manifests -- --repository "$REPO_NAME"
         env:
-          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
 
 
   report:

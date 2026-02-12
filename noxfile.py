@@ -180,8 +180,9 @@ def build_docker_image(session: nox.Session):
         "--help",
         silent=True,
     )
-    if ( not exaslpm_help_string or
-        "EXASLPM - Exasol Script Languages Package Management"
+    if (
+        not exaslpm_help_string
+        or "EXASLPM - Exasol Script Languages Package Management"
         not in exaslpm_help_string
     ):
         raise RuntimeError(
