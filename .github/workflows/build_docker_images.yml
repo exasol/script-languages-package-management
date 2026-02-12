@@ -48,7 +48,7 @@ jobs:
           poetry-version: "2.3.0"
 
       - name: Build Artifacts
-        run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --tag "${{matrix.target_tag}}"
+        run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}

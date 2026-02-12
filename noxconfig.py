@@ -3,37 +3,20 @@ from __future__ import annotations
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
+from pydantic import BaseModel
 
 
-def _build_docker_image_config() -> list[dict[str, str]]:
-    return [
-        {
-            "runner": "ubuntu-24.04",
-            "base_img": "ubuntu:24.04",
-            "target_tag": "24.04",
-        },
-        {
-            "runner": "ubuntu-24.04",
-            "base_img": "ubuntu:22.04",
-            "target_tag": "22.04",
-        },
-        {
-            "runner": "ubuntu-24.04-arm",
-            "base_img": "ubuntu:24.04",
-            "target_tag": "24.04",
-        },
-        {
-            "runner": "ubuntu-24.04-arm",
-            "base_img": "ubuntu:22.04",
-            "target_tag": "22.04",
-        },
-    ]
+class PlatformConfig(BaseModel):
+    docker_tag_suffix: str
+    runner_suffix: str
 
 
 class Config(BaseConfig):
-    runners: list[str] = list({cfg["runner"] for cfg in _build_docker_image_config()})
-    docker_image_config: list[dict[str, str]] = _build_docker_image_config()
-    supported_platforms: list[str] = ["aarch64", "x86_64"]
+    supported_ubuntu_versions: list[str] = ["22.04", "24.04"]
+    supported_platforms: list[PlatformConfig] = [
+        PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm"),
+        PlatformConfig(docker_tag_suffix="x86_64", runner_suffix=""),
+    ]
 
 
 PROJECT_CONFIG = Config(

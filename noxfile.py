@@ -75,12 +75,34 @@ def build_standalone_binary(session: nox.Session):
 
 @nox.session(name="matrix:runner", python=False)
 def matrix_runner(session: nox.Session):
-    print(json.dumps(PROJECT_CONFIG.runners))
+    runners = [
+        f"ubuntu-{ubuntu_version}{platform.runner_suffix}"
+        for platform in PROJECT_CONFIG.supported_platforms
+        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
+    ]
+    print(json.dumps(runners))
 
+
+def _build_docker_tag(tag: str, docker_tag_suffix: str):
+    return f"{tag}-{docker_tag_suffix}"
 
 @nox.session(name="matrix:docker-image-config", python=False)
 def docker_image_config(session: nox.Session):
-    print(json.dumps({"include": PROJECT_CONFIG.docker_image_config}))
+    def _build_docker_build_image_config(runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str):
+        return {
+            "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
+            "base_img": f"ubuntu:{ubuntu_version}",
+            "complete_docker_tag": _build_docker_tag(ubuntu_version, docker_tag_suffix)
+        }
+
+    docker_image_config = [
+        _build_docker_build_image_config(
+            runner_suffix=platform.runner_suffix, ubuntu_version=ubuntu_version, docker_tag_suffix=platform.docker_tag_suffix
+        )
+        for platform in PROJECT_CONFIG.supported_platforms
+        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
+    ]
+    print(json.dumps({"include": docker_image_config}))
 
 
 def push_image_safe(client, repository, tag, auth_config):
@@ -98,10 +120,6 @@ def push_image_safe(client, repository, tag, auth_config):
             print(log["status"])
 
 
-def _build_platform_tag(tag: str, arch: str = platform.machine()):
-    return f"{tag}-{arch}"
-
-
 def _get_docker_credentials_from_env() -> tuple[str, str]:
     if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
         raise ValueError(
@@ -113,15 +131,16 @@ def _get_docker_credentials_from_env() -> tuple[str, str]:
 @nox.session(name="build-docker-image", python=False)
 def build_docker_image(session: nox.Session):
     p = ArgumentParser(
-        usage='nox -s build-docker-image -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --tag "24.04"',
+        usage='nox -s build-docker-image -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --complete-docker-tag "24.04-arm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--base-img")
     p.add_argument("--repository")
-    p.add_argument("--tag")
+    p.add_argument("--complete-docker-tag")
+
     args = p.parse_args(session.posargs)
     base_img = args.base_img
-    tag_with_platform = _build_platform_tag(args.tag)
+    complete_docker_tag = args.complete_docker_tag
     repository = args.repository
     _build_binary("exaslpm", True, session)
 
@@ -140,7 +159,7 @@ def build_docker_image(session: nox.Session):
         dockerfile_path.write_text(dockerfile_content)
 
         docker_client.images.build(
-            path=str(tmp_dir), tag=f"{repository}:{tag_with_platform}"
+            path=str(tmp_dir), tag=f"{repository}:{complete_docker_tag}"
         )
     docker_user, docker_pwd = _get_docker_credentials_from_env()
     auth_config = {
@@ -148,7 +167,7 @@ def build_docker_image(session: nox.Session):
         "password": docker_pwd,
     }
     push_image_safe(
-        docker_client, repository, tag_with_platform, auth_config=auth_config
+        docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
 
 
@@ -174,20 +193,17 @@ def build_docker_manifests(session: nox.Session):
         check=True,
     )
 
-    active_tags = {cfg["target_tag"] for cfg in PROJECT_CONFIG.docker_image_config}
-    session.log(f"Found active tags: {active_tags}")
-
     # Create a manifest for every supported Ubuntu version, e.g.
     #           docker manifest create exasol/script-languages-container:22.04 \
     #             --amend exasol/script-languages-container:22.04-aarch64 \
     #             --amend exasol/script-languages-container:22.04-x86_64
     #           docker manifest push exasol/script-languages-container:22.04
-    for active_tag in active_tags:
-        cmd = ["docker", "manifest", "create", f"{repository}:{active_tag}"]
+    for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions:
+        cmd = ["docker", "manifest", "create", f"{repository}:{ubuntu_version}"]
 
         for platform in PROJECT_CONFIG.supported_platforms:
-            tag_with_platform = _build_platform_tag(active_tag, platform)
-            cmd.extend(["--amend", f"{repository}:{tag_with_platform}"])
+            complete_docker_tag = _build_docker_tag(ubuntu_version, platform.docker_tag_suffix)
+            cmd.extend(["--amend", f"{repository}:{complete_docker_tag}"])
 
         session.run(*cmd)
-        session.run("docker", "manifest", "push", f"{repository}:{active_tag}")
+        session.run("docker", "manifest", "push", f"{repository}:{ubuntu_version}")
