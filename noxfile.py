@@ -3,6 +3,7 @@ import json
 import os
 import platform
 import shutil
+import subprocess
 from argparse import ArgumentParser
 from inspect import cleandoc
 from pathlib import Path
@@ -97,6 +98,16 @@ def push_image_safe(client, repository, tag, auth_config):
             print(log["status"])
 
 
+def _build_platform_tag(tag: str, arch: str = platform.machine()):
+    return f"{tag}-{arch}"
+
+def _get_docker_credentials_from_env() -> tuple[str, str]:
+    if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
+        raise ValueError(
+            "Need to have set environment variable DOCKER_USERNAME and DOCKER_PASSWORD!"
+        )
+    return os.environ["DOCKER_USERNAME"], os.environ["DOCKER_PASSWORD"]
+
 @nox.session(name="build-docker-image", python=False)
 def build_docker_image(session: nox.Session):
     p = ArgumentParser(
@@ -108,7 +119,7 @@ def build_docker_image(session: nox.Session):
     p.add_argument("--tag")
     args = p.parse_args(session.posargs)
     base_img = args.base_img
-    tag_with_platform = f"{args.tag}-{platform.machine().lower()}"
+    tag_with_platform = _build_platform_tag(args.tag)
     repository = args.repository
     _build_binary("exaslpm", True, session)
 
@@ -126,17 +137,17 @@ def build_docker_image(session: nox.Session):
 
         dockerfile_path.write_text(dockerfile_content)
 
-
-        docker_client.images.build(path=str(tmp_dir), tag=f"{repository}:{tag_with_platform}")
-    if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
-        raise ValueError(
-            "Need to have set environment variable DOCKER_USERNAME and DOCKER_PASSWORD!"
+        docker_client.images.build(
+            path=str(tmp_dir), tag=f"{repository}:{tag_with_platform}"
         )
+    docker_user, docker_pwd = _get_docker_credentials_from_env()
     auth_config = {
-        "username": os.environ["DOCKER_USERNAME"],
-        "password": os.environ["DOCKER_PASSWORD"],
+        "username": docker_user,
+        "password": docker_pwd,
     }
-    push_image_safe(docker_client, repository, tag_with_platform, auth_config=auth_config)
+    push_image_safe(
+        docker_client, repository, tag_with_platform, auth_config=auth_config
+    )
 
 
 @nox.session(name="build-docker-manifests", python=False)
@@ -149,16 +160,32 @@ def build_docker_manifests(session: nox.Session):
     p.add_argument("--repository")
     args = p.parse_args(session.posargs)
     repository = args.repository
-    active_tags = {cfg["target_tag"] for cfg in PROJECT_CONFIG.docker_image_config}
 
+    if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
+        raise ValueError(
+            "Need to have set environment variable DOCKER_USERNAME and DOCKER_PASSWORD!"
+        )
+    user, password = _get_docker_credentials_from_env()
+    subprocess.run(
+        ["docker", "login", "-u", user, "--password-stdin"],
+        input=(password + "\n").encode(),
+        check=True,
+    )
+
+    active_tags = {cfg["target_tag"] for cfg in PROJECT_CONFIG.docker_image_config}
+    session.log(f"Found active tags: {active_tags}")
+
+    # Create a manifest for every supported Ubuntu version, e.g.
+    #           docker manifest create exasol/script-languages-container:22.04 \
+    #             --amend exasol/script-languages-container:22.04-aarch64 \
+    #             --amend exasol/script-languages-container:22.04-x86_64
+    #           docker manifest push exasol/script-languages-container:22.04
     for active_tag in active_tags:
-        cmd = ["docker" "manifest" "create" f"{repository}:{active_tag}"]
+        cmd = ["docker", "manifest", "create", f"{repository}:{active_tag}"]
 
         for platform in PROJECT_CONFIG.supported_platforms:
-            tag_with_platform = f"{active_tag}-{platform.machine().lower()}"
-            cmd.extend(["--ammend", f"{repository}:{tag_with_platform}"])
+            tag_with_platform = _build_platform_tag(active_tag, platform)
+            cmd.extend(["--amend", f"{repository}:{tag_with_platform}"])
 
         session.run(*cmd)
         session.run("docker", "manifest", "push", f"{repository}:{active_tag}")
-
-

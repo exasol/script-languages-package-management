@@ -75,3 +75,6 @@ jobs:
 
       - name: Build Manifest
         run: poetry run -- nox -s build-docker-manifests -- --repository "$REPO_NAME"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
