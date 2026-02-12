@@ -47,11 +47,12 @@ jobs:
           python-version: "3.10"
           poetry-version: "2.3.0"
 
-      - name: Build Artifacts
+      - name: Build and Push "${{env.REPO_NAME}}:${{matrix.complete_docker_tag}}"
         run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
 
   build-manifest:
     runs-on: "ubuntu-24.04"
@@ -74,7 +75,7 @@ jobs:
           poetry-version: "2.3.0"
 
       - name: Build Manifest
-        run: poetry run -- nox -s build-docker-manifests -- --repositoy "$REPO_NAME"
+        run: poetry run -- nox -s build-docker-manifests -- --repository "$REPO_NAME"
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
