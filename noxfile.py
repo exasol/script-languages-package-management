@@ -94,7 +94,9 @@ def docker_image_config(session: nox.Session):
         return {
             "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
             "base_img": f"ubuntu:{ubuntu_version}",
-            "complete_docker_tag": _build_docker_img_tag(ubuntu_version, docker_tag_suffix),
+            "complete_docker_tag": _build_docker_img_tag(
+                ubuntu_version, docker_tag_suffix
+            ),
         }
 
     docker_image_config = [
@@ -185,7 +187,7 @@ def build_docker_image(session: nox.Session):
         or "EXASLPM - Exasol Script Languages Package Management"
         not in exaslpm_help_string
     ):
-        raise RuntimeError(
+        session.error(
             f"Running exaslpm using new docker image did not succeed. \noutput:\n'{exaslpm_help_string}'"
         )
     session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
