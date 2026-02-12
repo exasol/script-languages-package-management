@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import platform
 import shutil
 import subprocess
 from argparse import ArgumentParser
@@ -86,18 +85,23 @@ def matrix_runner(session: nox.Session):
 def _build_docker_tag(tag: str, docker_tag_suffix: str):
     return f"{tag}-{docker_tag_suffix}"
 
+
 @nox.session(name="matrix:docker-image-config", python=False)
 def docker_image_config(session: nox.Session):
-    def _build_docker_build_image_config(runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str):
+    def _build_docker_build_image_config(
+        runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
+    ):
         return {
             "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
             "base_img": f"ubuntu:{ubuntu_version}",
-            "complete_docker_tag": _build_docker_tag(ubuntu_version, docker_tag_suffix)
+            "complete_docker_tag": _build_docker_tag(ubuntu_version, docker_tag_suffix),
         }
 
     docker_image_config = [
         _build_docker_build_image_config(
-            runner_suffix=platform.runner_suffix, ubuntu_version=ubuntu_version, docker_tag_suffix=platform.docker_tag_suffix
+            runner_suffix=platform.runner_suffix,
+            ubuntu_version=ubuntu_version,
+            docker_tag_suffix=platform.docker_tag_suffix,
         )
         for platform in PROJECT_CONFIG.supported_platforms
         for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
@@ -166,6 +170,25 @@ def build_docker_image(session: nox.Session):
         "username": docker_user,
         "password": docker_pwd,
     }
+    # Test exaslpm before we push the image to Dockerhub
+    exaslpm_help_string = session.run(
+        "docker",
+        "run",
+        f"{repository}:{complete_docker_tag}",
+        "exaslpm",
+        "--help",
+        silent=True,
+    )
+
+    if (
+        "EXASLPM - Exasol Script Languages Package Management"
+        not in exaslpm_help_string
+    ):
+        raise RuntimeError(
+            f"Running exaslpm using new docker image did not succeed. \nstdout:\n'{exaslpm_help_string}'"
+        )
+    session.log(f"Running exaslpm succeeded.\nstdout:\n'{exaslpm_help_string}'")
+    session.log(f"Pushing now new image to Docker Hub.")
     push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
@@ -202,7 +225,9 @@ def build_docker_manifests(session: nox.Session):
         cmd = ["docker", "manifest", "create", f"{repository}:{ubuntu_version}"]
 
         for platform in PROJECT_CONFIG.supported_platforms:
-            complete_docker_tag = _build_docker_tag(ubuntu_version, platform.docker_tag_suffix)
+            complete_docker_tag = _build_docker_tag(
+                ubuntu_version, platform.docker_tag_suffix
+            )
             cmd.extend(["--amend", f"{repository}:{complete_docker_tag}"])
 
         session.run(*cmd)
