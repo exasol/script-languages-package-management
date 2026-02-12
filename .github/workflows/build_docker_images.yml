@@ -10,9 +10,8 @@ on:
         description: 'Docker repository name, like "exasol/script-language-container"'
         required: true
   schedule:
-    # At 00:00 on every 7th day-of-month from 1 through 31. (https://crontab.guru)
-    - cron: "0 0 1/7 * *"
-  pull_request:
+    # At 00:00. (https://crontab.guru)
+    - cron: "0 0 * * *"
 
 jobs:
   build-matrix-docker-image-config:
