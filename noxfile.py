@@ -176,7 +176,7 @@ def build_docker_image(session: nox.Session):
         "run",
         f"{repository}:{complete_docker_tag}",
         "exaslpm",
-        "--help",
+        "--error",
         silent=True,
     )
 
