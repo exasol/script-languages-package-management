@@ -109,7 +109,7 @@ def build_docker_image(session: nox.Session):
     base_img = args.base_img
     tag = args.tag
     repository = args.repository
-    #    _build_binary("exaslpm", True, session)
+    _build_binary("exaslpm", True, session)
 
     docker_client = docker.from_env()
     with TemporaryDirectory() as tmp_dir:
