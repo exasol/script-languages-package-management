@@ -137,3 +137,28 @@ def build_docker_image(session: nox.Session):
         "password": os.environ["DOCKER_PASSWORD"],
     }
     push_image_safe(docker_client, repository, tag_with_platform, auth_config=auth_config)
+
+
+@nox.session(name="build-docker-manifests", python=False)
+def build_docker_manifests(session: nox.Session):
+
+    p = ArgumentParser(
+        usage='nox -s build-docker-manifests -- --repository "exasol/slc_base"',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument("--repository")
+    args = p.parse_args(session.posargs)
+    repository = args.repository
+    active_tags = {cfg["target_tag"] for cfg in PROJECT_CONFIG.docker_image_config}
+
+    for active_tag in active_tags:
+        cmd = ["docker" "manifest" "create" f"{repository}:{active_tag}"]
+
+        for platform in PROJECT_CONFIG.supported_platforms:
+            tag_with_platform = f"{active_tag}-{platform.machine().lower()}"
+            cmd.extend(["--ammend", f"{repository}:{tag_with_platform}"])
+
+        session.run(*cmd)
+        session.run("docker", "manifest", "push", f"{repository}:{active_tag}")
+
+

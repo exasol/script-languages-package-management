@@ -33,7 +33,7 @@ def _build_docker_image_config() -> list[dict[str, str]]:
 class Config(BaseConfig):
     runners: list[str] = list({cfg["runner"] for cfg in _build_docker_image_config()})
     docker_image_config: list[dict[str, str]] = _build_docker_image_config()
-    supported_platforms: list[str] = ["arm64", "amd64"]
+    supported_platforms: list[str] = ["aarch64", "x86_64"]
 
 
 PROJECT_CONFIG = Config(

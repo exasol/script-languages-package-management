@@ -52,3 +52,26 @@ jobs:
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+  build-manifest:
+    runs-on: "ubuntu-24.04"
+    needs:
+      - build
+    permissions:
+      contents: read
+
+    steps:
+      - name: SCM Checkout
+        uses: actions/checkout@v6
+# TODO: https://github.com/exasol/script-languages-package-management/issues/78
+#        with:
+#          ref: 'latest'
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Build Manifest
+        run: poetry run -- nox -s build-docker-manifests -- --repository "$REPO_NAME"
