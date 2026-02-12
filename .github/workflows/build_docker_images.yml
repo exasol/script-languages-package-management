@@ -1,17 +1,20 @@
 name: Build Docker Images
 
 env:
-  REPO_NAME: ${{ inputs.repository_name || 'TBD' }}
+  #REPO_NAME: ${{ inputs.repository_name || 'exasol/script-language-container' }}
+  REPO_NAME: ${{ inputs.repository_name || 'thomasuben/exaslpm' }}
 
 on:
   workflow_dispatch:
     inputs:
       repository_name:
-        description: 'Docker repository name, like "exasol/base_slc"'
+        description: 'Docker repository name, like "exasol/script-language-container"'
         required: true
   schedule:
     # At 00:00 on every 7th day-of-month from 1 through 31. (https://crontab.guru)
     - cron: "0 0 1/7 * *"
+  pull_request:
+
 jobs:
   build-matrix-docker-image-config:
     name: Generate Build Matrix for runners
@@ -34,6 +37,9 @@ jobs:
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
+# TODO: https://github.com/exasol/script-languages-package-management/issues/78
+#        with:
+#          ref: 'latest'
 
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@v5
