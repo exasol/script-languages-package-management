@@ -75,6 +75,7 @@ def build_standalone_binary(session: nox.Session):
 def matrix_runner(session: nox.Session):
     print(json.dumps(PROJECT_CONFIG.runners))
 
+
 @nox.session(name="matrix:docker-image-config", python=False)
 def docker_image_config(session: nox.Session):
     print(json.dumps({"include": PROJECT_CONFIG.docker_image_config}))

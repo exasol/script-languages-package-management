@@ -7,12 +7,19 @@ from exasol.toolbox.config import BaseConfig
 
 def _build_docker_image_config() -> list[dict[str, str]]:
     return [
-            {"runner":"ubuntu-24.04", "base_img": "ubuntu:24.04", "target_tag": "24.04"},
-            {"runner": "ubuntu-24.04", "base_img": "ubuntu:22.04", "target_tag": "22.04"},
-            {"runner": "ubuntu-24.04-arm", "base_img": "ubuntu:24.04", "target_tag": "24.04"},
-            {"runner": "ubuntu-24.04-arm", "base_img": "ubuntu:22.04", "target_tag": "22.04"},
-        ]
-
+        {"runner": "ubuntu-24.04", "base_img": "ubuntu:24.04", "target_tag": "24.04"},
+        {"runner": "ubuntu-24.04", "base_img": "ubuntu:22.04", "target_tag": "22.04"},
+        {
+            "runner": "ubuntu-24.04-arm",
+            "base_img": "ubuntu:24.04",
+            "target_tag": "24.04",
+        },
+        {
+            "runner": "ubuntu-24.04-arm",
+            "base_img": "ubuntu:22.04",
+            "target_tag": "22.04",
+        },
+    ]
 
 
 class Config(BaseConfig):
