@@ -1,0 +1,48 @@
+name: Build Docker Images
+
+env:
+  REPO_NAME: ${{ inputs.repository_name || 'TBD' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_name:
+        description: 'Docker repository name, like "exasol/base_slc"'
+        required: true
+  schedule:
+    # At 00:00 on every 7th day-of-month from 1 through 31. (https://crontab.guru)
+    - cron: "0 0 1/7 * *"
+jobs:
+  build-matrix-docker-image-config:
+    name: Generate Build Matrix for runners
+    uses: ./.github/workflows/matrix-docker-image-config.yml
+    permissions:
+      contents: read
+
+  build:
+    name: Build Docker Images (BaseImage-${{}}-${{ matrix.runner }})
+    needs:
+      - build-matrix-docker-image-config
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix) }}
+
+
+    steps:
+      - name: SCM Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Build Artifacts
+        run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --tag "${{matrix.target_tag}}"
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
