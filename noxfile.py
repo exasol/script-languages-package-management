@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import platform
 import shutil
 from argparse import ArgumentParser
 from inspect import cleandoc
@@ -125,7 +126,9 @@ def build_docker_image(session: nox.Session):
 
         dockerfile_path.write_text(dockerfile_content)
 
-        docker_client.images.build(path=str(tmp_dir), tag=f"{repository}:{tag}")
+        tag_with_platform = f"{tag}-{platform.machine().lower()}"
+
+        docker_client.images.build(path=str(tmp_dir), tag=f"{repository}:{tag_with_platform}")
     if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
         raise ValueError(
             "Need to have set environment variable DOCKER_USERNAME and DOCKER_PASSWORD!"
