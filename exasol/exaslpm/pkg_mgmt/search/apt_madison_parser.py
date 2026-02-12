@@ -33,5 +33,10 @@ class MadisonParser:
         return vers
     # correlate pkg and ver
     # maintain the order in which we pass the pkg to madison; same as the pkg_list param
-    # return is dict of str (pkg_name) and data-class
-    # 
+    # return is dict of str (pkg_name) and list of data-class. every singl data-class is ver and last-part
+    # throw exception if more than 2 pipes
+    # parse line by line, parse the whole package list and return dict as
+    #   above - use csv reader and populate the dict row-wise
+    # we may need the madison for list-new packages
+    # have a separate class that run the apt-cache-madison and return the raw output
+    # have another class that parses as above
