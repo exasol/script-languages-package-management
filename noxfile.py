@@ -101,12 +101,14 @@ def push_image_safe(client, repository, tag, auth_config):
 def _build_platform_tag(tag: str, arch: str = platform.machine()):
     return f"{tag}-{arch}"
 
+
 def _get_docker_credentials_from_env() -> tuple[str, str]:
     if "DOCKER_USERNAME" not in os.environ or "DOCKER_PASSWORD" not in os.environ:
         raise ValueError(
             "Need to have set environment variable DOCKER_USERNAME and DOCKER_PASSWORD!"
         )
     return os.environ["DOCKER_USERNAME"], os.environ["DOCKER_PASSWORD"]
+
 
 @nox.session(name="build-docker-image", python=False)
 def build_docker_image(session: nox.Session):
