@@ -1,14 +1,16 @@
-# sgn
-
 from exasol.exaslpm.model.package_file_config import AptPackages
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_common import (
     CommandExecInfo,
     run_cmd,
 )
+from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
+    MadisonExecutor,
+    MadisonParser,
+)
 
 
-def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
+def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExecInfo]:
     all_cmds = []
 
     all_cmds.append(
@@ -16,14 +18,31 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
             cmd=["apt-get", "-y", "update"], err="Failed while updating apt cmd"
         )
     )
-
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
     if apt_packages.packages is None:
         raise ValueError("no apt packages defined")
+
+    # If wildcards are present, parse those
+    pkgs = [
+        pkg
+        for pkg in apt_packages.packages
+        if pkg and pkg.version and "*" in pkg.version
+    ]
+    madison_out = MadisonExecutor.execute_madison(pkgs, ctx)
+    madison_dict = MadisonParser.parse_madison_output(madison_out)
+
     for package in apt_packages.packages:
-        apt_cmd = (
-            f"{package.name}={package.version}" if package.version else package.name
-        )
+        pkg_ver = package.version
+        if pkg_ver and pkg_ver.find("*") != -1 and package.name in madison_dict:
+            madison_variants = madison_dict[package.name]
+            pkg_ver = madison_variants[0].ver
+            ctx.cmd_logger.info(
+                f"Resolved version for {package.name} with wildcard: {pkg_ver}")
+        elif package.name not in madison_dict:
+            raise ValueError(
+                f"{package.name} with version {package.version} not found in madison output"
+            )
+        apt_cmd = f"{package.name}={pkg_ver}" if package.version else package.name
         install_cmd.append(apt_cmd)
     all_cmds.append(
         CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")
@@ -58,7 +77,7 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
 
 def install_apt_packages(apt_packages: AptPackages, context: Context) -> int:
     if len(apt_packages.packages) > 0:
-        cmd_n_errs = prepare_all_cmds(apt_packages)
+        cmd_n_errs = prepare_all_cmds(apt_packages, context)
         for cmd_n_err in cmd_n_errs:
             run_cmd(cmd_n_err, context)
     else:
