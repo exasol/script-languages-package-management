@@ -44,11 +44,14 @@ def pytest_addoption(parser):
         default=False,
     )
 
+@pytest.fixture(scope="session")
+def ubuntu_version(request) -> str:
+    ubuntu_version = request.config.getoption("--test-image-ubuntu-version")
+    return ubuntu_version
 
 @pytest.fixture(scope="session")
-def docker_image(request, tmp_path_factory) -> Iterator[DockerTestImage]:
+def docker_image(request, ubuntu_version, tmp_path_factory) -> Iterator[DockerTestImage]:
     keep_docker_image = request.config.getoption("--keep-docker-image")
-    ubuntu_version = request.config.getoption("--test-image-ubuntu-version")
     image_builder = DockerTestImageBuilder(
         build_path=tmp_path_factory.mktemp("image"), ubuntu_version=ubuntu_version
     )
