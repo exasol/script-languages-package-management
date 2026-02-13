@@ -91,12 +91,14 @@ class CommandExecutor:
         if res_path := self.get_resource_path():
             self._log.warn(f"Found res_path: {res_path}")
             res_env = {} if env is None else env
+            #Need to merge user environment variables and os environment variables (include $PATH etc.)
+            res_env = res_env | os.environ
             # Remove the PyInstaller-added path if it exists
             # This forces child processes to look at the SYSTEM libraries
-            if "LD_LIBRARY_PATH" in os.environ:
+            if "LD_LIBRARY_PATH" in res_env:
                 self._log.warn(f"LD_LIBRARY_PATH environment variable is set to {res_path}")
                 # Filter out any path containing the temporary _MEI directory
-                paths = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
+                paths = res_env["LD_LIBRARY_PATH"].split(os.pathsep)
                 paths = [p for p in paths if p != res_path]
                 res_env["LD_LIBRARY_PATH"] = os.pathsep.join(paths)
                 self._log.warn(f"LD_LIBRARY_PATH environment variable is now set to {res_env['LD_LIBRARY_PATH']}")
