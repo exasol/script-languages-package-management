@@ -75,8 +75,9 @@ def build_standalone_binary(session: nox.Session):
 @nox.session(name="matrix:runner", python=False)
 def matrix_runner(session: nox.Session):
     runners = [
-        f"ubuntu-24.04{platform.runner_suffix}"
+        f"ubuntu-{ubuntu_version}{platform.runner_suffix}"
         for platform in PROJECT_CONFIG.supported_platforms
+        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
     ]
     print(json.dumps(runners))
 

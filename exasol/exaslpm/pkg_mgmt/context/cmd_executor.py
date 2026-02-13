@@ -1,4 +1,6 @@
+import os
 import subprocess  # nosec B404
+import sys
 import threading
 from collections.abc import (
     Callable,
@@ -81,6 +83,27 @@ class CommandExecutor:
     def __init__(self, logger: CommandLogger):
         self._log = logger
 
+    @staticmethod
+    def get_resource_path() -> str | None:
+        return sys._MEIPASS if hasattr(sys, '_MEIPASS') else None
+
+    def _cleanup_ld_library_path(self, env: dict[str, str] | None) -> dict[str, str] | None:
+        if res_path := self.get_resource_path():
+            self._log.warn(f"Found res_path: {res_path}")
+            res_env = {} if env is None else env
+            # Remove the PyInstaller-added path if it exists
+            # This forces child processes to look at the SYSTEM libraries
+            if "LD_LIBRARY_PATH" in os.environ:
+                self._log.warn(f"LD_LIBRARY_PATH environment variable is set to {res_path}")
+                # Filter out any path containing the temporary _MEI directory
+                paths = os.environ["LD_LIBRARY_PATH"].split(os.pathsep)
+                paths = [p for p in paths if p != res_path]
+                res_env["LD_LIBRARY_PATH"] = os.pathsep.join(paths)
+                self._log.warn(f"LD_LIBRARY_PATH environment variable is now set to {res_env['LD_LIBRARY_PATH']}")
+            return res_env
+        else:
+            return env
+
     def execute(
         self, cmd_args: list[str], env: dict[str, str] | None = None
     ) -> CommandResult:
@@ -98,7 +121,7 @@ class CommandExecutor:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            env=env,
+            env=self._cleanup_ld_library_path(env),
         )  # nosec B603
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)
