@@ -88,6 +88,13 @@ def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
 
 @nox.session(name="matrix:docker-image-config", python=False)
 def docker_image_config(session: nox.Session):
+    """
+    Returns configuration for the Github runner which builds the Docker images.
+    Each entry consists of "runner" (e.g. ubuntu-24.04), "base_img" (e.g. ubuntu:24.04)
+    and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
+    Thus, there will be one configuration per supported ubuntu version and supported platform.
+    """
+
     def _build_docker_build_image_config(
         runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
     ):
@@ -111,7 +118,7 @@ def docker_image_config(session: nox.Session):
     print(json.dumps({"include": docker_image_config}))
 
 
-def push_image_safe(client, repository, tag, auth_config):
+def _push_image_safe(client, repository, tag, auth_config):
     # Use decode=True to get dictionary objects instead of raw bytes
     push_logs = client.images.push(
         f"{repository}:{tag}", stream=True, decode=True, auth_config=auth_config
@@ -136,6 +143,12 @@ def _get_docker_credentials_from_env() -> tuple[str, str]:
 
 @nox.session(name="build-docker-image", python=False)
 def build_docker_image(session: nox.Session):
+    """
+    Builds a docker image for given Docker repository, docker tag (including the architecture)
+    and base image name of the Ubuntu image (e.g. ubuntu:24.04)
+    After building the image. the nox task verifies that `exaslpm` can be executed within the image
+    and then pushes the image to Dockerhub.
+    """
     p = ArgumentParser(
         usage='nox -s build-docker-image -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --complete-docker-tag "24.04-arm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -192,13 +205,18 @@ def build_docker_image(session: nox.Session):
         )
     session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
     session.log(f"Pushing now new image to Docker Hub.")
-    push_image_safe(
+    _push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
 
 
 @nox.session(name="build-docker-manifests", python=False)
 def build_docker_manifests(session: nox.Session):
+    """
+    Creates a docker manifest which includes all supported architectures.
+    With that, a client can pull the architecture agnostic docker tag (e.g. exaslpm-ubuntu-22.04) and dockerhub
+    will return the correct image for the architecture, the client runs on.
+    """
 
     p = ArgumentParser(
         usage='nox -s build-docker-manifests -- --repository "exasol/slc_base"',
