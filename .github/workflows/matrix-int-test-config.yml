@@ -4,7 +4,7 @@ on:
   workflow_call:
     outputs:
       matrix:
-        description: "Generates the runner build matrix"
+        description: "Generates the integration test config build matrix"
         value: ${{ jobs.matrix_runner.outputs.matrix }}
 
 jobs:
@@ -23,11 +23,11 @@ jobs:
           poetry-version: "2.3.0"
 
       - name: Generate matrix
-        run: poetry run -- nox -s matrix:runner
+        run: poetry run -- nox -s matrix:int-test-config
 
       - id: set-matrix
         run: |
-          echo "matrix=$(poetry run -- nox -s matrix:runner)" >> $GITHUB_OUTPUT
+          echo "matrix=$(poetry run -- nox -s matrix:int-test-config)" >> $GITHUB_OUTPUT
 
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}

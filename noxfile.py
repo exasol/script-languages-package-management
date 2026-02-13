@@ -16,7 +16,7 @@ import PyInstaller.__main__
 from exasol.toolbox.nox.tasks import *
 
 from noxconfig import (
-    PROJECT_CONFIG,
+    PROJECT_CONFIG, IntegrationTestConfig,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -72,14 +72,21 @@ def build_standalone_binary(session: nox.Session):
         _build_binary(exe_name, cleanup, session)
 
 
-@nox.session(name="matrix:runner", python=False)
-def matrix_runner(session: nox.Session):
-    runners = [
-        f"ubuntu-{ubuntu_version}{platform.runner_suffix}"
+@nox.session(name="matrix:int-test-config", python=False)
+def matrix_int_test_config(session: nox.Session):
+    def _build_config(int_test_cfg: IntegrationTestConfig, platform: str, python_version: str) -> dict[str, str]:
+        return {
+            "runner": f"ubuntu-{int_test_cfg.runner}{platform.runner_suffix}",
+            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
+            "python-version": python_version
+        }
+    config = [
+        _build_config(int_test_cfg, platform)
         for platform in PROJECT_CONFIG.supported_platforms
-        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
+        for int_test_cfg in PROJECT_CONFIG.integration_test_config
+        for python_version in PROJECT_CONFIG.python_versions
     ]
-    print(json.dumps(runners))
+    print(json.dumps({"include": config}))
 
 
 def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
