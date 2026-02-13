@@ -33,9 +33,15 @@ def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExe
 
     for package in apt_packages.packages:
         pkg_ver = package.version
-        if pkg_ver and pkg_ver.find("*") != -1 and package in madison_dict:
+        if pkg_ver and pkg_ver.find("*") != -1 and package.name in madison_dict:
             madison_variants = madison_dict[package.name]
             pkg_ver = madison_variants[0].ver
+            ctx.cmd_logger.info(
+                f"Resolved version for {package.name} with wildcard: {pkg_ver}")
+        elif package.name not in madison_dict:
+            raise ValueError(
+                f"{package.name} with version {package.version} not found in madison output"
+            )
         apt_cmd = f"{package.name}={pkg_ver}" if package.version else package.name
         install_cmd.append(apt_cmd)
     all_cmds.append(
