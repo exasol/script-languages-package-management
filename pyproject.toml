@@ -33,6 +33,7 @@ dev = [
     "types-pyinstaller >=6.15.0.20250822, <7.0.0.0",
     "types-requests >=2.30.0, <3.0.0",
     "docker (>=7.1.0,<8.0.0) ; sys_platform != \"win32\"",
+    "types-docker >=7.1.0,<8.0.0"
     ]
 
 [build-system]
@@ -52,6 +53,7 @@ source = [
 [tool.coverage.report]
 fail_under = 0
 ignore_errors = true
+
 
 [tool.black]
 line-length = 88
