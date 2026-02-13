@@ -1,6 +1,8 @@
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
+from packaging.version import Version
 from pydantic import HttpUrl
 
 from exasol.exaslpm.model.package_file_config import (
@@ -24,38 +26,60 @@ from exasol.exaslpm.model.package_file_config import (
     ValidationConfig,
 )
 
-
 APT_PACKAGE_DEFS = {
     "24.04": {
         "wget": AptPackage(name="wget", version="1.21.4-1ubuntu4.1"),
         "curl": AptPackage(name="curl", version="8.5.0-2ubuntu10.6"),
         "coreutils": AptPackage(name="coreutils", version="9.4-3ubuntu6.1"),
-        "libsmbclient-dev": AptPackage(name="libsmbclient-dev", version="2:4.19.5+dfsg-4ubuntu9.4"),
-        "bzip2": AptPackage(name="bzip2",version="1.0.8-5.1build0.1",),
+        "libsmbclient-dev": AptPackage(
+            name="libsmbclient-dev", version="2:4.19.5+dfsg-4ubuntu9.4"
+        ),
+        "bzip2": AptPackage(
+            name="bzip2",
+            version="1.0.8-5.1build0.1",
+        ),
         "ca-certificates": AptPackage(name="ca-certificates", version="20240203"),
         "build-essential": AptPackage(name="build-essential", version="12.10ubuntu1"),
         "git": AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
-        "r-base-core": AptPackage(name="r-base-core",version="4.5.2-1.2404.0",),
+        "r-base-core": AptPackage(
+            name="r-base-core",
+            version="4.5.2-1.2404.0",
+        ),
     },
     "22.04": {
         "wget": AptPackage(name="wget", version="1.21.2-2ubuntu1.1"),
         "curl": AptPackage(name="curl", version="7.81.0-1ubuntu1.21"),
         "coreutils": AptPackage(name="coreutils", version="8.32-4.1ubuntu1.2"),
-        "libsmbclient-dev": AptPackage(name="libsmbclient-dev", version="2:4.15.13+dfsg-0ubuntu1.10"),
-        "bzip2": AptPackage(name="bzip2", version="1.0.8-5build1", ),
-        "ca-certificates": AptPackage(name="ca-certificates", version="20240203~22.04.1"),
+        "libsmbclient-dev": AptPackage(
+            name="libsmbclient-dev", version="2:4.15.13+dfsg-0ubuntu1.10"
+        ),
+        "bzip2": AptPackage(
+            name="bzip2",
+            version="1.0.8-5build1",
+        ),
+        "ca-certificates": AptPackage(
+            name="ca-certificates", version="20240203~22.04.1"
+        ),
         "build-essential": AptPackage(name="build-essential", version="12.9ubuntu3"),
         "git": AptPackage(name="git", version="1:2.34.1-1ubuntu1.15"),
-        "r-base-core": AptPackage(name="r-base-core",version="4.5.2-1.2204.0",),
-    }
+        "r-base-core": AptPackage(
+            name="r-base-core",
+            version="4.5.2-1.2204.0",
+        ),
+    },
 }
+
 
 @pytest.fixture
 def apt_package_with_version(ubuntu_version):
-    return APT_PACKAGE_DEFS[ubuntu_version]
+    # Some tests modify the packages, so we need to return a copy here, in order to avoid conflicts between different tests
+    return deepcopy(APT_PACKAGE_DEFS[ubuntu_version])
+
 
 @pytest.fixture
-def apt_package_file_content(apt_package_with_version: dict[str,AptPackage]) -> PackageFile:
+def apt_package_file_content(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -78,9 +102,7 @@ def apt_package_file_content(apt_package_with_version: dict[str,AptPackage]) -> 
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["coreutils"]
-                            ]
+                            packages=[apt_package_with_version["coreutils"]]
                         ),
                     )
                 ],
@@ -89,15 +111,29 @@ def apt_package_file_content(apt_package_with_version: dict[str,AptPackage]) -> 
     )
 
 
-# TODO Extend with configs `needs_break_system_packages=False`, see https://github.com/exasol/script-languages-package-management/issues/59
+@pytest.fixture
+def python_version(ubuntu_version) -> str:
+    python_versions = {
+        "24.04": "python3.12",
+        "22.04": "python3.10",
+    }
+    return python_versions[ubuntu_version]
+
+
 @pytest.fixture(
-    params=[
-        Pip(version="23.1", needs_break_system_packages=True),
-        Pip(version="25.3", needs_break_system_packages=True),
-    ],
+    params=["23.1", "25.3"],
     ids=["old", "new"],
 )
-def pip_package_file_content(request) -> PackageFile:
+def pip(request, ubuntu_version) -> Pip:
+    needs_break_system_packages = Version(ubuntu_version) >= Version("24.04")
+    return Pip(
+        version=request.param, needs_break_system_packages=needs_break_system_packages
+    )
+
+
+@pytest.fixture
+def pip_package_file_content(request, python_version, pip) -> PackageFile:
+
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -108,7 +144,7 @@ def pip_package_file_content(request) -> PackageFile:
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                AptPackage(name="python3.12-dev"),
+                                AptPackage(name=f"{python_version}-dev"),
                                 AptPackage(name="git"),
                                 AptPackage(name="ca-certificates"),
                             ]
@@ -116,11 +152,13 @@ def pip_package_file_content(request) -> PackageFile:
                     ),
                     Phase(
                         name="phase_2",
-                        tools=Tools(python_binary_path=Path("/usr/bin/python3.12")),
+                        tools=Tools(
+                            python_binary_path=Path(f"/usr/bin/{python_version}")
+                        ),
                     ),
                     Phase(
                         name="phase_3",
-                        tools=Tools(pip=request.param),
+                        tools=Tools(pip=pip),
                     ),
                 ],
             ),
@@ -154,7 +192,9 @@ def pip_packages_file_content() -> PackageFile:
 
 
 @pytest.fixture
-def pip_packages_file_content_which_needs_pkg_config(apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
+def pip_packages_file_content_which_needs_pkg_config(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -183,7 +223,9 @@ def pip_packages_file_content_which_needs_pkg_config(apt_package_with_version: d
 
 
 @pytest.fixture
-def micromamba_file_content(apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
+def micromamba_file_content(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -319,6 +361,7 @@ def apt_trivy_with_repo() -> PackageFile:
         ]
     )
 
+
 @pytest.fixture
 def cran_repo(ubuntu_version) -> AptRepo:
     repo_24_04 = AptRepo(
@@ -339,9 +382,10 @@ def cran_repo(ubuntu_version) -> AptRepo:
     return repo_24_04 if ubuntu_version == "24.04" else repo_22_04
 
 
-
 @pytest.fixture
-def apt_r_with_repo(cran_repo: AptRepo, apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
+def apt_r_with_repo(
+    cran_repo: AptRepo, apt_package_with_version: dict[str, AptPackage]
+) -> PackageFile:
 
     return PackageFile(
         build_steps=[
@@ -352,9 +396,7 @@ def apt_r_with_repo(cran_repo: AptRepo, apt_package_with_version: dict[str, AptP
                         name="phase_1",
                         apt=AptPackages(
                             repos={"cran-r": cran_repo},
-                            packages=[
-                                apt_package_with_version["r-base-core"]
-                            ],
+                            packages=[apt_package_with_version["r-base-core"]],
                         ),
                     ),
                 ],
