@@ -12,7 +12,7 @@ jobs:
 
   build-matrix-int-test-config:
     name: Generate Build Matrix for integration tests
-    uses: matrix-int-test-config.yml
+    uses: ./.github/workflows/matrix-int-test-config.yml
     permissions:
       contents: read
 
