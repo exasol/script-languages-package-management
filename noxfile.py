@@ -81,7 +81,7 @@ def matrix_int_test_config(session: nox.Session):
             "python-version": python_version
         }
     config = [
-        _build_config(int_test_cfg, platform)
+        _build_config(int_test_cfg, platform, python_version)
         for platform in PROJECT_CONFIG.supported_platforms
         for int_test_cfg in PROJECT_CONFIG.integration_test_config
         for python_version in PROJECT_CONFIG.python_versions
