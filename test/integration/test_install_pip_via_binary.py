@@ -4,7 +4,9 @@ from pathlib import Path
 from exasol.exaslpm.model.serialization import to_yaml_str
 
 
-def test_install_pip(docker_container, pip_package_file_content, cli_helper):
+def test_install_pip(
+    docker_container, pip_package_file_content, python_version, cli_helper
+):
     pip_package_file_yaml = to_yaml_str(pip_package_file_content)
 
     pip_package_file = docker_container.make_and_upload_file(
@@ -19,7 +21,7 @@ def test_install_pip(docker_container, pip_package_file_content, cli_helper):
     assert ret == 0
 
     pip_cmd_result_exit_code, _ = docker_container.run(
-        ["python3.12", "-m", "pip", "list"]
+        [python_version, "-m", "pip", "list"]
     )
     assert pip_cmd_result_exit_code == 0
 
