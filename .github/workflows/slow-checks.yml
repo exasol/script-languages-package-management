@@ -4,12 +4,6 @@ on:
   workflow_call:
 
 jobs:
-  build-matrix-python:
-    name: Generate Build Matrix for runners
-    uses: ./.github/workflows/matrix-python.yml
-    permissions:
-      contents: read
-
   build-matrix-int-test-config:
     name: Generate Build Matrix for integration tests
     uses: ./.github/workflows/matrix-int-test-config.yml
@@ -27,7 +21,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-runner.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.uild-matrix-int-test-config.outputs.matrix) }}
 
     steps:
       - name: SCM Checkout

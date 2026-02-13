@@ -30,7 +30,7 @@ class Config(BaseConfig):
         PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm"),
         PlatformConfig(docker_tag_suffix="x86_64", runner_suffix=""),
     ]
-    docker_tag_prefix: str = ("exaslpm-ubuntu",)
+    docker_tag_prefix: str = "exaslpm-ubuntu"
     integration_test_config: list[IntegrationTestConfig] = [
         IntegrationTestConfig(
             runner="22.04", ubuntu_base_version_docker_test_image="22.04"

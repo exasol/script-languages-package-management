@@ -17,7 +17,7 @@ from exasol.toolbox.nox.tasks import *
 
 from noxconfig import (
     PROJECT_CONFIG,
-    IntegrationTestConfig,
+    IntegrationTestConfig, PlatformConfig,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -76,7 +76,7 @@ def build_standalone_binary(session: nox.Session):
 @nox.session(name="matrix:int-test-config", python=False)
 def matrix_int_test_config(session: nox.Session):
     def _build_config(
-        int_test_cfg: IntegrationTestConfig, platform: str, python_version: str
+        int_test_cfg: IntegrationTestConfig, platform: PlatformConfig, python_version: str
     ) -> dict[str, str]:
         return {
             "runner": f"ubuntu-{int_test_cfg.runner}{platform.runner_suffix}",
