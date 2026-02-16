@@ -1,13 +1,33 @@
-from exasol.exaslpm.model.package_file_config import AptPackages
+from exasol.exaslpm.model.package_file_config import (
+    AptPackage,
+    AptPackages,
+)
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_common import (
     CommandExecInfo,
     run_cmd,
 )
 from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
+    MadisonData,
     MadisonExecutor,
     MadisonParser,
 )
+
+
+def get_package_version(
+    pkg: AptPackage, ctx: Context, madison_dict: dict[str, list[MadisonData]]
+) -> str:
+    if pkg and pkg.version and pkg.version.find("*") == -1:
+        return pkg.version
+    if pkg.name in madison_dict:
+        madison_variants = madison_dict[pkg.name]
+        pkg_ver = madison_variants[0].ver
+        ctx.cmd_logger.info(f"Resolved version for {pkg.name} with wildcard: {pkg_ver}")
+    else:
+        raise ValueError(
+            f"{pkg.name} with version {pkg.version} not found in madison output"
+        )
+    return pkg_ver
 
 
 def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExecInfo]:
@@ -32,17 +52,8 @@ def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExe
     madison_dict = MadisonParser.parse_madison_output(madison_out)
 
     for package in apt_packages.packages:
-        pkg_ver = package.version
-        if pkg_ver and pkg_ver.find("*") != -1 and package.name in madison_dict:
-            madison_variants = madison_dict[package.name]
-            pkg_ver = madison_variants[0].ver
-            ctx.cmd_logger.info(
-                f"Resolved version for {package.name} with wildcard: {pkg_ver}")
-        elif package.name not in madison_dict:
-            raise ValueError(
-                f"{package.name} with version {package.version} not found in madison output"
-            )
-        apt_cmd = f"{package.name}={pkg_ver}" if package.version else package.name
+        pkg_ver = get_package_version(package, ctx, madison_dict)
+        apt_cmd = f"{package.name}={pkg_ver}" if pkg_ver else package.name
         install_cmd.append(apt_cmd)
     all_cmds.append(
         CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")

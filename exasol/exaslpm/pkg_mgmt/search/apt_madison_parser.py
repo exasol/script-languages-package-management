@@ -28,6 +28,8 @@ class MadisonData:
 class MadisonExecutor:
     @staticmethod
     def execute_madison(pkg_list: list[AptPackage], ctx: Context) -> str:
+        if not pkg_list:
+            return ""
         cmd = ["apt-cache", "madison"]
         for pkg in pkg_list:
             cmd.append(pkg.name)
@@ -52,6 +54,8 @@ class MadisonExecutor:
 class MadisonParser:
     @staticmethod
     def parse_madison_output(madison_out: str) -> dict[str, list[MadisonData]]:
+        if not madison_out:
+            return {}
         madison_dict: dict[str, list[MadisonData]] = {}
         reader = csv.reader(StringIO(madison_out), delimiter="|")
         for row in reader:
@@ -63,13 +67,3 @@ class MadisonParser:
             else:
                 raise ValueError(f"Error parsing madison output")
         return madison_dict
-
-    # correlate pkg and ver
-    # maintain the order in which we pass the pkg to madison; same as the pkg_list param
-    # return is dict of str (pkg_name) and list of data-class. every singl data-class is ver and last-part
-    # throw exception if more than 2 pipes
-    # parse line by line, parse the whole package list and return dict as
-    #   above - use csv reader and populate the dict row-wise
-    # we may need the madison for list-new-packages feature
-    # have a separate class that run the apt-cache-madison and return the raw output
-    # have another class that parses as above
