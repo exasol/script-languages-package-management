@@ -59,11 +59,11 @@ class MadisonParser:
         madison_dict: dict[str, list[MadisonData]] = {}
         reader = csv.reader(StringIO(madison_out), delimiter="|")
         for row in reader:
-            if len(row) >= 3:
+            if len(row) == 3:
                 pkg, ver, tail = (x.strip() for x in row[:3])
                 if pkg not in madison_dict:
                     madison_dict[pkg] = []
                 madison_dict[pkg].append(MadisonData(ver, tail))
             else:
-                raise ValueError(f"Error parsing madison output")
+                raise ValueError(f"{madison_out}\nis invalid")
         return madison_dict

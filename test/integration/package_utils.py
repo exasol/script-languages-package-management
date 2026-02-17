@@ -21,11 +21,20 @@ class ContainsPackages:
         self.expected_packages = expected_packages
 
     @staticmethod
-    def _compare_package(expected: Package, installed: Package) -> bool:
-        if expected.version and expected.version != installed.version:
-            return False
+    def _is_ver_same(exp_ver: str, inst_ver: str) -> bool:
+        if exp_ver.find("*") != -1 or inst_ver.find("*") != -1:
+            idxExp = exp_ver.find("*")
+            idxIns = inst_ver.find("*")
+            cut = min(p for p in (idxExp, idxIns) if p != -1)
+            return exp_ver[:cut] == inst_ver[:cut]
+        return exp_ver == inst_ver
 
-        return expected.name.lower() == installed.name.lower()
+    @staticmethod
+    def _compare(exp: Package, inst: Package) -> bool:
+        return (
+            ContainsPackages._is_ver_same(exp.version, inst.version)
+            and exp.name.lower() == inst.name.lower()
+        )
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):
@@ -33,7 +42,7 @@ class ContainsPackages:
 
         # Check that every expected package exists in the installed list
         return all(
-            any(self._compare_package(exp, inst) for inst in installed_packages)
+            any(self._compare(exp, inst) for inst in installed_packages)
             for exp in self.expected_packages
         )
 

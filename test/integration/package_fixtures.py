@@ -58,6 +58,28 @@ def apt_package_file_content() -> PackageFile:
     )
 
 
+@pytest.fixture
+def apt_pkg_file_wildcard() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                AptPackage(name="tree", version="2.1.1*"),
+                                AptPackage(name="binutils", version="2.42*"),
+                            ]
+                        ),
+                    )
+                ],
+            ),
+        ]
+    )
+
+
 # TODO Extend with configs `needs_break_system_packages=False`, see https://github.com/exasol/script-languages-package-management/issues/59
 @pytest.fixture(
     params=[
