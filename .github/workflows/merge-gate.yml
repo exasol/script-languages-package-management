@@ -9,7 +9,7 @@ jobs:
     name: Fast
     uses: ./.github/workflows/checks.yml
     permissions:
-      contents: write
+      contents: read
 
   run-slow-tests:
     name: Run Slow Tests?

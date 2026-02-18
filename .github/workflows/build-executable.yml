@@ -8,6 +8,9 @@ on:
         description: 'Release tag'
         required: true
 
+  workflow_dispatch:
+    #No input parameter. We want to avoid the possibility to override artificats for existing release
+
 jobs:
   build-matrix-executable-config:
     name: Generate Build Matrix for building executable
@@ -53,9 +56,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Executable
-        if: ${{ inputs.release-tag == ''}}
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{env.BINARY_NAME}}
-          path: "dist/${{env.BINARY_NAME}}"
