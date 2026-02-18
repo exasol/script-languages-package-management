@@ -52,3 +52,10 @@ jobs:
         run: gh release upload ${{ inputs.release-tag }} "dist/$BINARY_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Executable
+        if: ${{ inputs.release-tag == ''}}
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{env.BINARY_NAME}}
+          path: "dist/${{env.BINARY_NAME}}"
