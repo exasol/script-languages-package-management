@@ -17,18 +17,18 @@ from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
 def assert_packages_installed(
-    docker_container: DockerTestContainer, pip: PipPackages
+    docker_container: DockerTestContainer, python_version: str, pip: PipPackages
 ) -> None:
     expected_packages = pip.packages
-    pkgs_in_container = docker_container.list_pip()
+    pkgs_in_container = docker_container.list_pip(python_version)
     assert pkgs_in_container == ContainsPipPackages(expected_packages)
 
 
 def assert_packages_not_installed(
-    docker_container: DockerTestContainer, pip: PipPackages
+    docker_container: DockerTestContainer, python_version: str, pip: PipPackages
 ) -> None:
     expected_packages = pip.packages
-    pkgs_in_container = docker_container.list_pip()
+    pkgs_in_container = docker_container.list_pip(python_version)
     assert pkgs_in_container != ContainsPipPackages(expected_packages)
 
 
@@ -55,12 +55,13 @@ def test_install_pip_packages(
     docker_executor_context,
     local_package_path,
     prepare_pip_env,
+    python_version,
 ):
     pip_packages_file_yaml = to_yaml_str(pip_packages_file_content)
     local_package_path.write_text(pip_packages_file_yaml)
     pip = pip_packages_file_content.build_steps[0].phases[0].pip
 
-    assert_packages_not_installed(docker_container, pip)
+    assert_packages_not_installed(docker_container, python_version, pip)
 
     package_install(
         package_file=local_package_path,
@@ -68,7 +69,7 @@ def test_install_pip_packages(
         context=docker_executor_context,
     )
 
-    assert_packages_installed(docker_container, pip)
+    assert_packages_installed(docker_container, python_version, pip)
 
 
 def prepare_package_file_with_packages_which_needs_pkg_config(
@@ -94,6 +95,7 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
     docker_executor_context,
     local_package_path,
     prepare_pip_env,
+    python_version,
 ):
     prepare_package_file_with_packages_which_needs_pkg_config(
         package_file=pip_packages_file_content_which_needs_pkg_config,
@@ -102,7 +104,7 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
     )
     pip = pip_packages_file_content_which_needs_pkg_config.build_steps[0].phases[1].pip
 
-    assert_packages_not_installed(docker_container, pip)
+    assert_packages_not_installed(docker_container, python_version, pip)
 
     package_install(
         package_file=local_package_path,
@@ -110,7 +112,7 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
         context=docker_executor_context,
     )
 
-    assert_packages_installed(docker_container, pip)
+    assert_packages_installed(docker_container, python_version, pip)
 
 
 def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
@@ -119,6 +121,7 @@ def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
     docker_executor_context,
     local_package_path,
     prepare_pip_env,
+    python_version,
 ):
     prepare_package_file_with_packages_which_needs_pkg_config(
         package_file=pip_packages_file_content_which_needs_pkg_config,
@@ -126,7 +129,7 @@ def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
         local_package_path=local_package_path,
     )
     pip = pip_packages_file_content_which_needs_pkg_config.build_steps[0].phases[1].pip
-    assert_packages_not_installed(docker_container, pip)
+    assert_packages_not_installed(docker_container, python_version, pip)
 
     with pytest.raises(CommandFailedException):
         package_install(

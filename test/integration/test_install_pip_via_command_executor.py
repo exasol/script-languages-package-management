@@ -7,6 +7,7 @@ from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 def test_install_pip(
     docker_container,
     pip_package_file_content,
+    python_version,
     local_package_path,
     docker_executor_context,
 ):
@@ -23,7 +24,7 @@ def test_install_pip(
     )
 
     pip_cmd_result_exit_code, _ = docker_container.run(
-        ["python3.12", "-m", "pip", "list"]
+        [python_version, "-m", "pip", "list"]
     )
     assert pip_cmd_result_exit_code == 0
 

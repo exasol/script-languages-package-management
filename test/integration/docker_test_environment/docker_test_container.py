@@ -80,10 +80,10 @@ class DockerTestContainer:
             AptPackage(name=pkg["package"], version=pkg["version"]) for pkg in packages
         ]
 
-    def list_pip(self) -> list[PipPackage]:
+    def list_pip(self, python_version: str) -> list[PipPackage]:
         _, out = self.run(
             [
-                "python3.12",
+                python_version,
                 "-m",
                 "pip",
                 "list",
