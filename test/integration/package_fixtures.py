@@ -457,3 +457,31 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
             ),
         ]
     )
+
+
+@pytest.fixture
+def variables_file_content(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        variables={"JAVA_HOME": "/usr/java"},
+                    )
+                ],
+            ),
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        variables={"PROTOBUF_DIR": "/opt/protobuf"},
+                    )
+                ],
+            ),
+        ]
+    )

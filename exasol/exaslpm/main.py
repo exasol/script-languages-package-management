@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 
-from exasol.exaslpm.cli.cli import cli
+import exasol.exaslpm.cli as cli
 
 
 def main():
-    cli()
+    cli.cli()
 
 
 if __name__ == "__main__":
