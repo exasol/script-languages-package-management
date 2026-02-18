@@ -8,20 +8,25 @@ on:
         description: 'Release tag'
         required: true
 
+  workflow_dispatch:
+    #No input parameter. We want to avoid the possibility to override artificats for existing release
+
 jobs:
+  build-matrix-executable-config:
+    name: Generate Build Matrix for building executable
+    uses: ./.github/workflows/matrix-build-executable-config.yml
+    permissions:
+      contents: read
 
   standalone-executable:
     name: Create a standalone linux executable
+    needs:
+      - build-matrix-executable-config
     runs-on:
       labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runner: "ubuntu-24.04"
-            binary-suffix: x86-64
-          - runner: ubuntu-24.04-arm
-            binary-suffix: arm64
+      matrix: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix) }}
     permissions:
       contents: write
     env:
@@ -50,3 +55,4 @@ jobs:
         run: gh release upload ${{ inputs.release-tag }} "dist/$BINARY_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
