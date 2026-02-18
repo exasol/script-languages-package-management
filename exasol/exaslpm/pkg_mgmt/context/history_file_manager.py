@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from pathlib import Path
 
 import yaml
@@ -30,11 +31,15 @@ class HistoryFileManager:
             )
         return package_file_model.build_steps[0]
 
+    @property
+    def _history_files(self) -> Iterator[Path]:
+        yield from (p for p in self.history_path.iterdir() if p.is_file())
+
     def raise_if_build_step_exists(self, build_step_name: str) -> None:
         """
         Check if a build step exists and raise an exception if so.
         """
-        if build_step_name in self.get_all_previous_build_step_names():
+        if build_step_name in self._get_all_previous_build_step_names():
             raise ValueError(
                 f"Buildstep '{build_step_name}' already exists in history path: '{self.history_path}'"
             )
@@ -45,21 +50,32 @@ class HistoryFileManager:
         The history file contains the given build step.
         """
         self.raise_if_build_step_exists(build_step.name)
-        (self.history_path / build_step.name).write_text(
+        number_of_history_files = len(list(self._history_files))
+        if number_of_history_files > 999:
+            raise RuntimeError("Maximum number of history files (999) exceeded.")
+        build_step_file_name_prefix = f"{number_of_history_files:0{3}d}"
+        build_step_file_name = f"{build_step_file_name_prefix}_{build_step.name}"
+        (self.history_path / build_step_file_name).write_text(
             self._serialize_build_step(build_step)
         )
 
-    def get_all_previous_build_step_names(self) -> set[str]:
+    def _get_all_previous_build_step_names(self) -> set[str]:
         """
         Read all build step names from the history path.
         """
-        return {p.name for p in self.history_path.iterdir() if p.is_file()}
+
+        def _remove_prefix(file_name: str) -> str:
+            prefix_end_idx = file_name.find("_")
+            return file_name[prefix_end_idx + 1 :]
+
+        return {_remove_prefix(p.name) for p in self._history_files}
 
     def get_all_previous_build_steps(self) -> list[BuildStep]:
         """
 
-        Returns: unsorted list of build steps found in history path.
+        Returns: sorted list of build steps found in history path.
 
         """
-        histore_files = [p for p in self.history_path.iterdir() if p.is_file()]
+        histore_files = list(self._history_files)
+        histore_files.sort(key=lambda p: p.name)
         return [self._deserialize_build_step(p.read_text()) for p in histore_files]
