@@ -214,3 +214,11 @@ jobs:
           name: coverage-python${{ matrix.python-versions }}-fast
           path: .coverage
           include-hidden-files: true
+
+  Validate-Standalone-Executable:
+    name: Validate build standalone linux executable
+    uses: ./.github/workflows/build-executable.yml
+    with:
+      release-tag: ''
+    permissions:
+      contents: write

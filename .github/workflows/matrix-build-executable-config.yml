@@ -23,11 +23,11 @@ jobs:
           poetry-version: "2.3.0"
 
       - name: Generate matrix
-        run: poetry run -- nox -s matrix:executable-build-runners
+        run: poetry run -- nox -s matrix:executable-build-config
 
       - id: set-matrix
         run: |
-          echo "matrix=$(poetry run -- nox -s matrix:executable-build-runners)" >> $GITHUB_OUTPUT
+          echo "matrix=$(poetry run -- nox -s matrix:executable-build-config)" >> $GITHUB_OUTPUT
 
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
