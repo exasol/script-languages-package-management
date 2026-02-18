@@ -1,7 +1,6 @@
 import contextlib
 import re
 from copy import deepcopy
-
 from test.unit.test_data import (
     TEST_BUILD_STEP,
     TEST_BUILD_STEP_2,
@@ -68,6 +67,7 @@ def test_fails_if_build_step_exists(history_file_manager):
         ):
             hsm.add_build_step_to_history(TEST_BUILD_STEP)
 
+
 def test_max_build_step_files(history_file_manager):
     def _make_build_step(index: int) -> BuildStep:
         build_step = deepcopy(TEST_BUILD_STEP)
@@ -77,5 +77,8 @@ def test_max_build_step_files(history_file_manager):
     with history_file_manager([]) as hsm:
         for count in range(1000):
             hsm.add_build_step_to_history(_make_build_step(count))
-        with pytest.raises(RuntimeError, match=re.escape("Maximum number of history files (999) exceeded.")):
+        with pytest.raises(
+            RuntimeError,
+            match=re.escape("Maximum number of history files (999) exceeded."),
+        ):
             hsm.add_build_step_to_history(_make_build_step(1000))
