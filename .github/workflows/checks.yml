@@ -220,3 +220,5 @@ jobs:
     uses: ./.github/workflows/build-executable.yml
     with:
       release-tag: ''
+    permissions:
+      contents: write
