@@ -37,6 +37,7 @@
  - #36: Added unit tests for exasol.exaslpm.pkg_mgmt.install_packages.package_install
  - #73: Updated to PTB 5.1.1 and relocked dependencies
  - #59: Extend integration tests to run on different versions of Ubuntu
+ - #79: Build executables for oldest supported Ubuntu version
 
 ## Bugs
 

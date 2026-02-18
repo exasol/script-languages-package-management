@@ -9,19 +9,36 @@ on:
         required: true
 
 jobs:
+  matrix_runner:
+    runs-on: "ubuntu-24.04"
+    permissions:
+      contents: read
+    steps:
+      - name: SCM Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Generate matrix
+        run: poetry run -- nox -s matrix:executable-build-runners
+
+      - id: set-matrix
+        run: |
+          echo "matrix=$(poetry run -- nox -s matrix:executable-build-config)" >> $GITHUB_OUTPUT
 
   standalone-executable:
     name: Create a standalone linux executable
+    needs:
+      - matrix_runner
     runs-on:
       labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - runner: "ubuntu-24.04"
-            binary-suffix: x86-64
-          - runner: ubuntu-24.04-arm
-            binary-suffix: arm64
+      matrix: ${{ fromJson(needs.matrix_runner.outputs.matrix) }}
     permissions:
       contents: write
     env:

@@ -95,6 +95,27 @@ def matrix_int_test_config(session: nox.Session):
     ]
     print(json.dumps({"include": config}))
 
+@nox.session(name="matrix:executable-build-config", python=False)
+def matrix_int_test_config(session: nox.Session):
+    def _build_config(
+        ubuntu_version: str,
+        platform: PlatformConfig,
+    ) -> dict[str, str]:
+        return {
+            "runner": f"ubuntu-{ubuntu_version}{platform.runner_suffix}",
+            "binary-suffix": platform.docker_tag_suffix,
+        }
+
+    ubuntu_versions = PROJECT_CONFIG.supported_ubuntu_versions.copy()
+    ubuntu_versions.sort()
+    min_ubuntu_version = ubuntu_versions[0]
+
+    config = [
+        _build_config(min_ubuntu_version, platform)
+        for platform in PROJECT_CONFIG.supported_platforms
+    ]
+    print(json.dumps({"include": config}))
+
 
 def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
     return f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}-{docker_tag_suffix}"
