@@ -1,5 +1,5 @@
-import sys
 import platform
+import sys
 from collections.abc import Iterator
 from pathlib import Path
 from typing import TextIO
@@ -7,7 +7,6 @@ from typing import TextIO
 from jinja2 import Template
 
 from exasol.exaslpm.pkg_mgmt.context.context import Context
-
 
 PLATFORM_MACHINE_MAPPING = {
     "x86_64": "x86_64",
