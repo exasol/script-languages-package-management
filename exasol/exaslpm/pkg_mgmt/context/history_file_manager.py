@@ -8,6 +8,7 @@ from exasol.exaslpm.model.package_file_config import (
     PackageFile,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
+from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
 
 
 class HistoryFileManager:
@@ -59,16 +60,17 @@ class HistoryFileManager:
             self._serialize_build_step(build_step)
         )
 
+    @staticmethod
+    def _remove_prefix(file_name: str) -> str:
+        prefix_end_idx = file_name.find("_")
+        return file_name[prefix_end_idx + 1 :]
+
     def _get_all_previous_build_step_names(self) -> set[str]:
         """
         Read all build step names from the history path.
         """
 
-        def _remove_prefix(file_name: str) -> str:
-            prefix_end_idx = file_name.find("_")
-            return file_name[prefix_end_idx + 1 :]
-
-        return {_remove_prefix(p.name) for p in self._history_files}
+        return {self._remove_prefix(p.name) for p in self._history_files}
 
     def get_all_previous_build_steps(self) -> list[BuildStep]:
         """
@@ -79,3 +81,27 @@ class HistoryFileManager:
         histore_files = list(self._history_files)
         histore_files.sort(key=lambda p: p.name)
         return [self._deserialize_build_step(p.read_text()) for p in histore_files]
+
+    def check_consistency(self) -> None:
+        """
+        Check if current history files are consistent.
+        """
+
+        def check_consistency_of_file(pkg_file: Path) -> str:
+            session = PackageFileSession(pkg_file)
+            if len(session.package_file_config.build_steps) != 1:
+                return f"File '{pkg_file.name}' has unexpected number of build steps '{len(session.package_file_config.build_steps)}'"
+            build_step_name = session.package_file_config.build_steps[0].name
+            if build_step_name != self._remove_prefix(pkg_file.name):
+                return f"Build-Step in File '{pkg_file.name}' has unexpected name '{build_step_name}'"
+            return ""
+
+        found_inconsistencies = [
+            check_consistency_of_file(history) for history in self._history_files
+        ]
+        filtered_inconsistencies = [
+            inconsistency for inconsistency in found_inconsistencies if inconsistency
+        ]
+        if filtered_inconsistencies:
+            err_msg = "\n".join(filtered_inconsistencies)
+            raise RuntimeError(f"Found inconsistency in history files: {err_msg}")

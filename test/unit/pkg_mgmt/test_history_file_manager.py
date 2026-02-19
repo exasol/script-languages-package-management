@@ -11,6 +11,7 @@ import pytest
 
 from exasol.exaslpm.model.package_file_config import BuildStep
 from exasol.exaslpm.pkg_mgmt.context.history_file_manager import HistoryFileManager
+from exasol.exaslpm.pkg_mgmt.package_file_session import PackageFileSession
 
 
 @pytest.fixture
@@ -82,3 +83,29 @@ def test_max_build_step_files(history_file_manager):
             match=re.escape("Maximum number of history files (999) exceeded."),
         ):
             hsm.add_build_step_to_history(_make_build_step(1000))
+
+
+def test_consistency_raises_if_wrong_build_step_file(history_file_manager):
+    with history_file_manager([TEST_BUILD_STEP]) as hsm:
+        session = PackageFileSession(hsm.history_path / f"000_{TEST_BUILD_STEP.name}")
+        session.package_file_config.build_steps.append(TEST_BUILD_STEP_2)
+        session.commit_changes()
+        with pytest.raises(
+            RuntimeError,
+            match=re.escape(
+                "Found inconsistency in history files: File '000_build_step_1' has unexpected number of build steps '2'"
+            ),
+        ):
+            hsm.check_consistency()
+
+
+def test_consistency_raises_if_wrong_build_step_file_name(history_file_manager):
+    with history_file_manager([TEST_BUILD_STEP]) as hsm:
+        session = PackageFileSession(hsm.history_path / f"000_{TEST_BUILD_STEP.name}")
+        session.package_file_config.build_steps[0].name = "some_other_name"
+        session.commit_changes()
+        with pytest.raises(
+            RuntimeError,
+            match="Found inconsistency in history files: Build-Step in File '000_build_step_1' has unexpected name 'some_other_name'",
+        ):
+            hsm.check_consistency()
