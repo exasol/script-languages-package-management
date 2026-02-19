@@ -17,9 +17,11 @@ from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
 def get_package_version(
     pkg: AptPackage, ctx: Context, madison_dict: dict[str, list[MadisonData]]
 ) -> str:
-    if pkg and pkg.version and pkg.version.find("*") == -1:
+    if not (pkg and pkg.version):
+        return ""
+    elif pkg.version.find("*") == -1:
         return pkg.version
-    if pkg.name in madison_dict:
+    elif pkg.name in madison_dict:
         madison_variants = madison_dict[pkg.name]
         filtered_versions = [
             variant.version
