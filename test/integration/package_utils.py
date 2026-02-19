@@ -9,7 +9,7 @@ from exasol.exaslpm.model.package_file_config import (
     Package,
     PipPackage,
 )
-from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import MadisonParser
+from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import MadisonData
 
 
 class ContainsPackages:
@@ -24,7 +24,7 @@ class ContainsPackages:
     @staticmethod
     def _compare_package(expected: Package, installed: Package) -> bool:
         return (
-            MadisonParser.is_match(installed.version, expected.version)
+            MadisonData.is_match(installed.version, expected.version)
             and expected.name.lower() == installed.name.lower()
         )
 

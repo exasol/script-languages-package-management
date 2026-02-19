@@ -24,14 +24,16 @@ def get_package_version(
         filtered_versions = [
             variant.version
             for variant in madison_variants
-            if pkg.version and MadisonParser.is_match(variant.version, pkg.version)
+            if pkg.version and MadisonData.is_match(variant.version, pkg.version)
         ]
         if not filtered_versions:
             raise ValueError(
                 f"No matching version found for {pkg.name} with version {pkg.version} in {madison_variants}"
             )
         pkg_ver = filtered_versions[0]
-        ctx.cmd_logger.info(f"Resolved version for {pkg.name} with wildcard: {pkg_ver}")
+        ctx.cmd_logger.info(
+            f"Resolved version={pkg_ver} for {pkg.name} with wildcard: {pkg.version}"
+        )
     else:
         raise ValueError(
             f"{pkg.name} with version {pkg.version} not found in madison output"

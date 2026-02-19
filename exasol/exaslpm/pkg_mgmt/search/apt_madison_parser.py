@@ -2,7 +2,6 @@ import csv
 import re
 from dataclasses import dataclass
 from io import StringIO
-from typing import Any
 
 from exasol.exaslpm.model.package_file_config import AptPackage
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
@@ -24,6 +23,19 @@ vim | 2:9.1.0016-1ubuntu7 | http://archive.ubuntu.com/ubuntu noble/main amd64 Pa
 class MadisonData:
     version: str
     tail: str
+
+    @staticmethod
+    def is_match(text: str, pattern: str) -> bool:
+        # 1. Escape special regex characters so they are treated as literal text
+        # 2. Replace the escaped asterisk '\*' back to the regex wildcard '.*'
+        regex_pattern = re.escape(pattern).replace(r"\*", ".*")
+
+        # 3. Add anchors (^ and $) to ensure we match the ENTIRE string,
+        # not just a piece of it in the middle.
+        full_regex = f"^{regex_pattern}$"
+
+        # Use re.fullmatch for a clean boolean check
+        return bool(re.fullmatch(full_regex, text))
 
 
 class MadisonExecutor:
@@ -54,19 +66,6 @@ class MadisonExecutor:
 
 class MadisonParser:
     @staticmethod
-    def is_match(text: str, pattern: str) -> bool:
-        # 1. Escape special regex characters so they are treated as literal text
-        # 2. Replace the escaped asterisk '\*' back to the regex wildcard '.*'
-        regex_pattern = re.escape(pattern).replace(r"\*", ".*")
-
-        # 3. Add anchors (^ and $) to ensure we match the ENTIRE string,
-        # not just a piece of it in the middle.
-        full_regex = f"^{regex_pattern}$"
-
-        # Use re.fullmatch for a clean boolean check
-        return bool(re.fullmatch(full_regex, text))
-
-    @staticmethod
     def parse_madison_output(
         madison_out: str, ctx: Context
     ) -> dict[str, list[MadisonData]]:
@@ -75,12 +74,16 @@ class MadisonParser:
         madison_dict: dict[str, list[MadisonData]] = {}
         reader = csv.reader(StringIO(madison_out), delimiter="|")
         for row in reader:
-            if len(row) == 3:
+            if not row:
+                continue
+            if len(row) != 3 or not all(x.strip() for x in row):
+                ctx.cmd_logger.err(f"Invalid madison output: {madison_out}")
+                raise ValueError(f"Invalid madison output: \n{row}\nis invalid")
+            else:
                 pkg, ver, tail = (x.strip() for x in row[:3])
                 if pkg not in madison_dict:
                     madison_dict[pkg] = []
                 madison_dict[pkg].append(MadisonData(ver, tail))
-            else:
-                ctx.cmd_logger.err(f"Invalid madison output: {madison_out}")
-                raise ValueError(f"{row}\nis invalid")
+            
+                
         return madison_dict

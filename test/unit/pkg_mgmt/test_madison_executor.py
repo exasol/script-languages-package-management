@@ -22,8 +22,7 @@ def test_execute_madison_single_package(context_mock: Context):
 
     def consume_results_side_effect(stdout_cb, stderr_cb):
         stdout_cb(
-            "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages",
-            None,
+            "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
         return 0
 
@@ -46,12 +45,10 @@ def test_execute_madison_multiple_packages(context_mock: Context):
 
     def consume_results_side_effect(stdout_cb, stderr_cb):
         stdout_cb(
-            "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages",
-            None,
+            "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
         stdout_cb(
-            "vim | 2:9.1.0016-1ubuntu7.9 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages",
-            None,
+            "vim | 2:9.1.0016-1ubuntu7.9 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
         return 0
 
