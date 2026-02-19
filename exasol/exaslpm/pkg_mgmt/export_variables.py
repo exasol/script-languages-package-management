@@ -12,7 +12,7 @@ def _check_uniquess_of_variables(
     existing_variables: dict[str, str],
     variables: dict[str, str],
 ) -> None:
-    for variable_key, variable_value in variables.items():
+    for variable_key in variables.keys():
         if variable_key in existing_variables:
             raise ValueError(
                 f"Variable {variable_key} in build-step={build_step_name}, phase={phase_name} was already defined."
