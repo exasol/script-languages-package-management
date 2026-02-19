@@ -1,7 +1,7 @@
 import sys
 from collections.abc import Iterator
-from io import TextIOBase
 from pathlib import Path
+from typing import TextIO
 
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
@@ -23,7 +23,7 @@ def _variables(context: Context) -> Iterator[tuple[str, str]]:
     yield from variables.items()
 
 
-def _write_variables(context: Context, out_stream: TextIOBase) -> None:
+def _write_variables(context: Context, out_stream: TextIO) -> None:
     for variable_key, variable_value in _variables(context):
         print(f"export {variable_key}={variable_value}", file=out_stream)
 
