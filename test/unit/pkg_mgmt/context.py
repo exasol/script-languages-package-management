@@ -49,6 +49,9 @@ class HistoryFileManagerMock:
     def get_all_previous_build_steps(self) -> list[BuildStep]:
         return self.build_steps
 
+    def check_consistency(self):
+        self.mock.check_consistency()
+
 
 class TempFileProviderMock:
     """

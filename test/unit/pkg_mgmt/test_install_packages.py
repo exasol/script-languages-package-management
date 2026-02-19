@@ -232,6 +232,7 @@ def test_install_packages_history_manager(
             context=context_mock,
         )
     assert context_mock.history_file_manager.mock.mock_calls == [
+        call.check_consistency(),
         call.raise_if_build_step_exists("build-step-1"),
         call.add_build_step_to_history(
             package_file_config.find_build_step("build-step-1")

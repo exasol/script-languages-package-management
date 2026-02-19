@@ -49,6 +49,7 @@ def package_install(package_file: pathlib.Path, build_step_name: str, context: C
 
     logger.info(f"Package File: {package_file}, Build Step: {build_step_name}")
 
+    context.history_file_manager.check_consistency()
     context.history_file_manager.raise_if_build_step_exists(build_step_name)
 
     try:

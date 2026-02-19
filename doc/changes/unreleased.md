@@ -27,7 +27,8 @@
  - #9: Implemented install_ppa
  - #4: Implement install command for R
  - #70: Added Bazel install
- - #75: Added Github Workflow which creates docker images 
+ - #75: Added Github Workflow which creates docker images
+ - #85: Added order to build step history 
 
 ## Refactorings
 
