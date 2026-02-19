@@ -1,6 +1,7 @@
 import pytest
 
 from exasol.exaslpm.model.serialization import to_yaml_str
+from exasol.exaslpm.pkg_mgmt import export_variables as export_variables_module
 from exasol.exaslpm.pkg_mgmt.export_variables import export_variables
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
@@ -27,8 +28,13 @@ def test_export_variables_stdout(capsys, docker_executor_context, prepare_variab
 
     export_variables(None, docker_executor_context)
     out = capsys.readouterr().out
-    assert "export JAVA_HOME=/usr/java" in out
+    mapped_platform = export_variables_module._mapped_platform(
+        export_variables_module.platform.machine()
+    )
+    java_suffix = "amd64" if mapped_platform == "x86_64" else "arm64"
+    assert f"export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-{java_suffix}" in out
     assert "export PROTOBUF_DIR=/opt/protobuf" in out
+    assert "{% if platform" not in out
 
 
 def test_export_variables_file(
@@ -39,9 +45,16 @@ def test_export_variables_file(
     export_variables(target_file, docker_executor_context)
 
     out = capsys.readouterr().out
-    assert "export JAVA_HOME=/usr/java" not in out
+    assert "export JAVA_HOME" not in out
     assert "export PROTOBUF_DIR=/opt/protobuf" not in out
 
     out_file = target_file.read_text()
-    assert "export JAVA_HOME=/usr/java" in out_file
+    mapped_platform = export_variables_module._mapped_platform(
+        export_variables_module.platform.machine()
+    )
+    java_suffix = "amd64" if mapped_platform == "x86_64" else "arm64"
+    assert (
+        f"export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-{java_suffix}" in out_file
+    )
     assert "export PROTOBUF_DIR=/opt/protobuf" in out_file
+    assert "{% if platform" not in out_file

@@ -470,7 +470,9 @@ def variables_file_content(
                 phases=[
                     Phase(
                         name="phase_1",
-                        variables={"JAVA_HOME": "/usr/java"},
+                        variables={
+                            "JAVA_HOME": "/usr/lib/jvm/java-1.17.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}"
+                        },
                     )
                 ],
             ),
