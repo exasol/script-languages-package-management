@@ -1,5 +1,7 @@
+import platform
 from copy import deepcopy
 from pathlib import Path
+from test.integration.export_variables_common import PreparedVariables
 
 import pytest
 from packaging.version import Version
@@ -462,7 +464,12 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
 @pytest.fixture
 def variables_file_content(
     apt_package_with_version: dict[str, AptPackage],
-) -> PackageFile:
+) -> tuple[PackageFile, PreparedVariables]:
+    if platform.machine() == "x86_64":
+        expected_java_home = "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64"
+    else:
+        expected_java_home = "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-arm64"
+
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -470,7 +477,9 @@ def variables_file_content(
                 phases=[
                     Phase(
                         name="phase_1",
-                        variables={"JAVA_HOME": "/usr/java"},
+                        variables={
+                            "JAVA_HOME": "/usr/lib/jvm/java-1.17.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}"
+                        },
                     )
                 ],
             ),
@@ -484,4 +493,4 @@ def variables_file_content(
                 ],
             ),
         ]
-    )
+    ), PreparedVariables(java_home=expected_java_home)

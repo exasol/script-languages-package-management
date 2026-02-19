@@ -12,7 +12,8 @@ def prepare_variables(
     local_package_path,
     docker_executor_context,
 ):
-    variables_package_file_yaml = to_yaml_str(variables_file_content)
+    variables_file_content_package_file, prepared_variables = variables_file_content
+    variables_package_file_yaml = to_yaml_str(variables_file_content_package_file)
     local_package_path.write_text(variables_package_file_yaml)
 
     for build_step_name in ["build_step_1", "build_step_2"]:
@@ -21,14 +22,16 @@ def prepare_variables(
             build_step_name=build_step_name,
             context=docker_executor_context,
         )
+    return prepared_variables
 
 
 def test_export_variables_stdout(capsys, docker_executor_context, prepare_variables):
 
     export_variables(None, docker_executor_context)
     out = capsys.readouterr().out
-    assert "export JAVA_HOME=/usr/java" in out
+    assert prepare_variables.java_home in out
     assert "export PROTOBUF_DIR=/opt/protobuf" in out
+    assert "{% if platform" not in out
 
 
 def test_export_variables_file(
@@ -39,9 +42,10 @@ def test_export_variables_file(
     export_variables(target_file, docker_executor_context)
 
     out = capsys.readouterr().out
-    assert "export JAVA_HOME=/usr/java" not in out
+    assert "export JAVA_HOME" not in out
     assert "export PROTOBUF_DIR=/opt/protobuf" not in out
 
     out_file = target_file.read_text()
-    assert "export JAVA_HOME=/usr/java" in out_file
+    assert prepare_variables.java_home in out_file
     assert "export PROTOBUF_DIR=/opt/protobuf" in out_file
+    assert "{% if platform" not in out_file
