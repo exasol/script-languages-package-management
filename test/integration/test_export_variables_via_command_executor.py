@@ -31,11 +31,17 @@ def test_export_variables_stdout(capsys, docker_executor_context, prepare_variab
     assert "export PROTOBUF_DIR=/opt/protobuf" in out
 
 
-def test_export_variables_file(tmp_path, docker_executor_context, prepare_variables):
+def test_export_variables_file(
+    capsys, tmp_path, docker_executor_context, prepare_variables
+):
 
     target_file = tmp_path / "variables.sh"
     export_variables(target_file, docker_executor_context)
 
-    out = target_file.read_text()
-    assert "export JAVA_HOME=/usr/java" in out
-    assert "export PROTOBUF_DIR=/opt/protobuf" in out
+    out = capsys.readouterr().out
+    assert "export JAVA_HOME=/usr/java" not in out
+    assert "export PROTOBUF_DIR=/opt/protobuf" not in out
+
+    out_file = target_file.read_text()
+    assert "export JAVA_HOME=/usr/java" in out_file
+    assert "export PROTOBUF_DIR=/opt/protobuf" in out_file

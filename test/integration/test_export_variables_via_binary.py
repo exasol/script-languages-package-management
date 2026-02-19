@@ -39,12 +39,15 @@ def test_export_variables_stdout(docker_container, prepare_variables):
 def test_export_variables_file(docker_container, prepare_variables):
 
     target_file = Path("/tmp/variables.sh")
-    ret, _ = docker_container.run_exaslpm(
+    ret, out = docker_container.run_exaslpm(
         ["export-variables", "--out-file", str(target_file)]
     )
 
+    assert "export JAVA_HOME=/usr/java" not in out
+    assert "export PROTOBUF_DIR=/opt/protobuf" not in out
+
     assert ret == 0
 
-    _, out = docker_container.run(["cat", str(target_file)])
-    assert "export JAVA_HOME=/usr/java" in out
-    assert "export PROTOBUF_DIR=/opt/protobuf" in out
+    _, out_cat = docker_container.run(["cat", str(target_file)])
+    assert "export JAVA_HOME=/usr/java" in out_cat
+    assert "export PROTOBUF_DIR=/opt/protobuf" in out_cat
