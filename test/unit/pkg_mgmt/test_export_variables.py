@@ -72,11 +72,20 @@ def test_export_variables_to_file(tmp_path: Path, context_mock):
     assert "export B=2\n" in out
 
 
-def test_export_variables_renders_jinja_template(capsys, context_mock, monkeypatch):
+@pytest.mark.parametrize(
+    "platform, expected_variable_value",
+    [
+        ("aarch64", "/usr/lib/jvm/java-1.17.0-openjdk-arm64"),
+        ("x86_64", "/usr/lib/jvm/java-1.17.0-openjdk-amd64"),
+    ],
+)
+def test_export_variables_renders_jinja_template(
+    capsys, context_mock, monkeypatch, platform, expected_variable_value
+):
+    monkeypatch.setattr(export_variables_module.platform, "machine", lambda: platform)
     context_mock.history_file_manager.build_steps = [TEMPLATE_BUILD_STEP]
-    monkeypatch.setattr(export_variables_module.platform, "machine", lambda: "aarch64")
 
     export_variables(None, context=context_mock)
 
     out = capsys.readouterr().out
-    assert "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-arm64\n" in out
+    assert f"export JAVA_HOME={expected_variable_value}\n" in out
