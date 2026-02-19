@@ -1,4 +1,5 @@
 import csv
+import re
 from dataclasses import dataclass
 from io import StringIO
 from typing import Any
@@ -21,7 +22,7 @@ vim | 2:9.1.0016-1ubuntu7 | http://archive.ubuntu.com/ubuntu noble/main amd64 Pa
 
 @dataclass
 class MadisonData:
-    ver: str
+    version: str
     tail: str
 
 
@@ -37,12 +38,12 @@ class MadisonExecutor:
 
         stdout_lines: list[str] = []
 
-        def consume_stdout(line: str | bytes, _ctx: Any) -> None:
+        def consume_stdout(line: str | bytes, **kwargs) -> None:
             if isinstance(line, bytes):
                 line = line.decode()
             stdout_lines.append(line)
 
-        def consume_stderr(_line: str | bytes, _ctx: Any) -> None:
+        def consume_stderr(_line: str | bytes, **kwargs) -> None:
             pass
 
         ret_code = cmd_res.consume_results(consume_stdout, consume_stderr)
@@ -53,7 +54,22 @@ class MadisonExecutor:
 
 class MadisonParser:
     @staticmethod
-    def parse_madison_output(madison_out: str) -> dict[str, list[MadisonData]]:
+    def is_match(text: str, pattern: str) -> bool:
+        # 1. Escape special regex characters so they are treated as literal text
+        # 2. Replace the escaped asterisk '\*' back to the regex wildcard '.*'
+        regex_pattern = re.escape(pattern).replace(r"\*", ".*")
+
+        # 3. Add anchors (^ and $) to ensure we match the ENTIRE string,
+        # not just a piece of it in the middle.
+        full_regex = f"^{regex_pattern}$"
+
+        # Use re.fullmatch for a clean boolean check
+        return bool(re.fullmatch(full_regex, text))
+
+    @staticmethod
+    def parse_madison_output(
+        madison_out: str, ctx: Context
+    ) -> dict[str, list[MadisonData]]:
         if not madison_out:
             return {}
         madison_dict: dict[str, list[MadisonData]] = {}
@@ -65,5 +81,6 @@ class MadisonParser:
                     madison_dict[pkg] = []
                 madison_dict[pkg].append(MadisonData(ver, tail))
             else:
-                raise ValueError(f"{madison_out}\nis invalid")
+                ctx.cmd_logger.err(f"Invalid madison output: {madison_out}")
+                raise ValueError(f"{row}\nis invalid")
         return madison_dict

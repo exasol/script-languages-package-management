@@ -95,21 +95,21 @@ def test_execute_madison_empty_output(context_mock: Context):
     assert result == ""
 
 
-def test_parse_madison_output_empty_string():
-    result = MadisonParser.parse_madison_output("")
+def test_parse_madison_output_empty_string(context_mock: Context):
+    result = MadisonParser.parse_madison_output("", context_mock)
     assert result == {}
 
 
-def test_parse_madison_output_none():
-    result = MadisonParser.parse_madison_output(None)
+def test_parse_madison_output_none(context_mock: Context):
+    result = MadisonParser.parse_madison_output(None, context_mock)
     assert result == {}
 
 
-def test_parse_madison_output_with_whitespace():
+def test_parse_madison_output_with_whitespace(context_mock: Context):
     madison_out = "  gpg  |  2.4.4-2ubuntu17.4  |  http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages  "
-    result = MadisonParser.parse_madison_output(madison_out)
+    result = MadisonParser.parse_madison_output(madison_out, context_mock)
     assert "gpg" in result
-    assert result["gpg"][0].ver == "2.4.4-2ubuntu17.4"
+    assert result["gpg"][0].version == "2.4.4-2ubuntu17.4"
     assert (
         result["gpg"][0].tail
         == "http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"

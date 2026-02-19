@@ -21,7 +21,16 @@ def get_package_version(
         return pkg.version
     if pkg.name in madison_dict:
         madison_variants = madison_dict[pkg.name]
-        pkg_ver = madison_variants[0].ver
+        filtered_versions = [
+            variant.version
+            for variant in madison_variants
+            if pkg.version and MadisonParser.is_match(variant.version, pkg.version)
+        ]
+        if not filtered_versions:
+            raise ValueError(
+                f"No matching version found for {pkg.name} with version {pkg.version} in {madison_variants}"
+            )
+        pkg_ver = filtered_versions[0]
         ctx.cmd_logger.info(f"Resolved version for {pkg.name} with wildcard: {pkg_ver}")
     else:
         raise ValueError(
@@ -49,7 +58,7 @@ def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExe
         if pkg and pkg.version and "*" in pkg.version
     ]
     madison_out = MadisonExecutor.execute_madison(pkgs, ctx)
-    madison_dict = MadisonParser.parse_madison_output(madison_out)
+    madison_dict = MadisonParser.parse_madison_output(madison_out, ctx)
 
     for package in apt_packages.packages:
         pkg_ver = get_package_version(package, ctx, madison_dict)
