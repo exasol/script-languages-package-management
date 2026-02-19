@@ -1,3 +1,4 @@
+import stat
 from pathlib import Path
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
@@ -38,3 +39,7 @@ class DockerFileAccess:
 
     def copy_file(self, source_path: Path, destination_path: Path) -> None:
         self.docker_test_container.run(["cp", str(source_path), str(destination_path)])
+
+    def chmod(self, file: Path, mode: int = stat.S_IXUSR) -> None:
+        assert mode == stat.S_IXUSR, "Only stat.S_IXUSR is currently supported"
+        self.docker_test_container.run(["chmod", "u+x", str(file)])

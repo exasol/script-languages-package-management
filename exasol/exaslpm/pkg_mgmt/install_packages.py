@@ -7,6 +7,7 @@ from exasol.exaslpm.model.package_file_config import (
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_apt_packages import install_apt_packages
 from exasol.exaslpm.pkg_mgmt.install_apt_repos import install_apt_repos
+from exasol.exaslpm.pkg_mgmt.install_bazel import install_bazel
 from exasol.exaslpm.pkg_mgmt.install_conda_packages import install_conda_packages
 from exasol.exaslpm.pkg_mgmt.install_micromamba import install_micromamba
 from exasol.exaslpm.pkg_mgmt.install_pip import install_pip
@@ -23,6 +24,8 @@ def _process_tools(context: Context, search_cache: SearchCache, phase: Phase):
             install_pip(search_cache, phase, context)
         if tools.micromamba:
             install_micromamba(phase, context)
+        if tools.bazel:
+            install_bazel(phase, context)
 
 
 def _process_phase(context: Context, build_step: BuildStep, phase: Phase) -> None:
@@ -46,6 +49,7 @@ def package_install(package_file: pathlib.Path, build_step_name: str, context: C
 
     logger.info(f"Package File: {package_file}, Build Step: {build_step_name}")
 
+    context.history_file_manager.check_consistency()
     context.history_file_manager.raise_if_build_step_exists(build_step_name)
 
     try:

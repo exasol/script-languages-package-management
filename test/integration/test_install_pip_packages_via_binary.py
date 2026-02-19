@@ -23,7 +23,11 @@ def prepare_pip_env(docker_container, pip_package_file_content, cli_helper):
 
 
 def test_install_pip_packages(
-    docker_container, pip_packages_file_content, cli_helper, prepare_pip_env
+    docker_container,
+    pip_packages_file_content,
+    python_version,
+    cli_helper,
+    prepare_pip_env,
 ):
     pip_packages_file_yaml = to_yaml_str(pip_packages_file_content)
 
@@ -33,7 +37,7 @@ def test_install_pip_packages(
 
     expected_packages = pip_packages_file_content.build_steps[0].phases[0].pip.packages
 
-    pkgs_before_install = docker_container.list_pip()
+    pkgs_before_install = docker_container.list_pip(python_version)
     assert pkgs_before_install != ContainsPipPackages(expected_packages)
 
     ret, out = docker_container.run_exaslpm(
@@ -43,7 +47,7 @@ def test_install_pip_packages(
     )
     assert ret == 0
 
-    pkgs_after_install = docker_container.list_pip()
+    pkgs_after_install = docker_container.list_pip(python_version)
     assert pkgs_after_install == ContainsPipPackages(expected_packages)
 
 

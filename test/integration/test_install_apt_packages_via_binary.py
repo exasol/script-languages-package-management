@@ -89,16 +89,16 @@ def test_history(docker_container, apt_package_file_content, cli_helper):
 
     _, out = docker_container.run(["ls", "/build_info/packages/history"])
     history_files = [line.strip() for line in out.splitlines()]
-    assert history_files == ["build_step_1", "build_step_2"]
+    assert history_files == ["000_build_step_1", "001_build_step_2"]
 
     _validate_build_step_history_file(
         docker_container,
-        Path("/build_info/packages/history/build_step_1"),
+        Path("/build_info/packages/history/000_build_step_1"),
         apt_package_file_content.build_steps[0],
     )
     _validate_build_step_history_file(
         docker_container,
-        Path("/build_info/packages/history/build_step_2"),
+        Path("/build_info/packages/history/001_build_step_2"),
         apt_package_file_content.build_steps[1],
     )
 

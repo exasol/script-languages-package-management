@@ -50,4 +50,4 @@ def test_install_micromamba_error(
         check_exit_code=False,
     )
     assert ret != 0
-    assert "bin/micromamba: Not found in archive" in out
+    assert "404 Client Error: Not Found for url" in out
