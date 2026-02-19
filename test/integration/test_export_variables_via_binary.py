@@ -32,8 +32,12 @@ def test_export_variables_stdout(docker_container, prepare_variables):
     ret, out = docker_container.run_exaslpm(["export-variables"])
 
     assert ret == 0
-    assert "export JAVA_HOME=/usr/java" in out
+    assert (
+        "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64" in out
+        or "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-arm64" in out
+    )
     assert "export PROTOBUF_DIR=/opt/protobuf" in out
+    assert "{% if platform" not in out
 
 
 def test_export_variables_file(docker_container, prepare_variables):
@@ -43,11 +47,15 @@ def test_export_variables_file(docker_container, prepare_variables):
         ["export-variables", "--out-file", str(target_file)]
     )
 
-    assert "export JAVA_HOME=/usr/java" not in out
+    assert "export JAVA_HOME" not in out
     assert "export PROTOBUF_DIR=/opt/protobuf" not in out
 
     assert ret == 0
 
     _, out_cat = docker_container.run(["cat", str(target_file)])
-    assert "export JAVA_HOME=/usr/java" in out_cat
+    assert (
+        "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64" in out_cat
+        or "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-arm64" in out_cat
+    )
     assert "export PROTOBUF_DIR=/opt/protobuf" in out_cat
+    assert "{% if platform" not in out_cat
