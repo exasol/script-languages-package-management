@@ -57,8 +57,8 @@ class CommandResult:
 
     def consume_results(
         self,
-        consume_stdout: Callable[[str | bytes, Any], None],
-        consume_stderr: Callable[[str | bytes, Any], None],
+        consume_stdout: Callable[[str | bytes], None],
+        consume_stderr: Callable[[str | bytes], None],
     ):
         read_out = threading.Thread(
             target=stream_reader, args=(self._stdout, consume_stdout)

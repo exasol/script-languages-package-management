@@ -119,6 +119,7 @@ def python_version(ubuntu_version) -> str:
     }
     return python_versions[ubuntu_version]
 
+
 @pytest.fixture
 def apt_pkg_file_wildcard() -> PackageFile:
     return PackageFile(
@@ -139,6 +140,7 @@ def apt_pkg_file_wildcard() -> PackageFile:
             ),
         ]
     )
+
 
 @pytest.fixture(
     params=["23.1", "25.3"],

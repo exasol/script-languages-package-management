@@ -84,6 +84,5 @@ class MadisonParser:
                 if pkg not in madison_dict:
                     madison_dict[pkg] = []
                 madison_dict[pkg].append(MadisonData(ver, tail))
-            
-                
+
         return madison_dict

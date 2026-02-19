@@ -5,7 +5,6 @@ from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
     MadisonData,
     MadisonParser,
 )
-from test.unit.pkg_mgmt.conftest import context_mock
 
 
 def test_madison_parser_empty(context_mock: Context):
