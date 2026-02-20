@@ -26,6 +26,8 @@ class MadisonData:
 
     @staticmethod
     def is_match(text: str, pattern: str) -> bool:
+        if not pattern or not text:
+            return True
         # 1. Escape special regex characters so they are treated as literal text
         # 2. Replace the escaped asterisk '\*' back to the regex wildcard '.*'
         regex_pattern = re.escape(pattern).replace(r"\*", ".*")

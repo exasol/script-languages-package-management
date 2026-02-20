@@ -101,3 +101,4 @@ def test_madison_is_match():
     assert MadisonData.is_match("2.4.2-2ubuntu17.4", "2.4.*")
     assert MadisonData.is_match("2.4.3-2ubuntu17.4", "2.*-2ubuntu17.4")
     assert not MadisonData.is_match("2.4.3-2ubuntu17.4", "3.*")
+    assert MadisonData.is_match("2.4.3-2ubuntu17.4", "")
