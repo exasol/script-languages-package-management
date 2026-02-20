@@ -26,6 +26,9 @@
  - #6: Implemented install_conda_packages command
  - #9: Implemented install_ppa
  - #4: Implement install command for R
+ - #70: Added Bazel install
+ - #75: Added Github Workflow which creates docker images
+ - #85: Added order to build step history 
 
 ## Refactorings
 
@@ -33,3 +36,10 @@
  - #46: Refactored injection of classes which implement external dependencies
  - #49: Updated install_packages to process all phases of a build step
  - #36: Added unit tests for exasol.exaslpm.pkg_mgmt.install_packages.package_install
+ - #73: Updated to PTB 5.1.1 and relocked dependencies
+ - #59: Extend integration tests to run on different versions of Ubuntu
+ - #79: Build executables for oldest supported Ubuntu version
+
+## Bugs
+
+ - #82: Cleaned up LD_LIBRARY_PATH for subprocesses

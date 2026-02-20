@@ -1,0 +1,99 @@
+name: Build Docker Images
+
+env:
+  REPO_NAME: ${{ inputs.repository_name || 'exasol/script-language-container' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_name:
+        description: 'Docker repository name, like "exasol/script-language-container"'
+        required: true
+  schedule:
+    # At 00:00. (https://crontab.guru)
+    - cron: "0 0 * * *"
+
+jobs:
+  build-matrix-docker-image-config:
+    name: Generate Build Matrix for runners
+    uses: ./.github/workflows/matrix-docker-image-config.yml
+    permissions:
+      contents: read
+
+  build:
+    name: Build Docker Images (BaseImage-${{matrix.base_img}}-Runner-${{matrix.runner}}-TargetTag-${{matrix.target_tag}})
+    needs:
+      - build-matrix-docker-image-config
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix) }}
+
+
+    steps:
+      - name: SCM Checkout
+        uses: actions/checkout@v6
+# TODO: https://github.com/exasol/script-languages-package-management/issues/78
+#        with:
+#          ref: 'latest'
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Build and Push "${{env.REPO_NAME}}:${{matrix.complete_docker_tag}}"
+        run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
+        env:
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
+
+
+  build-manifest:
+    runs-on: "ubuntu-24.04"
+    needs:
+      - build
+    permissions:
+      contents: read
+
+    steps:
+      - name: SCM Checkout
+        uses: actions/checkout@v6
+# TODO: https://github.com/exasol/script-languages-package-management/issues/78
+#        with:
+#          ref: 'latest'
+
+      - name: Setup Python & Poetry Environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Build Manifest
+        run: poetry run -- nox -s build-docker-manifests -- --repository "$REPO_NAME"
+        env:
+          DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
+
+
+  report:
+    if: ${{ failure() }}
+    needs:
+      - build
+      - build-manifest
+    name: Report status to slack
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report failure Status to Slack channel
+        id: report-failure-status-slack
+        uses: ravsamhq/notify-slack-action@v2
+        with:
+          status: failure
+          token: ${{ secrets.GITHUB_TOKEN }}
+          notification_title: "Build Docker Image for exaslpm failed"
+          message_format: "{emoji} *{workflow}* failed in <{repo_url}|{repo}>. See {run_url} for details."
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.INTEGRATION_TEAM_SLC_MONITORING_WEBHOOK }}

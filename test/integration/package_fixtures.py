@@ -1,7 +1,10 @@
 from copy import deepcopy
+from copy import deepcopy
 from pathlib import Path
 
 import pytest
+from packaging.version import Version
+from pydantic import HttpUrl
 from packaging.version import Version
 from pydantic import HttpUrl
 
@@ -140,6 +143,15 @@ def apt_pkg_file_wildcard() -> PackageFile:
             ),
         ]
     )
+
+
+@pytest.fixture
+def python_version(ubuntu_version) -> str:
+    python_versions = {
+        "24.04": "python3.12",
+        "22.04": "python3.10",
+    }
+    return python_versions[ubuntu_version]
 
 
 @pytest.fixture(
