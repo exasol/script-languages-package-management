@@ -1,14 +1,49 @@
-# sgn
-
-from exasol.exaslpm.model.package_file_config import AptPackages
+from exasol.exaslpm.model.package_file_config import (
+    AptPackage,
+    AptPackages,
+)
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_common import (
     CommandExecInfo,
     run_cmd,
 )
+from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
+    MadisonData,
+    MadisonExecutor,
+    MadisonParser,
+)
 
 
-def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
+def get_package_version(
+    pkg: AptPackage, ctx: Context, madison_dict: dict[str, list[MadisonData]]
+) -> str:
+    if not (pkg and pkg.version):
+        return ""
+    elif pkg.version.find("*") == -1:
+        return pkg.version
+    elif pkg.name in madison_dict:
+        madison_variants = madison_dict[pkg.name]
+        filtered_versions = [
+            variant.version
+            for variant in madison_variants
+            if pkg.version and MadisonData.is_match(variant.version, pkg.version)
+        ]
+        if not filtered_versions:
+            raise ValueError(
+                f"No matching version found for {pkg.name} with version {pkg.version} in {madison_variants}"
+            )
+        pkg_ver = filtered_versions[0]
+        ctx.cmd_logger.info(
+            f"Resolved version={pkg_ver} for {pkg.name} with wildcard: {pkg.version}"
+        )
+    else:
+        raise ValueError(
+            f"{pkg.name} with version {pkg.version} not found in madison output"
+        )
+    return pkg_ver
+
+
+def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExecInfo]:
     all_cmds = []
 
     all_cmds.append(
@@ -16,14 +51,22 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
             cmd=["apt-get", "-y", "update"], err="Failed while updating apt cmd"
         )
     )
-
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
     if apt_packages.packages is None:
         raise ValueError("no apt packages defined")
+
+    # If wildcards are present, parse those
+    pkgs = [
+        pkg
+        for pkg in apt_packages.packages
+        if pkg and pkg.version and "*" in pkg.version
+    ]
+    madison_out = MadisonExecutor.execute_madison(pkgs, ctx)
+    madison_dict = MadisonParser.parse_madison_output(madison_out, ctx)
+
     for package in apt_packages.packages:
-        apt_cmd = (
-            f"{package.name}={package.version}" if package.version else package.name
-        )
+        pkg_ver = get_package_version(package, ctx, madison_dict)
+        apt_cmd = f"{package.name}={pkg_ver}" if pkg_ver else package.name
         install_cmd.append(apt_cmd)
     all_cmds.append(
         CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")
@@ -58,7 +101,7 @@ def prepare_all_cmds(apt_packages: AptPackages) -> list[CommandExecInfo]:
 
 def install_apt_packages(apt_packages: AptPackages, context: Context) -> int:
     if len(apt_packages.packages) > 0:
-        cmd_n_errs = prepare_all_cmds(apt_packages)
+        cmd_n_errs = prepare_all_cmds(apt_packages, context)
         for cmd_n_err in cmd_n_errs:
             run_cmd(cmd_n_err, context)
     else:

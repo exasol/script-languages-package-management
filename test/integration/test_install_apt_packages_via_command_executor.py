@@ -7,14 +7,14 @@ from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 def test_apt_install(
     docker_container,
-    apt_package_file_content,
+    apt_pkg_file_wildcard,
     local_package_path,
     docker_executor_context,
 ):
-    apt_package_file_yaml = to_yaml_str(apt_package_file_content)
+    apt_package_file_yaml = to_yaml_str(apt_pkg_file_wildcard)
     local_package_path.write_text(apt_package_file_yaml)
 
-    expected_packages = apt_package_file_content.build_steps[0].phases[0].apt.packages
+    expected_packages = apt_pkg_file_wildcard.build_steps[0].phases[0].apt.packages
 
     pkgs_before_install = docker_container.list_apt()
     assert pkgs_before_install != ContainsPackages(expected_packages)
