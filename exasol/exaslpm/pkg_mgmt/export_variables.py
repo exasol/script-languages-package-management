@@ -1,0 +1,74 @@
+import platform
+import sys
+from collections.abc import Iterator
+from pathlib import Path
+from typing import TextIO
+
+from jinja2 import Template
+
+from exasol.exaslpm.pkg_mgmt.context.context import Context
+
+PLATFORM_MACHINE_MAPPING = {
+    "x86_64": "x86_64",
+    "amd64": "x86_64",
+    "aarch64": "arm64",
+    "arm64": "arm64",
+}
+
+
+def _mapped_platform(machine_name: str) -> str:
+    try:
+        return PLATFORM_MACHINE_MAPPING[machine_name]
+    except KeyError as error:
+        raise ValueError(f"Unsupported platform machine '{machine_name}'.") from error
+
+
+def _render_variable_value(variable_value: str) -> str:
+    template = Template(variable_value)
+    return template.render(platform=_mapped_platform(platform.machine()))
+
+
+def _check_uniquess_of_variables(
+    build_step_name: str,
+    phase_name: str,
+    existing_variables: dict[str, str],
+    variables: dict[str, str],
+) -> None:
+    for variable_key in variables.keys():
+        if variable_key in existing_variables:
+            raise ValueError(
+                f"Variable {variable_key} in build-step={build_step_name}, phase={phase_name} was already defined."
+            )
+
+
+def _variables(context: Context) -> Iterator[tuple[str, str]]:
+    previous_build_steps = context.history_file_manager.get_all_previous_build_steps()
+    variables: dict[str, str] = {}
+
+    for build_step in previous_build_steps:
+        for phase in build_step.phases:
+            if phase.variables:
+                _check_uniquess_of_variables(
+                    build_step.name, phase.name, variables, phase.variables
+                )
+                variables.update(phase.variables)
+
+    for variable_key, variable_value in variables.items():
+        yield variable_key, _render_variable_value(variable_value)
+
+
+def _write_variables(context: Context, out_stream: TextIO) -> None:
+    for variable_key, variable_value in _variables(context):
+        print(f"export {variable_key}={variable_value}", file=out_stream)
+
+
+def export_variables(
+    output_file: Path | None,
+    context: Context,
+) -> None:
+
+    if output_file is None:
+        _write_variables(context, out_stream=sys.stdout)
+    else:
+        with open(output_file, "w") as out_stream:
+            _write_variables(context, out_stream=out_stream)

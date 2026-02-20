@@ -8,43 +8,28 @@ from unittest.mock import (
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
-from exasol.exaslpm.cli import cli
+import exasol.exaslpm.cli as cli
+import exasol.exaslpm.cli.install as install_cli_mod
 
 
 @pytest.fixture
 def cliRunner():
-    return CliRunner(cli.install, True)
-
-
-@pytest.fixture
-def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
-    mock_function_to_mock = MagicMock()
-    monkeypatch.setattr(cli, "package_install", mock_function_to_mock)
-    return mock_function_to_mock
+    return CliRunner(cli.install_command, True)
 
 
 @pytest.fixture
 def mock_context(monkeypatch: MonkeyPatch) -> MagicMock:
     return_mock = MagicMock()
     mock_function_to_mock = MagicMock(return_value=return_mock)
-    monkeypatch.setattr(cli, "Context", mock_function_to_mock)
+    monkeypatch.setattr(install_cli_mod, "make_context", mock_function_to_mock)
     return return_mock
 
 
 @pytest.fixture
-def mock_history_manager(monkeypatch: MonkeyPatch) -> MagicMock:
-    return_mock = MagicMock()
-    mock_function_to_mock = MagicMock(return_value=return_mock)
-    monkeypatch.setattr(cli, "HistoryFileManager", mock_function_to_mock)
-    return return_mock
-
-
-@pytest.fixture
-def mock_file_access(monkeypatch: MonkeyPatch) -> MagicMock:
-    return_mock = MagicMock()
-    mock_function_to_mock = MagicMock(return_value=return_mock)
-    monkeypatch.setattr(cli, "FileAccess", mock_function_to_mock)
-    return return_mock
+def mock_install_packages(monkeypatch: MonkeyPatch) -> MagicMock:
+    mock_function_to_mock = MagicMock()
+    monkeypatch.setattr(install_cli_mod, "package_install", mock_function_to_mock)
+    return mock_function_to_mock
 
 
 def test_mock_no_build_step(cliRunner, mock_install_packages, some_package_file):
@@ -62,8 +47,6 @@ def test_mock_all_options(
     mock_install_packages,
     some_package_file,
     mock_context,
-    mock_history_manager,
-    mock_file_access,
 ):
     ret = cliRunner.run(
         "--package-file",

@@ -1,10 +1,9 @@
-from copy import deepcopy
+import platform
 from copy import deepcopy
 from pathlib import Path
+from test.integration.export_variables_common import PreparedVariables
 
 import pytest
-from packaging.version import Version
-from pydantic import HttpUrl
 from packaging.version import Version
 from pydantic import HttpUrl
 
@@ -491,3 +490,38 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
             ),
         ]
     )
+
+
+@pytest.fixture
+def variables_file_content(
+    apt_package_with_version: dict[str, AptPackage],
+) -> tuple[PackageFile, PreparedVariables]:
+    if platform.machine() == "x86_64":
+        expected_java_home = "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-amd64"
+    else:
+        expected_java_home = "export JAVA_HOME=/usr/lib/jvm/java-1.17.0-openjdk-arm64"
+
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        variables={
+                            "JAVA_HOME": "/usr/lib/jvm/java-1.17.0-openjdk-{% if platform == 'x86_64' %}amd64{% else %}arm64{% endif %}"
+                        },
+                    )
+                ],
+            ),
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        variables={"PROTOBUF_DIR": "/opt/protobuf"},
+                    )
+                ],
+            ),
+        ]
+    ), PreparedVariables(java_home=expected_java_home)
