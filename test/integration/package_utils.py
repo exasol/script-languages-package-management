@@ -23,10 +23,12 @@ class ContainsPackages:
 
     @staticmethod
     def _compare_package(expected: Package, installed: Package) -> bool:
-        return (
+        version_matches = (
             MadisonData.is_match(installed.version, expected.version)
-            and expected.name.lower() == installed.name.lower()
+            if expected.version
+            else True
         )
+        return version_matches and expected.name.lower() == installed.name.lower()
 
     def __eq__(self, installed_packages: Any) -> bool:
         if not isinstance(installed_packages, list):

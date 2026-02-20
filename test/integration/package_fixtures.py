@@ -32,6 +32,8 @@ APT_PACKAGE_DEFS = {
     "24.04": {
         "wget": AptPackage(name="wget", version="1.21.4-1ubuntu4.1"),
         "curl": AptPackage(name="curl", version="8.5.0-2ubuntu10.6"),
+        "tree": AptPackage(name="tree", version="2.1.1*"),
+        "binutils": AptPackage(name="binutils", version="2.42*"),
         "coreutils": AptPackage(name="coreutils", version="9.4-3ubuntu6.1"),
         "libsmbclient-dev": AptPackage(
             name="libsmbclient-dev", version="2:4.19.5+dfsg-4ubuntu9.4"
@@ -51,6 +53,8 @@ APT_PACKAGE_DEFS = {
     "22.04": {
         "wget": AptPackage(name="wget", version="1.21.2-2ubuntu1.1"),
         "curl": AptPackage(name="curl", version="7.81.0-1ubuntu1.21"),
+        "tree": AptPackage(name="tree", version="1.8.0*"),
+        "binutils": AptPackage(name="binutils", version="2.38*"),
         "coreutils": AptPackage(name="coreutils", version="8.32-4.1ubuntu1.2"),
         "libsmbclient-dev": AptPackage(
             name="libsmbclient-dev", version="2:4.15.13+dfsg-0ubuntu1.10"
@@ -123,7 +127,9 @@ def python_version(ubuntu_version) -> str:
 
 
 @pytest.fixture
-def apt_pkg_file_wildcard() -> PackageFile:
+def apt_pkg_file_wildcard(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -133,8 +139,8 @@ def apt_pkg_file_wildcard() -> PackageFile:
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
-                                AptPackage(name="tree", version="2.1.1*"),
-                                AptPackage(name="binutils", version="2.42*"),
+                                apt_package_with_version["tree"],
+                                apt_package_with_version["binutils"],
                             ]
                         ),
                     )
