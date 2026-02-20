@@ -7,7 +7,6 @@ from collections.abc import (
     Iterator,
 )
 from typing import (
-    Any,
     TextIO,
     cast,
 )
