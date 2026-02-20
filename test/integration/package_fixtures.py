@@ -53,7 +53,7 @@ APT_PACKAGE_DEFS = {
     "22.04": {
         "wget": AptPackage(name="wget", version="1.21.2-2ubuntu1.1"),
         "curl": AptPackage(name="curl", version="7.81.0-1ubuntu1.21"),
-        "tree": AptPackage(name="tree", version="1.8.0*"),
+        "tree": AptPackage(name="tree", version="2.0.2*"),
         "binutils": AptPackage(name="binutils", version="2.38*"),
         "coreutils": AptPackage(name="coreutils", version="8.32-4.1ubuntu1.2"),
         "libsmbclient-dev": AptPackage(
