@@ -28,7 +28,9 @@
  - #4: Implement install command for R
  - #70: Added Bazel install
  - #75: Added Github Workflow which creates docker images
- - #85: Added order to build step history 
+ - #85: Added order to build step history
+ - #88: Added export variables function
+ - #92: Added logic to treat variable values as Jinja2 templates
 
 ## Refactorings
 
