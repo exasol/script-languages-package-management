@@ -59,7 +59,7 @@ class MadisonExecutor:
 
         def consume_stderr(_line: str | bytes, **kwargs) -> None:
             """This function is intentionally empty to ignore stderr output."""
-            pass
+            ctx.cmd_logger.warn(_line)
 
         ret_code = cmd_res.consume_results(consume_stdout, consume_stderr)
         if ret_code != 0:
