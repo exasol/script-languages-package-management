@@ -150,15 +150,6 @@ def apt_pkg_file_wildcard(
     )
 
 
-@pytest.fixture
-def python_version(ubuntu_version) -> str:
-    python_versions = {
-        "24.04": "python3.12",
-        "22.04": "python3.10",
-    }
-    return python_versions[ubuntu_version]
-
-
 @pytest.fixture(
     params=["23.1", "25.3"],
     ids=["old", "new"],

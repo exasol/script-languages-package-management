@@ -17,7 +17,7 @@ from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
 def get_package_version(
     pkg: AptPackage, ctx: Context, madison_dict: dict[str, list[MadisonData]]
 ) -> str:
-    if not (pkg and pkg.version):
+    if not (pkg.version):
         return ""
     elif pkg.version.find("*") == -1:
         return pkg.version
