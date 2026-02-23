@@ -58,7 +58,8 @@ class MadisonExecutor:
             stdout_lines.append(line)
 
         def consume_stderr(_line: str | bytes, **kwargs) -> None:
-            """This function is intentionally empty to ignore stderr output."""
+            if isinstance(_line, bytes):
+                _line = _line.decode()
             ctx.cmd_logger.warn(_line)
 
         ret_code = cmd_res.consume_results(consume_stdout, consume_stderr)
