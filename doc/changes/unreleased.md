@@ -31,6 +31,7 @@
  - #85: Added order to build step history
  - #88: Added export variables function
  - #92: Added logic to treat variable values as Jinja2 templates
+ - #71: Implemented wildcard for version strings of apt packages
 
 ## Refactorings
 

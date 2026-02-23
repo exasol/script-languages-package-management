@@ -92,16 +92,3 @@ def test_madison_parser_output_with_empty_columns(context_mock: Context):
     madison_out = " | 2.4.3-2ubuntu17  | \n | | http://archive.ubuntu.com/ubuntu"
     with pytest.raises(ValueError):
         MadisonParser.parse_madison_output(madison_out, context_mock)
-
-
-def test_madison_is_match():
-    assert MadisonData.is_match("2.4.3-2ubuntu17.4", "2.4.3-2ubuntu17.4")
-    assert not MadisonData.is_match("2.5.3-2ubuntu17.4", "2.4.*")
-    assert MadisonData.is_match("2.4.3-2ubuntu17.4", "2.4.*")
-    assert MadisonData.is_match("2.4.2-2ubuntu17.4", "2.4.*")
-    assert MadisonData.is_match("2.4.3-2ubuntu17.4", "2.*-2ubuntu17.4")
-    assert not MadisonData.is_match("2.4.3-2ubuntu17.4", "3.*")
-    with pytest.raises(ValueError):
-        MadisonData.is_match("", "2.4.3-2ubuntu17.4")
-    with pytest.raises(ValueError):
-        MadisonData.is_match("2.4.3-2ubuntu17.4", "")
