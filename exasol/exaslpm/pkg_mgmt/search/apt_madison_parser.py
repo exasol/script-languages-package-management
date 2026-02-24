@@ -45,7 +45,7 @@ class MadisonExecutor:
     def execute_madison(pkg_list: list[AptPackage], ctx: Context) -> str:
         if not pkg_list:
             return ""
-        cmd = ["apt-cache", "madison"]
+        cmd = ["apt-cache", "-o", "quiet=0", "madison"]
         for pkg in pkg_list:
             cmd.append(pkg.name)
         cmd_res = ctx.cmd_executor.execute(cmd)
