@@ -42,7 +42,7 @@ def test_madison_executor_nonexistent_package(
     result = MadisonExecutor.execute_madison(pkg_list, docker_executor_context)
     assert isinstance(result, str)
     assert result == ""
-    assert warn_log.result == "N: Unable to locate package nonexistent-package"
+    assert warn_log.result.strip() == "N: Unable to locate package nonexistent-package"
     assert error_log.result == ""
 
 
