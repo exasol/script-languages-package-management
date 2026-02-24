@@ -46,3 +46,7 @@
 ## Bugs
 
  - #82: Cleaned up LD_LIBRARY_PATH for subprocesses
+
+## Internal
+
+ - Fixed pyproject.toml
