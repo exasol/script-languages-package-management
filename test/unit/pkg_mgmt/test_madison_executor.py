@@ -35,7 +35,7 @@ def test_execute_madison_single_package(context_mock: Context):
         == "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
     )
     context_mock.cmd_executor.execute.assert_called_once_with(
-        ["apt-cache", "madison", "gpg"]
+        ["apt-cache", "-o", "quiet=0", "madison", "gpg"]
     )
 
 
@@ -62,7 +62,7 @@ def test_execute_madison_multiple_packages(context_mock: Context):
     assert "gpg | 2.4.4-2ubuntu17.4" in result
     assert "vim | 2:9.1.0016-1ubuntu7.9" in result
     context_mock.cmd_executor.execute.assert_called_once_with(
-        ["apt-cache", "madison", "gpg", "vim"]
+        ["apt-cache", "-o", "quiet=0", "madison", "gpg", "vim"]
     )
 
 
