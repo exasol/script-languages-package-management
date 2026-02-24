@@ -37,8 +37,8 @@ def test_madison_executor_nonexistent_package(
     pkg_list = [AptPackage(name="nonexistent-package")]
     warn_log = LogCollector()
     error_log = LogCollector()
-    test_logger.warning_callback = warn_log
-    test_logger.error_callback = error_log
+    test_logger.warning_callback = warn_log.log
+    test_logger.error_callback = error_log.log
     result = MadisonExecutor.execute_madison(pkg_list, docker_executor_context)
     assert isinstance(result, str)
     assert result == ""
