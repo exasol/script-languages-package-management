@@ -35,9 +35,8 @@ jobs:
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
-# TODO: https://github.com/exasol/script-languages-package-management/issues/78
-#        with:
-#          ref: 'latest'
+        with:
+          ref: 'latest'
 
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@v5
