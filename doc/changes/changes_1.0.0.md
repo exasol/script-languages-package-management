@@ -1,5 +1,7 @@
 # 1.0.0 - 2026-02-25
 
+This is the first release containing basic feature for installing different package.
+
 ## Features
 
  - #1: Created skeletal structure for this project
