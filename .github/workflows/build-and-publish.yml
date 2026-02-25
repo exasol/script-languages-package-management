@@ -42,6 +42,6 @@ jobs:
           dist/*
 
       - name: GitHub Latest tag
-        run: >-
+        run: |
           git tag -f latest
           git push --force origin latest
