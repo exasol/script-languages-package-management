@@ -42,6 +42,7 @@
  - #73: Updated to PTB 5.1.1 and relocked dependencies
  - #59: Extend integration tests to run on different versions of Ubuntu
  - #79: Build executables for oldest supported Ubuntu version
+ - #78: Changed build_docker_image github workflow to use latest tag
 
 ## Bugs
 
