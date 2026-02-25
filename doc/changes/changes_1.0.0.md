@@ -1,6 +1,6 @@
 # 1.0.0 - 2026-02-25
 
-This is the first release containing basic feature for installing different package.
+This is the first release containing basic features for installing APT, Pip, Conda and R packages.
 
 ## Features
 
