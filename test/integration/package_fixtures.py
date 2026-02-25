@@ -30,44 +30,44 @@ from exasol.exaslpm.model.package_file_config import (
 
 APT_PACKAGE_DEFS = {
     "24.04": {
-        "wget": AptPackage(name="wget", version="1.21.4-1ubuntu4.1"),
-        "curl": AptPackage(name="curl", version="8.5.0-2ubuntu10.6"),
+        "wget": AptPackage(name="wget", version="1.21.4-1ubuntu*"),
+        "curl": AptPackage(name="curl", version="8.5.0-2ubuntu*"),
         "tree": AptPackage(name="tree", version="2.1.1*"),
         "binutils": AptPackage(name="binutils", version="2.42*"),
-        "coreutils": AptPackage(name="coreutils", version="9.4-3ubuntu6.1"),
+        "coreutils": AptPackage(name="coreutils", version="9.4-3ubuntu*"),
         "libsmbclient-dev": AptPackage(
-            name="libsmbclient-dev", version="2:4.19.5+dfsg-4ubuntu9.4"
+            name="libsmbclient-dev", version="2:4.19.5+dfsg-4ubuntu*"
         ),
         "bzip2": AptPackage(
             name="bzip2",
-            version="1.0.8-5.1build0.1",
+            version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(name="ca-certificates", version="20240203"),
-        "build-essential": AptPackage(name="build-essential", version="12.10ubuntu1"),
-        "git": AptPackage(name="git", version="1:2.43.0-1ubuntu7.3"),
+        "build-essential": AptPackage(name="build-essential", version="12.10ubuntu*"),
+        "git": AptPackage(name="git", version="1:2.43.0-1ubuntu*"),
         "r-base-core": AptPackage(
             name="r-base-core",
             version="4.5.2-1.2404.0",
         ),
     },
     "22.04": {
-        "wget": AptPackage(name="wget", version="1.21.2-2ubuntu1.1"),
-        "curl": AptPackage(name="curl", version="7.81.0-1ubuntu1.21"),
+        "wget": AptPackage(name="wget", version="1.21.2-2ubuntu*"),
+        "curl": AptPackage(name="curl", version="7.81.0-1ubuntu*"),
         "tree": AptPackage(name="tree", version="2.0.2*"),
         "binutils": AptPackage(name="binutils", version="2.38*"),
-        "coreutils": AptPackage(name="coreutils", version="8.32-4.1ubuntu1.2"),
+        "coreutils": AptPackage(name="coreutils", version="8.32-4.1ubuntu*"),
         "libsmbclient-dev": AptPackage(
-            name="libsmbclient-dev", version="2:4.15.13+dfsg-0ubuntu1.10"
+            name="libsmbclient-dev", version="2:4.15.13+dfsg-0ubuntu*"
         ),
         "bzip2": AptPackage(
             name="bzip2",
-            version="1.0.8-5build1",
+            version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
             name="ca-certificates", version="20240203~22.04.1"
         ),
-        "build-essential": AptPackage(name="build-essential", version="12.9ubuntu3"),
-        "git": AptPackage(name="git", version="1:2.34.1-1ubuntu1.15"),
+        "build-essential": AptPackage(name="build-essential", version="12.9ubuntu*"),
+        "git": AptPackage(name="git", version="1:2.34.1-1ubuntu*"),
         "r-base-core": AptPackage(
             name="r-base-core",
             version="4.5.2-1.2204.0",
