@@ -104,7 +104,7 @@ class ContainsCondaPackages:
                     first_digit_index = index
                     break
             if first_digit_index == -1:
-                #Got something really strange
+                # Got something really strange
                 return version
 
             conda_build_start = expected.version.find("=", first_digit_index)
@@ -113,7 +113,6 @@ class ContainsCondaPackages:
                 if conda_build_start != -1
                 else expected.version
             )
-
 
         if not expected.name.lower() == installed.name.lower():
             return False
