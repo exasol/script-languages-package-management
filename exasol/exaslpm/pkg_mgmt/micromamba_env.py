@@ -31,9 +31,11 @@ def conda_cmd_from_history(
         CondaBinary.Conda: lambda: search_cache.conda_binary_path,
     }
     binary_path = get_binary[conda_binary]()
+    user_defined_variables = search_cache.all_variables
+    env = user_defined_variables | create_mamba_env_variables(search_cache.micromamba)
 
     return CommandExecInfo(
         cmd=[str(binary_path)] + params,
         err=err,
-        env=create_mamba_env_variables(search_cache.micromamba),
+        env=env,
     )

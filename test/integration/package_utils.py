@@ -96,11 +96,18 @@ class ContainsCondaPackages:
             return False
 
         if expected.version:
-            # SpecifierSet does not work with specs like "1.2.*", but works with "==1.2.*"
-            version_restriction = (
-                f"={expected.version}"
-                if expected.version[0] == "=" and expected.version[1].isdigit()
+            # Remove possible conda build restrictions e.g. =22.0.0=h552f9d5_3_cuda => =22.0.0
+            conda_build_start = expected.version.find("=", 1)
+            normalized_version = (
+                expected.version[:conda_build_start]
+                if conda_build_start != -1
                 else expected.version
+            )
+            # SpecifierSet does not work with specs like "=1.2.*", but works with "==1.2.*"
+            version_restriction = (
+                f"={normalized_version}"
+                if normalized_version[0] == "=" and normalized_version[1].isdigit()
+                else normalized_version
             )
             if Version(installed.version) not in SpecifierSet(version_restriction):
                 return False

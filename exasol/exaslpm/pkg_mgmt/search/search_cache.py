@@ -82,3 +82,12 @@ class SearchCache:
     @property
     def all_phases(self) -> list[Phase]:
         return self._all_phases
+
+    @property
+    def all_variables(self) -> dict[str, str]:
+        return {
+            key: value
+            for phase in self.all_phases
+            if phase.variables is not None
+            for key, value in phase.variables.items()
+        }
