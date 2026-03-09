@@ -95,8 +95,10 @@ def matrix_int_test_config(session: nox.Session):
     ]
     print(json.dumps({"include": config}))
 
+
 def _build_docker_prefix_tag():
     from exasol.exaslpm.version import VERSION as EXASLPM_VERSION
+
     return f"exaslpm-{EXASLPM_VERSION}-ubuntu"
 
 
