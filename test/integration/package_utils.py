@@ -92,17 +92,34 @@ class ContainsCondaPackages:
     @staticmethod
     def _compare_package(expected: CondaPackage, installed: CondaPackage) -> bool:
 
-        if not expected.name.lower() == installed.name.lower():
-            return False
-
-        if expected.version:
+        def normalized_version(version: str) -> str:
             # Remove possible conda build restrictions e.g. =22.0.0=h552f9d5_3_cuda => =22.0.0
-            conda_build_start = expected.version.find("=", 1)
-            normalized_version = (
+            # Strategy is to find index of first digit (index=1 in above example)
+            # and then search for '=' starting from this position in string.
+            # Of '=' was found, cut off everything behind '='
+            first_digit_index = -1
+
+            for index, char in enumerate(version):
+                if char.isdigit():
+                    first_digit_index = index
+                    break
+            if first_digit_index == -1:
+                #Got something really strange
+                return version
+
+            conda_build_start = expected.version.find("=", first_digit_index)
+            return (
                 expected.version[:conda_build_start]
                 if conda_build_start != -1
                 else expected.version
             )
+
+
+        if not expected.name.lower() == installed.name.lower():
+            return False
+
+        if expected.version:
+            normalized_version = normalized_version(expected.version)
             # SpecifierSet does not work with specs like "=1.2.*", but works with "==1.2.*"
             version_restriction = (
                 f"={normalized_version}"
