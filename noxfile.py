@@ -95,6 +95,10 @@ def matrix_int_test_config(session: nox.Session):
     ]
     print(json.dumps({"include": config}))
 
+def _build_docker_prefix_tag():
+    from exasol.exaslpm.version import VERSION as EXASLPM_VERSION
+    return f"exaslpm-{EXASLPM_VERSION}-ubuntu"
+
 
 @nox.session(name="matrix:executable-build-config", python=False)
 def matrix_executable_build_config(session: nox.Session):
@@ -117,7 +121,7 @@ def matrix_executable_build_config(session: nox.Session):
 
 
 def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
-    return f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}-{docker_tag_suffix}"
+    return f"{_build_docker_prefix_tag()}-{ubuntu_version}-{docker_tag_suffix}"
 
 
 @nox.session(name="matrix:docker-image-config", python=False)
@@ -277,7 +281,7 @@ def build_docker_manifests(session: nox.Session):
     #             --amend exasol/script-languages-container:exaslpm-ubuntu-22.04-x86_64
     #           docker manifest push exasol/script-languages-container:exaslpm-ubuntu-22.04
     for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions:
-        manifest_tag = f"{PROJECT_CONFIG.docker_tag_prefix}-{ubuntu_version}"
+        manifest_tag = f"{_build_docker_prefix_tag()}-{ubuntu_version}"
         cmd = ["docker", "manifest", "create", f"{repository}:{manifest_tag}"]
 
         for platform in PROJECT_CONFIG.supported_platforms:
