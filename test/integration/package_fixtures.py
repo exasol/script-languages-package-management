@@ -551,9 +551,7 @@ def cuda_packages_file_content() -> PackageFile:
                             packages=[
                                 CondaPackage(name="nss", version="=3.100"),
                                 CondaPackage(name="pyarrow", version="=22.0.0"),
-                                CondaPackage(
-                                    name="libarrow", version="=22.0.0=*cuda"
-                                ),
+                                CondaPackage(name="libarrow", version="=22.0.0=*cuda"),
                                 CondaPackage(name="cuda-toolkit", version="=12.9.1"),
                             ],
                             binary=CondaBinary.Mamba,
