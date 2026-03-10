@@ -522,3 +522,42 @@ def variables_file_content(
             ),
         ]
     ), PreparedVariables(java_home=expected_java_home)
+
+
+@pytest.fixture
+def cuda_packages_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        conda=CondaPackages(
+                            packages=[CondaPackage(name="mamba", version="=2.3.*")],
+                            binary=CondaBinary.Micromamba,
+                            channels={"conda-forge"},
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        tools=Tools(mamba_binary_path=Path("/opt/conda/bin/mamba")),
+                        variables={"CONDA_OVERRIDE_CUDA": "12.9"},
+                    ),
+                    Phase(
+                        name="phase_3",
+                        conda=CondaPackages(
+                            channels={"conda-forge", "nvidia"},
+                            packages=[
+                                CondaPackage(name="nss", version="=3.100"),
+                                CondaPackage(name="pyarrow", version="=22.0.0"),
+                                CondaPackage(name="libarrow", version="=22.0.0=*cuda"),
+                                CondaPackage(name="cuda-toolkit", version="=12.9.1"),
+                            ],
+                            binary=CondaBinary.Mamba,
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )

@@ -86,3 +86,34 @@ def test_conda_packages_install_error(
     )
     assert ret != 0
     assert "unknowsoftware =0.0.0 * does not exist" in out
+
+
+def test_install_cuda_conda_packages(
+    docker_container, cuda_packages_file_content, cli_helper, prepare_micromamba_env
+):
+    cuda_packages_file_yaml = to_yaml_str(cuda_packages_file_content)
+
+    cuda_package_file = docker_container.make_and_upload_file(
+        Path("/"), "cuda_file_01", cuda_packages_file_yaml.encode("utf-8")
+    )
+
+    expected_packages = (
+        cuda_packages_file_content.build_steps[0].phases[2].conda.packages
+    )
+
+    pkgs_before_install = docker_container.list_conda_packages(
+        MICROMAMBA_PATH, prepare_micromamba_env
+    )
+    assert pkgs_before_install != ContainsCondaPackages(expected_packages)
+
+    ret, out = docker_container.run_exaslpm(
+        cli_helper.install.package_file(cuda_package_file)
+        .build_step("build_step_2")
+        .args
+    )
+    assert ret == 0
+
+    pkgs_after_install = docker_container.list_conda_packages(
+        MICROMAMBA_PATH, prepare_micromamba_env
+    )
+    assert pkgs_after_install == ContainsCondaPackages(expected_packages)
