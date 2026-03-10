@@ -1,4 +1,5 @@
 import re
+from copy import copy
 from typing import Any
 
 from packaging.specifiers import SpecifierSet
@@ -118,7 +119,7 @@ class ContainsCondaPackages:
             return False
 
         if expected.version:
-            normalized_version = normalized_version(expected.version)
+            normalized_version = normalized_version(copy(expected.version))
             # SpecifierSet does not work with specs like "=1.2.*", but works with "==1.2.*"
             version_restriction = (
                 f"={normalized_version}"
