@@ -552,7 +552,7 @@ def cuda_packages_file_content() -> PackageFile:
                                 CondaPackage(name="nss", version="=3.100"),
                                 CondaPackage(name="pyarrow", version="=22.0.0"),
                                 CondaPackage(
-                                    name="libarrow", version="=22.0.0=h552f9d5_3_cuda"
+                                    name="libarrow", version="=22.0.0=*cuda"
                                 ),
                                 CondaPackage(name="cuda-toolkit", version="=12.9.1"),
                             ],
