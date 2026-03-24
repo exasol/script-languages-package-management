@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import pytest
 
@@ -17,16 +17,19 @@ def test_madison_executor_empty_list(context_mock: Context):
 
 
 def test_execute_madison_single_package(context_mock: Context):
-    cmd_result = MagicMock()
-    context_mock.cmd_executor.execute.return_value = cmd_result
-
     def consume_results_side_effect(stdout_cb, stderr_cb):
         stdout_cb(
             "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
         return 0
 
-    cmd_result.consume_results.side_effect = consume_results_side_effect
+    update_result = MagicMock()
+    update_result.consume_results.return_value = 0
+
+    madison_result = MagicMock()
+    madison_result.consume_results.side_effect = consume_results_side_effect
+
+    context_mock.cmd_executor.execute.side_effect = [update_result, madison_result]
     pkg_list = [AptPackage(name="gpg", version="2.4.4-2ubuntu17.4")]
     result = MadisonExecutor.execute_madison(pkg_list, context_mock)
 
@@ -34,15 +37,35 @@ def test_execute_madison_single_package(context_mock: Context):
         result
         == "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
     )
-    context_mock.cmd_executor.execute.assert_called_once_with(
-        ["apt-cache", "-o", "quiet=0", "madison", "gpg"]
-    )
+    calls = context_mock.cmd_executor.execute.call_args_list
+    assert calls[0] == call(["apt", "update"])
+    assert calls[1] == call(["apt-cache", "-o", "quiet=0", "madison", "gpg"])
+
+
+def test_execute_madison_apt_update_fails_still_runs_madison(context_mock: Context):
+    """apt update failure should log a warning but not block the execution of madison"""
+
+    def consume_results_side_effect(stdout_cb, stderr_cb):
+        stdout_cb(
+            "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
+        )
+        return 0
+
+    update_result = MagicMock()
+    update_result.consume_results.side_effect = lambda out, err: 1
+
+    madison_result = MagicMock()
+    madison_result.consume_results.side_effect = consume_results_side_effect
+    context_mock.cmd_executor.execute.side_effect = [update_result, madison_result]
+
+    pkg_list = [AptPackage(name="gpg")]
+    result = MadisonExecutor.execute_madison(pkg_list, context_mock)
+
+    context_mock.cmd_logger.warn.assert_called()  # warning was logged
+    assert result != ""
 
 
 def test_execute_madison_multiple_packages(context_mock: Context):
-    cmd_result = MagicMock()
-    context_mock.cmd_executor.execute.return_value = cmd_result
-
     def consume_results_side_effect(stdout_cb, stderr_cb):
         stdout_cb(
             "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
@@ -52,7 +75,13 @@ def test_execute_madison_multiple_packages(context_mock: Context):
         )
         return 0
 
-    cmd_result.consume_results.side_effect = consume_results_side_effect
+    update_result = MagicMock()
+    update_result.consume_results.return_value = 0
+
+    madison_result = MagicMock()
+    madison_result.consume_results.side_effect = consume_results_side_effect
+
+    context_mock.cmd_executor.execute.side_effect = [update_result, madison_result]
     pkg_list = [
         AptPackage(name="gpg", version="2.4.4-2ubuntu17.4"),
         AptPackage(name="vim", version="2:9.1.0016-1ubuntu7.9"),
@@ -61,16 +90,19 @@ def test_execute_madison_multiple_packages(context_mock: Context):
     result = MadisonExecutor.execute_madison(pkg_list, context_mock)
     assert "gpg | 2.4.4-2ubuntu17.4" in result
     assert "vim | 2:9.1.0016-1ubuntu7.9" in result
-    context_mock.cmd_executor.execute.assert_called_once_with(
-        ["apt-cache", "-o", "quiet=0", "madison", "gpg", "vim"]
-    )
+    calls = context_mock.cmd_executor.execute.call_args_list
+    assert calls[0] == call(["apt", "update"])
+    assert calls[1] == call(["apt-cache", "-o", "quiet=0", "madison", "gpg", "vim"])
 
 
 def test_execute_madison_command_failure(context_mock: Context):
-    cmd_result = MagicMock()
-    context_mock.cmd_executor.execute.return_value = cmd_result
+    update_result = MagicMock()
+    update_result.consume_results.return_value = 0
 
-    cmd_result.consume_results.side_effect = lambda stdout_cb, stderr_cb: 1
+    madison_result = MagicMock()
+    madison_result.consume_results.side_effect = lambda stdout_cb, stderr_cb: 1
+
+    context_mock.cmd_executor.execute.side_effect = [update_result, madison_result]
     pkg_list = [AptPackage(name="gpg", version="2.4.4-2ubuntu17.4")]
 
     with pytest.raises(CommandFailedException) as exc_info:
@@ -79,13 +111,13 @@ def test_execute_madison_command_failure(context_mock: Context):
 
 
 def test_execute_madison_empty_output(context_mock: Context):
-    cmd_result = MagicMock()
-    context_mock.cmd_executor.execute.return_value = cmd_result
+    update_result = MagicMock()
+    update_result.consume_results.return_value = 0
 
-    def consume_results_side_effect(stdout_cb, stderr_cb):
-        return 0
+    madison_result = MagicMock()
+    madison_result.consume_results.side_effect = lambda stdout_cb, stderr_cb: 0
 
-    cmd_result.consume_results.side_effect = consume_results_side_effect
+    context_mock.cmd_executor.execute.side_effect = [update_result, madison_result]
     pkg_list = [AptPackage(name="nonexistent", version="1.0")]
 
     result = MadisonExecutor.execute_madison(pkg_list, context_mock)

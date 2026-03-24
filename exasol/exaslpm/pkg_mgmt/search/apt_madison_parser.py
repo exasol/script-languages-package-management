@@ -45,6 +45,10 @@ class MadisonExecutor:
     def execute_madison(pkg_list: list[AptPackage], ctx: Context) -> str:
         if not pkg_list:
             return ""
+        update_res = ctx.cmd_executor.execute(["apt", "update"])
+        ret_code = update_res.consume_results(ctx.cmd_logger.info, ctx.cmd_logger.warn)
+        if ret_code != 0:
+            ctx.cmd_logger.warn("apt update failed, proceeding with stale index")
         cmd = ["apt-cache", "-o", "quiet=0", "madison"]
         for pkg in pkg_list:
             cmd.append(pkg.name)
