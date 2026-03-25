@@ -49,13 +49,6 @@ def update_cmd_and_err() -> CommandExecInfo:
     )
 
 
-def install_cmd_and_err(install_cmd: list[str]) -> CommandExecInfo:
-    return CommandExecInfo(
-        cmd=install_cmd,
-        err=f"Failed while installing apt cmd",
-    )
-
-
 def clean_cmd_and_err() -> CommandExecInfo:
     return CommandExecInfo(
         cmd=["apt-get", "-y", "clean"], err="Failed while running apt clean"
@@ -89,31 +82,34 @@ def load_config_and_err() -> CommandExecInfo:
     )
 
 
+def install_cmd_and_err(all_pkgs: list[AptPackage], ctx: Context) -> CommandExecInfo:
+    if all_pkgs is None:
+        raise ValueError("no apt packages defined")
+    install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
+
+    wildcard_pkgs = [
+        pkg for pkg in all_pkgs if pkg and pkg.version and "*" in pkg.version
+    ]
+    madison_out = MadisonExecutor.execute_madison(wildcard_pkgs, ctx)
+    madison_dict = MadisonParser.parse_madison_output(madison_out, ctx)
+    for pkg in all_pkgs:
+        pkg_ver = get_package_version(pkg, ctx, madison_dict)
+        apt_cmd = f"{pkg.name}={pkg_ver}" if pkg_ver else pkg.name
+        install_cmd.append(apt_cmd)
+    return CommandExecInfo(
+        cmd=install_cmd,
+        err="Failed while installing apt cmd",
+    )
+
+
 def install_apt_packages(apt_packages: AptPackages, ctx: Context) -> int:
     if len(apt_packages.packages) == 0:
         ctx.cmd_logger.warn("Got an empty list of AptPackages")
-        return 0
+        return 1
 
     run_cmd(update_cmd_and_err(), ctx)
 
-    install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
-    if apt_packages.packages is None:
-        raise ValueError("no apt packages defined")
-
-    # If wildcards are present, parse those
-    pkgs = [
-        pkg
-        for pkg in apt_packages.packages
-        if pkg and pkg.version and "*" in pkg.version
-    ]
-    madison_out = MadisonExecutor.execute_madison(pkgs, ctx)
-    madison_dict = MadisonParser.parse_madison_output(madison_out, ctx)
-
-    for package in apt_packages.packages:
-        pkg_ver = get_package_version(package, ctx, madison_dict)
-        apt_cmd = f"{package.name}={pkg_ver}" if pkg_ver else package.name
-        install_cmd.append(apt_cmd)
-    run_cmd(install_cmd_and_err(install_cmd), ctx)
+    run_cmd(install_cmd_and_err(apt_packages.packages, ctx), ctx)
 
     run_cmd(clean_cmd_and_err(), ctx)
 
