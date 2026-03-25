@@ -71,14 +71,14 @@ def autoremove_cmd_and_err() -> CommandExecInfo:
 
 def locale_gen_cmd_and_err() -> CommandExecInfo:
     return CommandExecInfo(
-        cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen"
+        cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen cmd"
     )
 
 
 def update_locale_cmd_and_err() -> CommandExecInfo:
     return CommandExecInfo(
         cmd=["update-locale", "LC_ALL=en_US.UTF-8"],
-        err="Failed while running update-locale",
+        err="Failed while running update-locale cmd",
     )
 
 
