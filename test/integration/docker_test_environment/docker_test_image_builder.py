@@ -49,7 +49,7 @@ class DockerTestImageBuilder:
         return cleandoc(
             f"""
                 FROM ubuntu:{self.ubuntu_version}
-
+                ENV DEBIAN_FRONTEND=noninteractive
                 COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslpm_path_in_container} 
             """
         )
