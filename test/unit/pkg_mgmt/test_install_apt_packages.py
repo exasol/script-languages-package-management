@@ -1,4 +1,5 @@
 from unittest.mock import (
+    MagicMock,
     call,
 )
 
@@ -64,6 +65,52 @@ def test_install_apt_packages(context_mock):
         call.execute().return_code(),
     ]
 
+def handle_executor(cmd_args: list[str], env: dict[str, str] | None = None):
+    if cmd_args == ["apt-cache", "-o", "quiet=0", "madison", "curl"]:
+        mock_command_result = MagicMock()
+
+        def consume_results_side_effect(stdout_cb, _stderr_cb):
+            stdout_cb(
+                "curl | 7.68.0 | http://archive.ubuntu.com/ubuntu noble/main amd64 Packages"
+            )
+            return 0
+
+        mock_command_result.consume_results.side_effect = consume_results_side_effect
+        return mock_command_result
+
+    mock_command_result = MagicMock()
+    mock_command_result.return_code.return_value = 0
+    return mock_command_result
+
+
+
+def test_install_apt_packages_with_wildcard(context_mock):
+    pkgs = [
+        AptPackage(name="curl", version="7.68.*"),
+    ]
+    aptPackages = AptPackages(packages=pkgs)
+    context_mock.cmd_executor.execute.side_effect = handle_executor
+    install_apt_packages(aptPackages, context_mock)
+    assert context_mock.cmd_executor.mock_calls == [
+        call.execute(["apt-cache", "-o", "quiet=0", "madison", "curl"]),
+        call.execute(["apt-get", "-y", "update"], env=None),
+        call.execute(
+            [
+                "apt-get",
+                "install",
+                "-V",
+                "-y",
+                "--no-install-recommends",
+                "curl=7.68.0",
+            ],
+            env=None,
+        ),
+        call.execute(["apt-get", "-y", "clean"], env=None),
+        call.execute(["apt-get", "-y", "autoremove"], env=None),
+        call.execute(["locale-gen", "en_US.UTF-8"], env=None),
+        call.execute(["update-locale", "LC_ALL=en_US.UTF-8"], env=None),
+        call.execute(["ldconfig"], env=None),
+    ]
 
 class FailCommandResult:
     def __init__(self, ret_code):
