@@ -1,8 +1,8 @@
-from exasol.exaslpm.pkg_mgmt.context.context import Context
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_utils import ContainsPackages
 
 from exasol.exaslpm.model.serialization import to_yaml_str
+from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -78,8 +78,7 @@ def test_apt_install_updates_before_install(
     install_index = next(
         index
         for index, command in enumerate(execute_recorder.commands)
-        if command[:5]
-        == ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
+        if command[:5] == ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
     )
 
     assert update_index < install_index

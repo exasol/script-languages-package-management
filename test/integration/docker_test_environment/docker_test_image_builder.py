@@ -49,11 +49,6 @@ class DockerTestImageBuilder:
         return cleandoc(
             f"""
                 FROM ubuntu:{self.ubuntu_version}
-                ENV DEBIAN_FRONTEND=noninteractive
-                ENV LANG en_US.UTF-8
-                ENV LANGUAGE en_US:en
-                ENV LC_ALL en_US.UTF-8
-                RUN apt-get update && apt-get install -y locales && locale-gen en_US.UTF-8 && update-locale LC_ALL=en_US.UTF-8
 
                 COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslpm_path_in_container} 
             """
