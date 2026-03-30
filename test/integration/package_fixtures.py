@@ -169,7 +169,12 @@ def pip(request, ubuntu_version) -> Pip:
 
 
 @pytest.fixture
-def pip_package_file_content(request, python_version, pip) -> PackageFile:
+def pip_package_file_content(
+    request,
+    python_version,
+    pip,
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
 
     return PackageFile(
         build_steps=[
@@ -213,11 +218,6 @@ def pip_packages_file_content() -> PackageFile:
                 phases=[
                     Phase(
                         name="phase_1",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         pip=PipPackages(
                             packages=[
                                 PipPackage(name="jinja2", version=" >=3.1.6, <4.0.0"),
@@ -254,11 +254,6 @@ def pip_packages_file_content_which_needs_pkg_config(
                     ),
                     Phase(
                         name="phase_2",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         pip=PipPackages(
                             packages=[
                                 PipPackage(name="pysmbc", version=" == 1.0.25.1"),
@@ -310,11 +305,6 @@ def conda_packages_file_content() -> PackageFile:
                 phases=[
                     Phase(
                         name="phase_1",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         conda=CondaPackages(
                             packages=[CondaPackage(name="mamba", version="=2.3.*")],
                             binary=CondaBinary.Micromamba,
@@ -327,11 +317,6 @@ def conda_packages_file_content() -> PackageFile:
                     ),
                     Phase(
                         name="phase_3",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         conda=CondaPackages(
                             packages=[CondaPackage(name="conda", version="=26.1.*")],
                             binary=CondaBinary.Mamba,
@@ -339,20 +324,10 @@ def conda_packages_file_content() -> PackageFile:
                     ),
                     Phase(
                         name="phase_4",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         tools=Tools(conda_binary_path=Path("/opt/conda/bin/conda")),
                     ),
                     Phase(
                         name="phase_5",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                            ]
-                        ),
                         conda=CondaPackages(
                             packages=[
                                 CondaPackage(
@@ -373,7 +348,7 @@ def conda_packages_file_content() -> PackageFile:
 
 
 @pytest.fixture
-def apt_gpg() -> PackageFile:
+def apt_gpg(apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -401,7 +376,9 @@ def apt_gpg() -> PackageFile:
 
 
 @pytest.fixture
-def apt_trivy_with_repo() -> PackageFile:
+def apt_trivy_with_repo(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
