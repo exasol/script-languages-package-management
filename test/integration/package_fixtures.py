@@ -259,7 +259,6 @@ def pip_packages_file_content_which_needs_pkg_config(
                                 apt_package_with_version["locales"],
                             ]
                         ),
-
                         pip=PipPackages(
                             packages=[
                                 PipPackage(name="pysmbc", version=" == 1.0.25.1"),

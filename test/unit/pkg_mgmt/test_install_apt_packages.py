@@ -23,6 +23,7 @@ def test_empty_packages(context_mock):
         call.warn("Got an empty list of AptPackages"),
     ]
 
+
 def test_install_apt_packages(context_mock):
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
