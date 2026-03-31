@@ -43,6 +43,8 @@ class MadisonData:
 class MadisonExecutor:
     @staticmethod
     def execute_madison(pkg_list: list[AptPackage], ctx: Context) -> str:
+        # Call `apt update` before invoking this method so `apt-cache madison`
+        # reads current package index metadata and returns complete results.
         if not pkg_list:
             return ""
         cmd = ["apt-cache", "-o", "quiet=0", "madison"]

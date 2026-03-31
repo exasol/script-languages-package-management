@@ -43,67 +43,81 @@ def get_package_version(
     return pkg_ver
 
 
-def prepare_all_cmds(apt_packages: AptPackages, ctx: Context) -> list[CommandExecInfo]:
-    all_cmds = []
-
-    all_cmds.append(
-        CommandExecInfo(
-            cmd=["apt-get", "-y", "update"], err="Failed while updating apt cmd"
-        )
+def update_cmd_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["apt-get", "-y", "update"], err="Failed while updating apt cmd"
     )
-    install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
-    if apt_packages.packages is None:
+
+
+def clean_cmd_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["apt-get", "-y", "clean"], err="Failed while running apt clean"
+    )
+
+
+def autoremove_cmd_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["apt-get", "-y", "autoremove"],
+        err="Failed while running apt autoremove",
+    )
+
+
+def locale_gen_cmd_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen cmd"
+    )
+
+
+def update_locale_cmd_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["update-locale", "LC_ALL=en_US.UTF-8"],
+        err="Failed while running update-locale cmd",
+    )
+
+
+def load_config_and_err() -> CommandExecInfo:
+    return CommandExecInfo(
+        cmd=["ldconfig"],
+        err="Failed while running ldconfig",
+    )
+
+
+def install_cmd_and_err(all_pkgs: list[AptPackage], ctx: Context) -> CommandExecInfo:
+    if all_pkgs is None:
         raise ValueError("no apt packages defined")
+    install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
 
-    # If wildcards are present, parse those
-    pkgs = [
-        pkg
-        for pkg in apt_packages.packages
-        if pkg and pkg.version and "*" in pkg.version
+    wildcard_pkgs = [
+        pkg for pkg in all_pkgs if pkg and pkg.version and "*" in pkg.version
     ]
-    madison_out = MadisonExecutor.execute_madison(pkgs, ctx)
+    madison_out = MadisonExecutor.execute_madison(wildcard_pkgs, ctx)
     madison_dict = MadisonParser.parse_madison_output(madison_out, ctx)
-
-    for package in apt_packages.packages:
-        pkg_ver = get_package_version(package, ctx, madison_dict)
-        apt_cmd = f"{package.name}={pkg_ver}" if pkg_ver else package.name
+    for pkg in all_pkgs:
+        pkg_ver = get_package_version(pkg, ctx, madison_dict)
+        apt_cmd = f"{pkg.name}={pkg_ver}" if pkg_ver else pkg.name
         install_cmd.append(apt_cmd)
-    all_cmds.append(
-        CommandExecInfo(cmd=install_cmd, err="Failed while installing apt cmd")
+    return CommandExecInfo(
+        cmd=install_cmd,
+        err="Failed while installing apt cmd",
     )
-    all_cmds.append(
-        CommandExecInfo(
-            cmd=["apt-get", "-y", "clean"], err="Failed while running apt clean"
-        )
-    )
-    all_cmds.append(
-        CommandExecInfo(
-            cmd=["apt-get", "-y", "autoremove"],
-            err="Failed while running apt autoremove",
-        )
-    )
-    all_cmds.append(
-        CommandExecInfo(
-            cmd=["locale-gen", "en_US.UTF-8"], err="Failed while running locale-gen cmd"
-        )
-    )
-    all_cmds.append(
-        CommandExecInfo(
-            cmd=["update-locale", "LC_ALL=en_US.UTF-8"],
-            err="Failed while running update-locale cmd",
-        )
-    )
-    all_cmds.append(
-        CommandExecInfo(cmd=["ldconfig"], err="Failed while running ldconfig")
-    )
-    return all_cmds
 
 
-def install_apt_packages(apt_packages: AptPackages, context: Context) -> int:
-    if len(apt_packages.packages) > 0:
-        cmd_n_errs = prepare_all_cmds(apt_packages, context)
-        for cmd_n_err in cmd_n_errs:
-            run_cmd(cmd_n_err, context)
-    else:
-        context.cmd_logger.warn("Got an empty list of AptPackages")
+def install_apt_packages(apt_packages: AptPackages, ctx: Context) -> int:
+    if len(apt_packages.packages) == 0:
+        ctx.cmd_logger.warn("Got an empty list of AptPackages")
+        return 1
+
+    run_cmd(update_cmd_and_err(), ctx)
+
+    run_cmd(install_cmd_and_err(apt_packages.packages, ctx), ctx)
+
+    run_cmd(clean_cmd_and_err(), ctx)
+
+    run_cmd(autoremove_cmd_and_err(), ctx)
+
+    run_cmd(locale_gen_cmd_and_err(), ctx)
+
+    run_cmd(update_locale_cmd_and_err(), ctx)
+
+    run_cmd(load_config_and_err(), ctx)
     return 0
