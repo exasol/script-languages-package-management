@@ -17,10 +17,15 @@ from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
 )
 
 
+def _update_apt_metadata(docker_container: DockerTestContainer) -> None:
+    docker_container.run(["apt-get", "-y", "update"])
+
+
 def test_madison_executor_basic_package(
     docker_container: DockerTestContainer, docker_executor_context: Context
 ):
     pkg_list = [AptPackage(name="bash")]
+    _update_apt_metadata(docker_container)
     logger = TestLogger()
     docker_cmd_executor = DockerCommandExecutor(
         logger=logger, test_container=docker_container
@@ -32,9 +37,12 @@ def test_madison_executor_basic_package(
 
 
 def test_madison_executor_nonexistent_package(
-    docker_executor_context: Context, test_logger: TestLogger
+    docker_container: DockerTestContainer,
+    docker_executor_context: Context,
+    test_logger: TestLogger,
 ):
     pkg_list = [AptPackage(name="nonexistent-package")]
+    _update_apt_metadata(docker_container)
     warn_log = LogCollector()
     error_log = LogCollector()
     test_logger.warning_callback = warn_log.log
@@ -52,6 +60,7 @@ def test_madison_mixed(docker_container: DockerTestContainer):
         AptPackage(name="nonexistent-pkg-xyz"),
         AptPackage(name="grep"),
     ]
+    _update_apt_metadata(docker_container)
 
     logger = TestLogger()
     docker_cmd_executor = DockerCommandExecutor(
