@@ -30,7 +30,7 @@ from exasol.exaslpm.model.package_file_config import (
 
 APT_PACKAGE_DEFS = {
     "24.04": {
-        "locales": AptPackage(name="locales", version="2.39-0ubuntu8.7"),
+        "locales": AptPackage(name="locales", version="2.39-0ubuntu*"),
         "wget": AptPackage(name="wget", version="1.21.4-1ubuntu*"),
         "curl": AptPackage(name="curl", version="8.5.0-2ubuntu*"),
         "tree": AptPackage(name="tree", version="2.1.1*"),
