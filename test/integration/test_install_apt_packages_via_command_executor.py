@@ -2,7 +2,6 @@ from test.integration.docker_test_environment.test_logger import StringMatchCoun
 from test.integration.package_utils import ContainsPackages
 
 from exasol.exaslpm.model.serialization import to_yaml_str
-from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
