@@ -5,16 +5,6 @@ from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
-class CommandExecuteRecorder:
-    def __init__(self, delegate):
-        self._delegate = delegate
-        self.commands: list[list[str]] = []
-
-    def execute(self, cmd_strs: list[str], env=None):
-        self.commands.append(cmd_strs)
-        return self._delegate.execute(cmd_strs, env=env)
-
-
 def test_apt_install(
     docker_container,
     apt_pkg_file_wildcard,
