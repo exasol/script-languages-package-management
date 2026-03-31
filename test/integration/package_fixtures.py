@@ -52,7 +52,7 @@ APT_PACKAGE_DEFS = {
         ),
     },
     "22.04": {
-        "locales": AptPackage(name="locales", version="2.35-0ubuntu3.13"),
+        "locales": AptPackage(name="locales", version="2.35-0ubuntu*"),
         "wget": AptPackage(name="wget", version="1.21.2-2ubuntu*"),
         "curl": AptPackage(name="curl", version="7.81.0-1ubuntu*"),
         "tree": AptPackage(name="tree", version="2.0.2*"),
