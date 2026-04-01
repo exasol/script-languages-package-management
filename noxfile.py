@@ -208,12 +208,10 @@ def build_docker_image(session: nox.Session):
         shutil.copy(PROJECT_CONFIG.root_path / "dist" / "exaslpm", str(tmp_dir))
         dockerfile_path = Path(tmp_dir) / "Dockerfile"
 
-        dockerfile_content = cleandoc(
-            f"""
+        dockerfile_content = cleandoc(f"""
         FROM {base_img}
         COPY exaslpm /usr/local/bin/
-        """
-        )
+        """)
 
         dockerfile_path.write_text(dockerfile_content)
 

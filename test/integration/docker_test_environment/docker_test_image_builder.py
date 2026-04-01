@@ -46,13 +46,11 @@ class DockerTestImageBuilder:
 
     @property
     def _test_dockerfile_content(self) -> str:
-        return cleandoc(
-            f"""
+        return cleandoc(f"""
                 FROM ubuntu:{self.ubuntu_version}
                 ENV DEBIAN_FRONTEND=noninteractive
                 COPY {self.exaslpm_info.executable_name} {self.exaslpm_info.exaslpm_path_in_container} 
-            """
-        )
+            """)
 
     def build(self):
         dockerfile_path = self.build_path / "Dockerfile"
