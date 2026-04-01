@@ -25,7 +25,7 @@ jobs:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
   standalone-executable:
-    needs: [cd-job]
+    needs: [build-and-publish]
     name: Create a standalone linux executable
     uses: ./.github/workflows/build-executable.yml
     with:
