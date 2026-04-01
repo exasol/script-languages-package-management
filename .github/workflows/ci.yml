@@ -13,6 +13,7 @@ jobs:
     uses: ./.github/workflows/merge-gate.yml
     secrets: inherit
     permissions:
+      id-token: write
       contents: read
 
   report:
@@ -23,3 +24,4 @@ jobs:
     secrets: inherit
     permissions:
       contents: read
+      id-token: write
