@@ -30,6 +30,7 @@ from exasol.exaslpm.model.package_file_config import (
 
 APT_PACKAGE_DEFS = {
     "24.04": {
+        "locales": AptPackage(name="locales", version="2.39-0ubuntu*"),
         "wget": AptPackage(name="wget", version="1.21.4-1ubuntu*"),
         "curl": AptPackage(name="curl", version="8.5.0-2ubuntu*"),
         "tree": AptPackage(name="tree", version="2.1.1*"),
@@ -51,6 +52,7 @@ APT_PACKAGE_DEFS = {
         ),
     },
     "22.04": {
+        "locales": AptPackage(name="locales", version="2.35-0ubuntu*"),
         "wget": AptPackage(name="wget", version="1.21.2-2ubuntu*"),
         "curl": AptPackage(name="curl", version="7.81.0-1ubuntu*"),
         "tree": AptPackage(name="tree", version="2.0.2*"),
@@ -95,6 +97,7 @@ def apt_package_file_content(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["wget"],
                                 apt_package_with_version["curl"],
                             ]
@@ -108,7 +111,10 @@ def apt_package_file_content(
                     Phase(
                         name="phase_1",
                         apt=AptPackages(
-                            packages=[apt_package_with_version["coreutils"]]
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["coreutils"],
+                            ]
                         ),
                     )
                 ],
@@ -139,6 +145,7 @@ def apt_pkg_file_wildcard(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["tree"],
                                 apt_package_with_version["binutils"],
                             ]
@@ -162,7 +169,12 @@ def pip(request, ubuntu_version) -> Pip:
 
 
 @pytest.fixture
-def pip_package_file_content(request, python_version, pip) -> PackageFile:
+def pip_package_file_content(
+    request,
+    python_version,
+    pip,
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
 
     return PackageFile(
         build_steps=[
@@ -174,6 +186,7 @@ def pip_package_file_content(request, python_version, pip) -> PackageFile:
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 AptPackage(name=f"{python_version}-dev"),
                                 AptPackage(name="git"),
                                 AptPackage(name="ca-certificates"),
@@ -234,6 +247,7 @@ def pip_packages_file_content_which_needs_pkg_config(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["libsmbclient-dev"],
                             ]
                         ),
@@ -265,6 +279,7 @@ def micromamba_file_content(
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["bzip2"],
                                 # Need certificates for Conda
                                 apt_package_with_version["ca-certificates"],
@@ -333,7 +348,7 @@ def conda_packages_file_content() -> PackageFile:
 
 
 @pytest.fixture
-def apt_gpg() -> PackageFile:
+def apt_gpg(apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -344,6 +359,7 @@ def apt_gpg() -> PackageFile:
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 AptPackage(
                                     name="gpg",
                                 ),
@@ -360,7 +376,9 @@ def apt_gpg() -> PackageFile:
 
 
 @pytest.fixture
-def apt_trivy_with_repo() -> PackageFile:
+def apt_trivy_with_repo(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -380,6 +398,7 @@ def apt_trivy_with_repo() -> PackageFile:
                                 )
                             },
                             packages=[
+                                apt_package_with_version["locales"],
                                 AptPackage(
                                     name="trivy",
                                 ),
@@ -426,7 +445,10 @@ def apt_r_with_repo(
                         name="phase_1",
                         apt=AptPackages(
                             repos={"cran-r": cran_repo},
-                            packages=[apt_package_with_version["r-base-core"]],
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["r-base-core"],
+                            ],
                         ),
                     ),
                 ],
@@ -451,6 +473,7 @@ def packages_r(apt_package_with_version: dict[str, AptPackage]) -> PackageFile:
                         name="phase_2",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["build-essential"],
                             ]
                         ),
@@ -476,6 +499,7 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
                         name="phase_1",
                         apt=AptPackages(
                             packages=[
+                                apt_package_with_version["locales"],
                                 apt_package_with_version["build-essential"],
                                 apt_package_with_version["git"],
                                 apt_package_with_version["ca-certificates"],

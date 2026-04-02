@@ -1,4 +1,6 @@
 from unittest.mock import (
+    ANY,
+    MagicMock,
     call,
 )
 
@@ -63,6 +65,55 @@ def test_install_apt_packages(context_mock):
         call.execute().print_results(),
         call.execute().return_code(),
     ]
+
+
+def test_install_apt_packages_with_wildcard(context_mock):
+    run_cmd_result = context_mock.cmd_executor.execute.return_value
+    madison_cmd_result = MagicMock()
+
+    def consume_results_side_effect(stdout_cb, stderr_cb):
+        stdout_cb(
+            "curl | 7.68.0-1ubuntu2.25 | http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages"
+        )
+        return 0
+
+    madison_cmd_result.consume_results.side_effect = consume_results_side_effect
+
+    def execute_side_effect(cmd, env=None):
+        if cmd == ["apt-cache", "-o", "quiet=0", "madison", "curl"]:
+            return madison_cmd_result
+        return run_cmd_result
+
+    context_mock.cmd_executor.execute.side_effect = execute_side_effect
+
+    pkgs = [
+        AptPackage(name="curl", version="7.68.*"),
+        AptPackage(name="requests", version="2.25.1"),
+    ]
+    aptPackages = AptPackages(packages=pkgs)
+    install_apt_packages(aptPackages, context_mock)
+    assert context_mock.cmd_executor.execute.call_args_list == [
+        call(["apt-get", "-y", "update"], env=None),
+        call(["apt-cache", "-o", "quiet=0", "madison", "curl"]),
+        call(
+            [
+                "apt-get",
+                "install",
+                "-V",
+                "-y",
+                "--no-install-recommends",
+                "curl=7.68.0-1ubuntu2.25",
+                "requests=2.25.1",
+            ],
+            env=None,
+        ),
+        call(["apt-get", "-y", "clean"], env=None),
+        call(["apt-get", "-y", "autoremove"], env=None),
+        call(["locale-gen", "en_US.UTF-8"], env=None),
+        call(["update-locale", "LC_ALL=en_US.UTF-8"], env=None),
+        call(["ldconfig"], env=None),
+    ]
+    madison_cmd_result.consume_results.assert_called_once_with(ANY, ANY)
 
 
 class FailCommandResult:
