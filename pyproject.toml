@@ -28,10 +28,10 @@ homepage = "https://github.com/exasol/script-languages-package-management"
 [dependency-groups]
 
 dev = [
-    "exasol-toolbox >=5.1.1, <6.0.0",
+    "exasol-toolbox >=6.1.1, <7.0.0",
     "pyinstaller >=6.15.0, <7.0.0",
     "types-pyinstaller >=6.15.0.20250822, <7.0.0.0",
-    "types-requests >=2.30.0, <3.0.0",
+    "types-requests >=2.33.0, <3.0.0",
     "docker (>=7.1.0,<8.0.0) ; sys_platform != \"win32\"",
     "types-docker >=7.1.0,<8.0.0"
     ]

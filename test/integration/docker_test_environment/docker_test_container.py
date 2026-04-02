@@ -29,7 +29,7 @@ class DockerTestContainer:
         environment: dict[str, str] | None = None,
         workdir: str = None,
     ) -> tuple[int, str]:
-        (exit_code, output) = self.container.exec_run(
+        exit_code, output = self.container.exec_run(
             param_list, environment=environment, workdir=workdir
         )
         if check_exit_code:
@@ -39,7 +39,7 @@ class DockerTestContainer:
     def run_exaslpm(
         self, param_list: list[str], check_exit_code: bool = True
     ) -> tuple[int, str]:
-        (exit_code, output) = self.container.exec_run(
+        exit_code, output = self.container.exec_run(
             [str(self.exaslpm_info.exaslpm_path_in_container)] + param_list
         )
         if check_exit_code:

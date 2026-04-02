@@ -6,3 +6,8 @@ This release fixes a bug where apt packages are installed without updating the a
 ## Bug
 
  - #110: run apt-update before apt-cache madison
+
+
+## Refactoring
+
+ - #115: Updated the PTB and workflow
