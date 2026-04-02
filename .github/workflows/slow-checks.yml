@@ -24,20 +24,24 @@ jobs:
       matrix: ${{ fromJson(needs.build-matrix-int-test-config.outputs.matrix) }}
 
     steps:
-      - name: SCM Checkout
+      - name: Check out Repository
+        id: check-out-repository
         uses: actions/checkout@v6
 
-      - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v5
+      - name: Set up Python & Poetry Environment
+        id: set-up-python-and-poetry-environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v6
         with:
           python-version: ${{ matrix.python-version }}
           poetry-version: "2.3.0"
 
-      - name: Run Tests and Collect Coverage
+      - name: Run Integration Tests
+        id: run-integration-tests
         run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}}
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        id: upload-artifacts
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-slow
           path: .coverage
