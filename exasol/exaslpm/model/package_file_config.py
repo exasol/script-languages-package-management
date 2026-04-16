@@ -9,6 +9,7 @@ from pydantic import (
     BaseModel,
     Field,
     HttpUrl,
+    field_validator,
     model_validator,
 )
 
@@ -27,7 +28,7 @@ class Package(BaseModel):
     name: str
     version: str | None = None
     comment: str | None = None
-    # yaml comments don't survive deserialization when we programatically change this file
+    # yaml comments don't survive deserialization when we programmatically change this file
 
 
 class AptPackage(Package):
@@ -187,10 +188,19 @@ class CondaBinary(Enum):
 
 class CondaPackages(BaseModel):
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
-    channels: None | set[str] = None
+    channels: None | list[str] = None
     packages: list[CondaPackage]
     binary: CondaBinary = CondaBinary.Micromamba
     comment: None | str = None
+
+    @field_validator("channels")
+    @classmethod
+    def check_unique(cls, v: None | list[str]) -> None | list[str]:
+        if v is None:
+            return v
+        if len(v) != len(set(v)):
+            raise ValueError("Conda channels must be unique")
+        return v
 
     @overload
     def find_package(

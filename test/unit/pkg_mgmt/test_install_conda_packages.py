@@ -144,4 +144,4 @@ def test_install_conda_packages_spec(context_with_conda_env):
     output = StringIO()
     _write_conda_spec(output, pkgs)
 
-    assert output.getvalue() == ("main::numpy=1.2.3\n" "requests=2.25.*=something\n")
+    assert output.getvalue() == "main::numpy=1.2.3\nrequests=2.25.*=something\n"

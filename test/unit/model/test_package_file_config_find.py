@@ -231,3 +231,10 @@ def test_find_invalid_pkg_in_model_returns_none(packages_model, new_package):
     assert (
         packages_model.find_package("invalid package", raise_if_not_found=False) is None
     )
+
+
+def test_find_duplicate_conda_channel_raises():
+    with pytest.raises(ValueError, match=r"Conda channels must be unique"):
+        CondaPackages(
+            channels=["my-channel-1", "my-channel-2", "my-channel-1"], packages=[]
+        )
