@@ -30,7 +30,7 @@ def collect_conda_packages(phases: list[Phase]) -> list[CondaPackage]:
 
 def collect_conda_channels(phases: list[Phase]) -> list[str]:
     """
-    Collects all conda channels as set from a list of phases.
+    Collects all conda channels as list from a list of phases.
     """
     return [
         channel

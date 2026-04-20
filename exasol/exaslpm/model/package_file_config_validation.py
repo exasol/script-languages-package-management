@@ -55,6 +55,21 @@ def _check_versions(
             )
 
 
+def _check_unique_conda_channels(
+    channels: list[str] | None, model_path: list[str]
+) -> None:
+    if channels is None:
+        return
+    channels_counter = Counter(channels)
+    multiple_channels = [name for name, count in channels_counter.items() if count > 1]
+
+    if multiple_channels:
+        raise PackageFileValidationError(
+            model_path,
+            f"Conda channels must be unique. Multiple channels were detected: ({multiple_channels})",
+        )
+
+
 def validate_apt_packages(
     apt_packages: "AptPackages",
     validation_cfg: "ValidationConfig",
@@ -73,6 +88,7 @@ def validate_conda_packages(
     _model_path = [*model_path, "<CondaPackages>"]
     _check_unique_packages(conda_packages.packages, _model_path)
     _check_versions(validation_cfg, conda_packages.packages, _model_path)
+    _check_unique_conda_channels(conda_packages.channels, _model_path)
 
 
 def validate_pip_packages(

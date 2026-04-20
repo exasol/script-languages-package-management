@@ -4,6 +4,7 @@ from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
     BuildStep,
+    CondaPackages,
     Phase,
     Tools,
 )
@@ -52,6 +53,18 @@ TEST_BUILD_STEP_3 = BuildStep(
                 packages=[
                     AptPackage(name="curl", version="7.68.0", comment="For downloading")
                 ]
+            ),
+        )
+    ],
+)
+
+TEST_BUILD_STEP_CONDA_DUPLICATE_CHANNELS = BuildStep(
+    name="build_step_1",
+    phases=[
+        Phase(
+            name="phase 1",
+            conda=CondaPackages(
+                channels=["my-channel-1", "my-channel-2", "my-channel-1"], packages=[]
             ),
         )
     ],

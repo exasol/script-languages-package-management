@@ -9,7 +9,6 @@ from pydantic import (
     BaseModel,
     Field,
     HttpUrl,
-    field_validator,
     model_validator,
 )
 
@@ -192,15 +191,6 @@ class CondaPackages(BaseModel):
     packages: list[CondaPackage]
     binary: CondaBinary = CondaBinary.Micromamba
     comment: None | str = None
-
-    @field_validator("channels")
-    @classmethod
-    def check_unique(cls, v: None | list[str]) -> None | list[str]:
-        if v is None:
-            return v
-        if len(v) != len(set(v)):
-            raise ValueError("Conda channels must be unique")
-        return v
 
     @overload
     def find_package(

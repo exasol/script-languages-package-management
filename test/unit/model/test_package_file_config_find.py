@@ -6,6 +6,7 @@ from test.unit.model.build_test_matrix import (
 from test.unit.test_data import (
     TEST_BUILD_STEP,
     TEST_BUILD_STEP_2,
+    TEST_BUILD_STEP_CONDA_DUPLICATE_CHANNELS,
 )
 
 import pytest
@@ -20,6 +21,7 @@ from exasol.exaslpm.model.package_file_config import (
     PackageFile,
     Phase,
 )
+from exasol.exaslpm.model.package_validation_error import PackageFileValidationError
 
 
 def test_find_in_single_build_step_model():
@@ -234,7 +236,9 @@ def test_find_invalid_pkg_in_model_returns_none(packages_model, new_package):
 
 
 def test_find_duplicate_conda_channel_raises():
-    with pytest.raises(ValueError, match=r"Conda channels must be unique"):
-        CondaPackages(
-            channels=["my-channel-1", "my-channel-2", "my-channel-1"], packages=[]
-        )
+
+    with pytest.raises(
+        PackageFileValidationError,
+        match=r"Conda channels must be unique. Multiple channels were detected: \(\['my-channel-1'\]\)",
+    ):
+        PackageFile(build_steps=[TEST_BUILD_STEP_CONDA_DUPLICATE_CHANNELS])
