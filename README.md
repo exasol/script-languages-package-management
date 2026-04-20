@@ -34,4 +34,4 @@ pip install exasol-script-languages-package-management
 
 ## 📚 Documentation
 
-For futher details, checkout the latest [documentation](https://exasol.github.io/script-languages-package-management/).
+For further details, checkout the latest [documentation](https://exasol.github.io/script-languages-package-management/).

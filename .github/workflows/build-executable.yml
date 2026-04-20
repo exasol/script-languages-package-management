@@ -9,7 +9,7 @@ on:
         required: true
 
   workflow_dispatch:
-    #No input parameter. We want to avoid the possibility to override artificats for existing release
+    #No input parameter. We want to avoid the possibility to override artificats for existing releases
 
 jobs:
   build-matrix-executable-config:
@@ -19,7 +19,7 @@ jobs:
       contents: read
 
   standalone-executable:
-    name: Create a standalone linux executable
+    name: Create a standalone Linux executable
     needs:
       - build-matrix-executable-config
     runs-on:

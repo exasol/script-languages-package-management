@@ -159,7 +159,7 @@ def test_collect_multi_phases(collector, package_variable, packages_model, packa
 
 def test_collect_conda_channels_empty():
     result = collect_conda_channels([])
-    assert result == set()
+    assert result == list()
 
 
 @pytest.mark.parametrize(
@@ -170,10 +170,10 @@ def test_collect_conda_channels_empty():
                 phases=[
                     Phase(
                         name="phase-1",
-                        conda=CondaPackages(channels={"my-channel"}, packages=[]),
+                        conda=CondaPackages(channels=["my-channel"], packages=[]),
                     ),
                 ],
-                expected={"my-channel"},
+                expected=["my-channel"],
             ),
             id="single-channel",
         ),
@@ -183,11 +183,11 @@ def test_collect_conda_channels_empty():
                     Phase(
                         name="phase-1",
                         conda=CondaPackages(
-                            channels={"my-channel-1", "my-channel-2"}, packages=[]
+                            channels=["my-channel-1", "my-channel-2"], packages=[]
                         ),
                     ),
                 ],
-                expected={"my-channel-1", "my-channel-2"},
+                expected=["my-channel-1", "my-channel-2"],
             ),
             id="two channels, one phase",
         ),
@@ -196,14 +196,14 @@ def test_collect_conda_channels_empty():
                 phases=[
                     Phase(
                         name="phase-1",
-                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                        conda=CondaPackages(channels=["my-channel-1"], packages=[]),
                     ),
                     Phase(
                         name="phase-2",
-                        conda=CondaPackages(channels={"my-channel-2"}, packages=[]),
+                        conda=CondaPackages(channels=["my-channel-2"], packages=[]),
                     ),
                 ],
-                expected={"my-channel-1", "my-channel-2"},
+                expected=["my-channel-1", "my-channel-2"],
             ),
             id="two channels, two phases",
         ),
@@ -212,11 +212,11 @@ def test_collect_conda_channels_empty():
                 phases=[
                     Phase(
                         name="phase-1",
-                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                        conda=CondaPackages(channels=["my-channel-1"], packages=[]),
                     ),
                     Phase(name="phase-2", apt=AptPackages(packages=[TEST_PACKAGE_APT])),
                 ],
-                expected={"my-channel-1"},
+                expected=["my-channel-1"],
             ),
             id="one conda phase, one apt phase",
         ),
@@ -225,11 +225,11 @@ def test_collect_conda_channels_empty():
                 phases=[
                     Phase(
                         name="phase-1",
-                        conda=CondaPackages(channels={"my-channel-1"}, packages=[]),
+                        conda=CondaPackages(channels=["my-channel-1"], packages=[]),
                     ),
                     Phase(name="phase-2", conda=CondaPackages(packages=[])),
                 ],
-                expected={"my-channel-1"},
+                expected=["my-channel-1"],
             ),
             id="one conda phase, one conda phase without channels",
         ),

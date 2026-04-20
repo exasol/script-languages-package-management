@@ -21,7 +21,7 @@ from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
 def _prepare_all_cmds(
     conda_package_file: pathlib.Path,
-    all_channels: set[str],
+    all_channels: list[str],
     conda_binary: CondaBinary,
     search_cache: SearchCache,
 ) -> list[CommandExecInfo]:

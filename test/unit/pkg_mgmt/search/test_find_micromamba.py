@@ -19,18 +19,19 @@ def test_find_micromamba_empty():
 
 @dataclass
 class TestPhaseData:
+    __test__ = False
     phase_name: str
     enable_apt: bool = False
     enable_micromamba: bool = False
 
 
-def _make_phase(phase: TestPhaseData) -> Phase:
+def _make_phase(phase_data: TestPhaseData) -> Phase:
     phase = Phase(
-        name=phase.phase_name,
-        apt=AptPackages(packages=[]) if phase.enable_apt else None,
+        name=phase_data.phase_name,
+        apt=AptPackages(packages=[]) if phase_data.enable_apt else None,
         tools=(
             Tools(micromamba=Micromamba(version="1.2.3"))
-            if phase.enable_micromamba
+            if phase_data.enable_micromamba
             else None
         ),
     )

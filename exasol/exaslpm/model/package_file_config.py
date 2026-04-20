@@ -27,7 +27,7 @@ class Package(BaseModel):
     name: str
     version: str | None = None
     comment: str | None = None
-    # yaml comments don't survive deserialization when we programatically change this file
+    # yaml comments don't survive deserialization when we programmatically change this file
 
 
 class AptPackage(Package):
@@ -187,7 +187,7 @@ class CondaBinary(Enum):
 
 class CondaPackages(BaseModel):
     # we might need to add later here a Channel class with authentication information for private channels https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html#config-channels
-    channels: None | set[str] = None
+    channels: None | list[str] = None
     packages: list[CondaPackage]
     binary: CondaBinary = CondaBinary.Micromamba
     comment: None | str = None
