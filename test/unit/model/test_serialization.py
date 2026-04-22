@@ -98,7 +98,7 @@ def test_to_yaml_str_omits_none_fields_by_default_in_dump():
     # Ensure optional sections not provided are not forced into YAML
     assert "pip" not in phase
     assert "r" not in phase
-    assert "conde" not in phase
+    assert "conda" not in phase
     assert "tools" not in phase
     assert "variables" not in phase
 

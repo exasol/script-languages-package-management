@@ -22,10 +22,10 @@ TEST_BINARY_PATH = Path("some_binary_path")
 
 @pytest.fixture(
     params=[
-        (BinaryType.PYTHON),
-        (BinaryType.R),
-        (BinaryType.CONDA),
-        (BinaryType.MAMBA),
+        BinaryType.PYTHON,
+        BinaryType.R,
+        BinaryType.CONDA,
+        BinaryType.MAMBA,
     ],
     ids=[
         BinaryType.PYTHON.value,

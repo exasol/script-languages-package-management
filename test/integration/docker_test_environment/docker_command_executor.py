@@ -84,7 +84,7 @@ class DockerCommandExecutor:
             stream_splitter.thread.join()
             if not stream_splitter.finished:
                 raise RuntimeError("Stream not finished")
-            for i in range(100):
+            for _ in range(100):
                 exit_metadata = docker_client.api.exec_inspect(exec_instance["Id"])
                 if not exit_metadata["Running"]:
                     return exit_metadata["ExitCode"]

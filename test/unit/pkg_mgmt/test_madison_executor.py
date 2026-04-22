@@ -20,7 +20,7 @@ def test_execute_madison_single_package(context_mock: Context):
     cmd_result = MagicMock()
     context_mock.cmd_executor.execute.return_value = cmd_result
 
-    def consume_results_side_effect(stdout_cb, stderr_cb):
+    def consume_results_side_effect(stdout_cb, _):
         stdout_cb(
             "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
@@ -43,7 +43,7 @@ def test_execute_madison_multiple_packages(context_mock: Context):
     cmd_result = MagicMock()
     context_mock.cmd_executor.execute.return_value = cmd_result
 
-    def consume_results_side_effect(stdout_cb, stderr_cb):
+    def consume_results_side_effect(stdout_cb, _):
         stdout_cb(
             "gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages"
         )
@@ -82,7 +82,7 @@ def test_execute_madison_empty_output(context_mock: Context):
     cmd_result = MagicMock()
     context_mock.cmd_executor.execute.return_value = cmd_result
 
-    def consume_results_side_effect(stdout_cb, stderr_cb):
+    def consume_results_side_effect(_, __):
         return 0
 
     cmd_result.consume_results.side_effect = consume_results_side_effect

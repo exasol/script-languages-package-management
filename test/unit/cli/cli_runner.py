@@ -6,7 +6,9 @@ from click.testing import CliRunner as ClickCli
 
 
 class CliRunner:
-    def __init__(self, command: click.Command, debug: bool = False, env={}):
+    def __init__(self, command: click.Command, debug: bool = False, env=None):
+        if env is None:
+            env = {}
         self._command = command
         self.debug = debug
         self.result = None
