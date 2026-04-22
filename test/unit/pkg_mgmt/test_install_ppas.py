@@ -3,18 +3,17 @@ from unittest.mock import (
     call,
 )
 
-from exasol.exaslpm.model.package_file_config import AptRepo
-from exasol.exaslpm.pkg_mgmt.install_apt_packages import *
+from exasol.exaslpm.model.package_file_config import AptRepo, AptPackages
 from exasol.exaslpm.pkg_mgmt.install_apt_repos import install_apt_repos
 
 
 def test_empty_packages(context_mock):
-    aptPackages = AptPackages(packages=[])
-    install_apt_repos(aptPackages, context_mock)
+    apt_packages = AptPackages(packages=[])
+    install_apt_repos(apt_packages, context_mock)
 
 
 def test_install_apt_repos(context_mock):
-    aptPackages = AptPackages(
+    apt_packages = AptPackages(
         packages=[],
         repos={
             "some_ppa": AptRepo(
@@ -25,7 +24,7 @@ def test_install_apt_repos(context_mock):
         },
     )
 
-    install_apt_repos(aptPackages, context_mock)
+    install_apt_repos(apt_packages, context_mock)
     assert context_mock.cmd_executor.mock_calls == [
         call.execute(
             [

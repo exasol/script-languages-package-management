@@ -15,20 +15,20 @@ def find_phases_of_build_steps(
     current_build_step: BuildStep,
     current_phase_name: str,
 ) -> list[Phase]:
-    current_phase_indeces = [
+    current_phase_indices = [
         idx
         for idx, phase in enumerate(current_build_step.phases)
         if phase.name == current_phase_name
     ]
 
-    if len(current_phase_indeces) == 0:
+    if len(current_phase_indices) == 0:
         raise ValueError(
             f"Phase '{current_phase_name}' not found in given current build step'"
         )
 
     # Take first phase matching the names.
     # Duplicated phase names can be ignored as model validation will raise an exception if found
-    phases_of_current_build_step = current_build_step.phases[: current_phase_indeces[0]]
+    phases_of_current_build_step = current_build_step.phases[: current_phase_indices[0]]
     phases_of_previous_build_steps = [
         phase for build_step in previous_build_steps for phase in build_step.phases
     ]

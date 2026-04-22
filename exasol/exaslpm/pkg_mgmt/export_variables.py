@@ -28,7 +28,7 @@ def _render_variable_value(variable_value: str) -> str:
     return template.render(platform=_mapped_platform(platform.machine()))
 
 
-def _check_uniquess_of_variables(
+def _check_uniqueness_of_variables(
     build_step_name: str,
     phase_name: str,
     existing_variables: dict[str, str],
@@ -48,7 +48,7 @@ def _variables(context: Context) -> Iterator[tuple[str, str]]:
     for build_step in previous_build_steps:
         for phase in build_step.phases:
             if phase.variables:
-                _check_uniquess_of_variables(
+                _check_uniqueness_of_variables(
                     build_step.name, phase.name, variables, phase.variables
                 )
                 variables.update(phase.variables)

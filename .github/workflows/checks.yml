@@ -13,8 +13,6 @@ jobs:
       - name: Check out Repository
         id: check-out-repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
 
       - name: Set up Python & Poetry Environment
         id: set-up-python-and-poetry-environment

@@ -44,7 +44,7 @@ class CommandResult:
         :param fn_ret_code: a function that waits untils the process has stopped and returns the return code. For example, subprocess.open.wait.
         :param stdout: iterable stdout captures
         :param stderr: iterable stderr captures
-        :param logger: a protocol that defines the log singatures
+        :param logger: a protocol that defines the log signature
         """
         self._log = logger
         self._fn_return_code = fn_ret_code
@@ -107,8 +107,8 @@ class CommandExecutor:
     ) -> CommandResult:
         """
         :param cmd_args: command with all its options as a list of individual str
+        :param env: environment variables to be set during execution
         :return: The result that can be used to access the results
-        :env: environment variables to be set during execution
         :rtype: CommandResult
         """
         cmd_str = " ".join(cmd_args)

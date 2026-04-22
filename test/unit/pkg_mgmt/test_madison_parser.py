@@ -13,7 +13,7 @@ def test_madison_parser_empty(context_mock: Context):
     assert madison_dict == {}
 
 
-def test_madision_proper_output(context_mock: Context):
+def test_madison_proper_output(context_mock: Context):
     madison_out = """gpg | 2.4.3-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
 gpg | 2.4.4-2ubuntu17.4 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
 vim | 2:9.1.0015-1ubuntu7.9 | http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages
@@ -44,7 +44,7 @@ vim | 2:9.1.0016-1ubuntu7.9 | http://security.ubuntu.com/ubuntu noble-security/m
     }
 
 
-def test_madision_missing_columns(context_mock: Context):
+def test_madison_missing_columns(context_mock: Context):
     madison_out = """gpg | 2.4.3-2ubuntu17.4 
 gpg | 2.4.4-2ubuntu17.4 
 """

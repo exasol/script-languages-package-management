@@ -26,10 +26,6 @@ def test_madison_executor_basic_package(
 ):
     pkg_list = [AptPackage(name="bash")]
     _update_apt_metadata(docker_container)
-    logger = TestLogger()
-    docker_cmd_executor = DockerCommandExecutor(
-        logger=logger, test_container=docker_container
-    )
 
     result = MadisonExecutor.execute_madison(pkg_list, docker_executor_context)
     assert result != ""
