@@ -63,7 +63,7 @@ def test_r_packages_install_error(
     docker_container, packages_r, cli_helper, prepare_r_env
 ):
     pkg = packages_r.find_build_step("build_step_3").find_phase("phase_3").r.packages[0]
-    pkg.name = "unknowsoftware"
+    pkg.name = "unknownsoftware"
     pkg.version = "0.0.0"
     r_package_file_content_yaml = to_yaml_str(packages_r)
     r_invalid_pkg_file = docker_container.make_and_upload_file(
@@ -77,4 +77,4 @@ def test_r_packages_install_error(
         False,
     )
     assert ret != 0
-    assert "couldn't find package 'unknowsoftware'" in out
+    assert "couldn't find package 'unknownsoftware'" in out

@@ -75,7 +75,7 @@ def build_standalone_binary(session: nox.Session):
 
 
 @nox.session(name="matrix:int-test-config", python=False)
-def matrix_int_test_config(session: nox.Session):
+def matrix_int_test_config(_):
     def _build_config(
         int_test_cfg: IntegrationTestConfig,
         platform: PlatformConfig,
@@ -103,7 +103,7 @@ def _build_docker_prefix_tag():
 
 
 @nox.session(name="matrix:executable-build-config", python=False)
-def matrix_executable_build_config(session: nox.Session):
+def matrix_executable_build_config(_):
     def _build_config(
         ubuntu_version: str,
         platform: PlatformConfig,
@@ -127,9 +127,9 @@ def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
 
 
 @nox.session(name="matrix:docker-image-config", python=False)
-def docker_image_config(session: nox.Session):
+def docker_image_config(_):
     """
-    Returns configuration for the Github runner which builds the Docker images.
+    Returns configuration for the GitHub runner which builds the Docker images.
     Each entry consists of "runner" (e.g. ubuntu-24.04), "base_img" (e.g. ubuntu:24.04)
     and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
     Thus, there will be one configuration per supported ubuntu version and supported platform.
@@ -187,7 +187,7 @@ def build_docker_image(session: nox.Session):
     Builds a docker image for given Docker repository, docker tag (including the architecture)
     and base image name of the Ubuntu image (e.g. ubuntu:24.04)
     After building the image. the nox task verifies that `exaslpm` can be executed within the image
-    and then pushes the image to Dockerhub.
+    and then pushes the image to DockerHub.
     """
     p = ArgumentParser(
         usage='nox -s build-docker-image -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --complete-docker-tag "24.04-arm"',
@@ -223,7 +223,7 @@ def build_docker_image(session: nox.Session):
         "username": docker_user,
         "password": docker_pwd,
     }
-    # Test exaslpm before we push the image to Dockerhub
+    # Test exaslpm before we push the image to DockerHub
     session.log("Checking exaslpm in new docker image.")
     exaslpm_help_string = session.run(
         "docker",
@@ -242,7 +242,7 @@ def build_docker_image(session: nox.Session):
             f"Running exaslpm using new docker image did not succeed. \noutput:\n'{exaslpm_help_string}'"
         )
     session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
-    session.log(f"Pushing now new image to Docker Hub.")
+    session.log("Pushing now new image to Docker Hub.")
     _push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
@@ -252,7 +252,7 @@ def build_docker_image(session: nox.Session):
 def build_docker_manifests(session: nox.Session):
     """
     Creates a docker manifest which includes all supported architectures.
-    With that, a client can pull the architecture agnostic docker tag (e.g. exaslpm-ubuntu-22.04) and dockerhub
+    With that, a client can pull the architecture agnostic docker tag (e.g. exaslpm-ubuntu-22.04) and DockerHub
     will return the correct image for the architecture, the client runs on.
     """
 

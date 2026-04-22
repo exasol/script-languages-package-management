@@ -219,17 +219,17 @@ INVALID_PACKAGE_MATRIX = [
 
 
 @pytest.mark.parametrize(
-    "packages_model, new_package", build_test_matrix(INVALID_PACKAGE_MATRIX)
+    "packages_model, _", build_test_matrix(INVALID_PACKAGE_MATRIX)
 )
-def test_find_invalid_pkg_in_model_raises(packages_model, new_package):
+def test_find_invalid_pkg_in_model_raises(packages_model, _):
     with pytest.raises(ValueError, match=r"Package 'invalid package' not found"):
         packages_model.find_package("invalid package")
 
 
 @pytest.mark.parametrize(
-    "packages_model, new_package", build_test_matrix(INVALID_PACKAGE_MATRIX)
+    "packages_model, _", build_test_matrix(INVALID_PACKAGE_MATRIX)
 )
-def test_find_invalid_pkg_in_model_returns_none(packages_model, new_package):
+def test_find_invalid_pkg_in_model_returns_none(packages_model, _):
     assert (
         packages_model.find_package("invalid package", raise_if_not_found=False) is None
     )

@@ -57,7 +57,7 @@ class DockerTestImageBuilder:
         dockerfile_path.write_text(self._test_dockerfile_content)
         self._build_exaslpm_executable()
 
-        image, build_logs = self.docker_client.images.build(
+        image, _ = self.docker_client.images.build(
             path=str(self.build_path), tag=self._docker_image_tag
         )
         return DockerTestImage(

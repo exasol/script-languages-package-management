@@ -1,5 +1,8 @@
 import sys
-from typing import Protocol
+from typing import (
+    Protocol,
+    TextIO,
+)
 
 
 class CommandLogger(Protocol):
@@ -9,20 +12,21 @@ class CommandLogger(Protocol):
 
 
 class StdLogger:
-    def info(self, msg: str, **kwargs) -> None:
-        if kwargs:
-            print(msg.rstrip() + str(kwargs), file=sys.stdout)
-        else:
-            print(msg.rstrip(), file=sys.stdout)
+    @staticmethod
+    def info(msg: str, **kwargs) -> None:
+        StdLogger._log(msg, sys.stdout, **kwargs)
 
-    def warn(self, msg: str, **kwargs) -> None:
-        if kwargs:
-            print(msg.rstrip() + str(kwargs), file=sys.stdout)
-        else:
-            print(msg.rstrip(), file=sys.stdout)
+    @staticmethod
+    def warn(msg: str, **kwargs) -> None:
+        StdLogger._log(msg, sys.stdout, **kwargs)
 
-    def err(self, msg: str, **kwargs) -> None:
+    @staticmethod
+    def err(msg: str, **kwargs) -> None:
+        StdLogger._log(msg, sys.stderr, **kwargs)
+
+    @staticmethod
+    def _log(msg: str, file: TextIO, **kwargs) -> None:
         if kwargs:
-            print(msg.rstrip() + str(kwargs), file=sys.stderr)
+            print(msg.rstrip() + str(kwargs), file=file)
         else:
-            print(msg.rstrip(), file=sys.stderr)
+            print(msg.rstrip(), file=file)

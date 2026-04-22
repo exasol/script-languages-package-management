@@ -6,9 +6,6 @@ from unittest.mock import (
 
 import pytest
 
-from exasol.exaslpm.model.package_file_config import (
-    AptPackage,
-)
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import (
     CommandFailedException,
 )
@@ -16,8 +13,8 @@ from exasol.exaslpm.pkg_mgmt.install_apt_packages import *
 
 
 def test_empty_packages(context_mock):
-    aptPackages = AptPackages(packages=[])
-    install_apt_packages(aptPackages, context_mock)
+    apt_packages = AptPackages(packages=[])
+    install_apt_packages(apt_packages, context_mock)
 
     assert context_mock.cmd_logger.mock_calls == [
         call.warn("Got an empty list of AptPackages"),
@@ -29,8 +26,8 @@ def test_install_apt_packages(context_mock):
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
-    aptPackages = AptPackages(packages=pkgs)
-    install_apt_packages(aptPackages, context_mock)
+    apt_packages = AptPackages(packages=pkgs)
+    install_apt_packages(apt_packages, context_mock)
     assert context_mock.cmd_executor.mock_calls == [
         call.execute(["apt-get", "-y", "update"], env=None),
         call.execute().print_results(),
@@ -71,7 +68,7 @@ def test_install_apt_packages_with_wildcard(context_mock):
     run_cmd_result = context_mock.cmd_executor.execute.return_value
     madison_cmd_result = MagicMock()
 
-    def consume_results_side_effect(stdout_cb, stderr_cb):
+    def consume_results_side_effect(stdout_cb, _):
         stdout_cb(
             "curl | 7.68.0-1ubuntu2.25 | http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages"
         )
@@ -79,7 +76,7 @@ def test_install_apt_packages_with_wildcard(context_mock):
 
     madison_cmd_result.consume_results.side_effect = consume_results_side_effect
 
-    def execute_side_effect(cmd, env=None):
+    def execute_side_effect(cmd, **_):
         if cmd == ["apt-cache", "-o", "quiet=0", "madison", "curl"]:
             return madison_cmd_result
         return run_cmd_result
@@ -90,8 +87,8 @@ def test_install_apt_packages_with_wildcard(context_mock):
         AptPackage(name="curl", version="7.68.*"),
         AptPackage(name="requests", version="2.25.1"),
     ]
-    aptPackages = AptPackages(packages=pkgs)
-    install_apt_packages(aptPackages, context_mock)
+    apt_packages = AptPackages(packages=pkgs)
+    install_apt_packages(apt_packages, context_mock)
     assert context_mock.cmd_executor.execute.call_args_list == [
         call(["apt-get", "-y", "update"], env=None),
         call(["apt-cache", "-o", "quiet=0", "madison", "curl"]),
@@ -132,7 +129,7 @@ class FailCommandExecutor:
         self.fail_step = fail_at_step
         self.count = 0
 
-    def execute(self, cmd, env):
+    def execute(self, _, **__):
         self.count += 1
         step_index = self.count - 1
         if step_index == self.fail_step:
@@ -171,9 +168,9 @@ def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_e
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
-    aptPackages = AptPackages(packages=pkgs)
+    apt_packages = AptPackages(packages=pkgs)
 
     with pytest.raises(CommandFailedException):
-        install_apt_packages(aptPackages, context)
+        install_apt_packages(apt_packages, context)
 
     context.cmd_logger.err.assert_any_call(expected_error)

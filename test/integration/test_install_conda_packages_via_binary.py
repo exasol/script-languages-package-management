@@ -71,7 +71,7 @@ def test_conda_packages_install_error(
         .find_phase("phase_1")
         .conda.packages[0]
     )
-    pkg.name = "unknowsoftware"
+    pkg.name = "unknownsoftware"
     pkg.version = "=0.0.0"
     conda_package_file_content_yaml = to_yaml_str(conda_packages_file_content)
     conda_invalid_pkg_file = docker_container.make_and_upload_file(
@@ -85,7 +85,7 @@ def test_conda_packages_install_error(
         False,
     )
     assert ret != 0
-    assert "unknowsoftware =0.0.0 * does not exist" in out
+    assert "unknownsoftware =0.0.0 * does not exist" in out
 
 
 def test_install_cuda_conda_packages(

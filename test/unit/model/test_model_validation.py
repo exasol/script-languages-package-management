@@ -354,7 +354,7 @@ def test_valid_package_installer_conda(conda_binary):
 
 
 def test_valid_package_installer_conda_invalid_binary():
-    yaml_file = f"""
+    yaml_file = """
     build_steps:
       - name: build_step_one
         phases:
