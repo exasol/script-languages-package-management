@@ -18,6 +18,13 @@ Documentation of  script-languages-package-management
 
         Instructions and best practices to help developers contribute to the project and set up their development environment.
 
+
+    .. grid-item-card:: :octicon:`checklist` Specification
+        :link: specification
+        :link-type: ref
+
+        Given-When-Then behavior specification for core project workflows.
+
     .. grid-item-card:: :octicon:`question` FAQ
         :link: faq
         :link-type: ref
@@ -30,6 +37,7 @@ Documentation of  script-languages-package-management
 
    user_guide/user_guide
    developer_guide/developer_guide
+   specification
    api
    faq
    changes/changelog
