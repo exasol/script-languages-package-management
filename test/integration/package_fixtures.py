@@ -235,6 +235,29 @@ def pip_packages_file_content() -> PackageFile:
 
 
 @pytest.fixture
+def incorrect_pip_packages_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(
+                                    name="invalid_package", version=" >=3.1.6, <4.0.0"
+                                ),
+                            ]
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
 def pip_packages_file_content_which_needs_pkg_config(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
@@ -343,6 +366,29 @@ def conda_packages_file_content() -> PackageFile:
                     ),
                 ],
             ),
+        ]
+    )
+
+
+@pytest.fixture
+def incorrect_conda_packages_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        conda=CondaPackages(
+                            packages=[
+                                CondaPackage(name="invalid_conda_pkg", version="=2.3.*")
+                            ],
+                            binary=CondaBinary.Micromamba,
+                            channels={"conda-forge"},
+                        ),
+                    ),
+                ],
+            )
         ]
     )
 

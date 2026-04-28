@@ -3,6 +3,7 @@ from pathlib import Path
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
+from test.integration.docker_test_environment.test_logger import LogCollector
 from test.integration.package_utils import ContainsPipPackages
 
 import pytest
@@ -115,21 +116,18 @@ def test_install_pip_packages_with_install_build_tools_ephemerally(
     assert_packages_installed(docker_container, python_version, pip)
 
 
-def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
+def test_install_pip_packages_prints_requirements_file_if_exception(
     docker_container,
-    pip_packages_file_content_which_needs_pkg_config,
+    incorrect_pip_packages_file_content,
     docker_executor_context,
     local_package_path,
     prepare_pip_env,
     python_version,
 ):
-    prepare_package_file_with_packages_which_needs_pkg_config(
-        package_file=pip_packages_file_content_which_needs_pkg_config,
-        use_install_build_tools_ephemerally=False,
-        local_package_path=local_package_path,
-    )
-    pip = pip_packages_file_content_which_needs_pkg_config.build_steps[0].phases[1].pip
-    assert_packages_not_installed(docker_container, python_version, pip)
+    pip_packages_file_yaml = to_yaml_str(incorrect_pip_packages_file_content)
+    local_package_path.write_text(pip_packages_file_yaml)
+    log_collector = LogCollector()
+    docker_executor_context.cmd_logger.error_callback = log_collector.log
 
     with pytest.raises(CommandFailedException):
         package_install(
@@ -137,3 +135,4 @@ def test_install_pip_packages_without_install_build_tools_ephemerally_raises(
             build_step_name="build_step_2",
             context=docker_executor_context,
         )
+    assert "invalid_package  >=3.1.6, <4.0.0" in log_collector.result

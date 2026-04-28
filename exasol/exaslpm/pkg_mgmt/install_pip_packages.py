@@ -84,9 +84,8 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
             try:
                 run_cmd(install_pip_cmd, ctx)
             except Exception as e:
-                pip_packages_content = temp_file.path.read_text()
                 ctx.cmd_logger.err(
-                    f"Failed while installing pip packages: \n{pip_packages_content}"
+                    f"Failed while installing pip packages: \n{temp_file.content}"
                 )
                 raise e
         if phase.pip.install_build_tools_ephemerally:

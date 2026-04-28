@@ -82,9 +82,8 @@ def install_conda_packages(search_cache: SearchCache, phase: Phase, ctx: Context
                 for cmd in cmds:
                     run_cmd(cmd, ctx)
             except Exception as e:
-                conda_packages_content = temp_file.path.read_text()
                 ctx.cmd_logger.err(
-                    f"Failed while installing conda packages: \n{conda_packages_content}"
+                    f"Failed while installing conda packages: \n{temp_file.content}"
                 )
                 raise e
     else:
