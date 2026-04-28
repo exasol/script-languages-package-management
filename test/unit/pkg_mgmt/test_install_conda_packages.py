@@ -149,7 +149,6 @@ def test_install_conda_packages_spec(context_with_conda_env):
     assert output.getvalue() == "main::numpy=1.2.3\nrequests=2.25.*=something\n"
 
 
-
 @pytest.fixture
 def context_with_conda_env_and_temp_file(context_with_conda_env):
     return Context(
@@ -161,9 +160,14 @@ def context_with_conda_env_and_temp_file(context_with_conda_env):
         temp_file_provider=TempFileProvider(),
     )
 
-def test_install_pip_packages_prints_package_file_if_exception(context_with_conda_env_and_temp_file):
 
-    context_with_conda_env_and_temp_file.cmd_executor.execute.side_effect = Exception("An error occurred")
+def test_install_pip_packages_prints_package_file_if_exception(
+    context_with_conda_env_and_temp_file,
+):
+
+    context_with_conda_env_and_temp_file.cmd_executor.execute.side_effect = Exception(
+        "An error occurred"
+    )
 
     pkgs = [
         CondaPackage(name="numpy", version="=1.2.3"),
@@ -176,9 +180,13 @@ def test_install_pip_packages_prints_package_file_if_exception(context_with_cond
         ),
     )
     build_step = BuildStep(name="build-step-1", phases=[phase_one])
-    search_cache = SearchCache(build_step, phase_one, context_with_conda_env_and_temp_file)
+    search_cache = SearchCache(
+        build_step, phase_one, context_with_conda_env_and_temp_file
+    )
     with pytest.raises(Exception, match="An error occurred"):
-        install_conda_packages(search_cache, phase_one, context_with_conda_env_and_temp_file)
+        install_conda_packages(
+            search_cache, phase_one, context_with_conda_env_and_temp_file
+        )
     assert context_with_conda_env_and_temp_file.cmd_logger.err.mock_calls == [
-        call('Failed while installing conda packages: \nnumpy=1.2.3\n')
+        call("Failed while installing conda packages: \nnumpy=1.2.3\n")
     ]

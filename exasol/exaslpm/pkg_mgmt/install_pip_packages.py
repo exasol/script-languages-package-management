@@ -1,6 +1,3 @@
-import logging
-from pathlib import Path
-
 from exasol.exaslpm.model.package_file_config import (
     Phase,
 )
@@ -88,7 +85,9 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
                 run_cmd(install_pip_cmd, ctx)
             except Exception as e:
                 pip_packages_content = temp_file.path.read_text()
-                ctx.cmd_logger.err(f"Failed while installing pip packages: \n{pip_packages_content}")
+                ctx.cmd_logger.err(
+                    f"Failed while installing pip packages: \n{pip_packages_content}"
+                )
                 raise e
         if phase.pip.install_build_tools_ephemerally:
             _uninstall_build_tools_ephemerally(ctx)

@@ -148,6 +148,7 @@ def test_install_pip_packages(
         call(Path("/usr/bin/test-python"))
     ]
 
+
 @pytest.fixture
 def context_with_python_env_and_temp_file(context_with_python_env):
     return Context(
@@ -159,9 +160,14 @@ def context_with_python_env_and_temp_file(context_with_python_env):
         temp_file_provider=TempFileProvider(),
     )
 
-def test_install_pip_packages_prints_package_file_if_exception(context_with_python_env_and_temp_file):
 
-    context_with_python_env_and_temp_file.cmd_executor.execute.side_effect = Exception("An error occurred")
+def test_install_pip_packages_prints_package_file_if_exception(
+    context_with_python_env_and_temp_file,
+):
+
+    context_with_python_env_and_temp_file.cmd_executor.execute.side_effect = Exception(
+        "An error occurred"
+    )
 
     pkgs = [
         PipPackage(name="numpy", version="== 1.2.3"),
@@ -174,9 +180,13 @@ def test_install_pip_packages_prints_package_file_if_exception(context_with_pyth
         ),
     )
     build_step = BuildStep(name="build-step-1", phases=[phase_one])
-    search_cache = SearchCache(build_step, phase_one, context_with_python_env_and_temp_file)
+    search_cache = SearchCache(
+        build_step, phase_one, context_with_python_env_and_temp_file
+    )
     with pytest.raises(Exception, match="An error occurred"):
-        install_pip_packages(search_cache, phase_one, context_with_python_env_and_temp_file)
+        install_pip_packages(
+            search_cache, phase_one, context_with_python_env_and_temp_file
+        )
     assert context_with_python_env_and_temp_file.cmd_logger.err.mock_calls == [
-        call('Failed while installing pip packages: \nnumpy == 1.2.3\n')
+        call("Failed while installing pip packages: \nnumpy == 1.2.3\n")
     ]
