@@ -23,12 +23,20 @@ class CommandFailedException(Exception):
 def stream_reader(
     pipe: Iterator[str],
     callback: Callable[[str | bytes], None],
+    exception_list: list[BaseException],
+    kill_on_fail: Callable[[], None] | None = None,
 ):
     while True:
         try:
             _val = next(pipe)
             callback(_val)
         except StopIteration:
+            return
+        except BaseException as exc:
+            if not exception_list:
+                exception_list.append(exc)
+            if kill_on_fail is not None:
+                kill_on_fail()
             return
 
 
@@ -39,6 +47,7 @@ class CommandResult:
         stdout: Iterator[str],
         stderr: Iterator[str],
         logger: CommandLogger,
+        kill_on_fail: Callable[[], None] | None = None,
     ):
         """
         :param fn_ret_code: a function that waits untils the process has stopped and returns the return code. For example, subprocess.open.wait.
@@ -50,6 +59,7 @@ class CommandResult:
         self._fn_return_code = fn_ret_code
         self._stdout = stdout
         self._stderr = stderr
+        self._kill_on_fail = kill_on_fail
 
     def return_code(self) -> int:
         return self._fn_return_code()
@@ -59,11 +69,25 @@ class CommandResult:
         consume_stdout: Callable[[str | bytes], None],
         consume_stderr: Callable[[str | bytes], None],
     ):
+        exception_list: list[BaseException] = []
+
         read_out = threading.Thread(
-            target=stream_reader, args=(self._stdout, consume_stdout)
+            target=stream_reader,
+            args=(
+                self._stdout,
+                consume_stdout,
+                exception_list,
+                self._kill_on_fail,
+            ),
         )
         read_err = threading.Thread(
-            target=stream_reader, args=(self._stderr, consume_stderr)
+            target=stream_reader,
+            args=(
+                self._stderr,
+                consume_stderr,
+                exception_list,
+                self._kill_on_fail,
+            ),
         )
 
         read_out.start()
@@ -71,6 +95,10 @@ class CommandResult:
         return_code = self.return_code()
         read_out.join()
         read_err.join()
+
+        if exception_list:
+            raise exception_list[0]
+
         return return_code
 
     def print_results(self):
@@ -124,9 +152,14 @@ class CommandExecutor:
         std_out = cast(TextIO, sub_process.stdout)
         std_err = cast(TextIO, sub_process.stderr)
 
+        def kill_sub_process():
+            if sub_process.poll() is None:
+                sub_process.kill()
+
         return CommandResult(
             fn_ret_code=sub_process.wait,
             stdout=iter(std_out),
             stderr=iter(std_err),
             logger=self._log,
+            kill_on_fail=kill_sub_process,
         )
