@@ -78,7 +78,12 @@ def install_conda_packages(search_cache: SearchCache, phase: Phase, ctx: Context
                 temp_file.path, all_channels, phase.conda.binary, search_cache
             )
 
-            for cmd in cmds:
-                run_cmd(cmd, ctx)
+            try:
+                for cmd in cmds:
+                    run_cmd(cmd, ctx)
+            except Exception as e:
+                conda_packages_content = temp_file.path.read_text()
+                ctx.cmd_logger.err(f"Failed while installing conda packages: \n{conda_packages_content}")
+                raise e
     else:
         ctx.cmd_logger.warn("Got an empty list of CondaPackages")

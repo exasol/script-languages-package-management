@@ -16,6 +16,8 @@ from exasol.exaslpm.model.package_file_config import (
     Tools,
 )
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
+from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.temp_file_provider import TempFileProvider
 from exasol.exaslpm.pkg_mgmt.install_conda_packages import (
     _write_conda_spec,
     install_conda_packages,
@@ -145,3 +147,38 @@ def test_install_conda_packages_spec(context_with_conda_env):
     _write_conda_spec(output, pkgs)
 
     assert output.getvalue() == "main::numpy=1.2.3\nrequests=2.25.*=something\n"
+
+
+
+@pytest.fixture
+def context_with_conda_env_and_temp_file(context_with_conda_env):
+    return Context(
+        cmd_logger=context_with_conda_env.cmd_logger,
+        cmd_executor=context_with_conda_env.cmd_executor,
+        history_file_manager=context_with_conda_env.history_file_manager,
+        file_access=context_with_conda_env.file_access,
+        file_downloader=context_with_conda_env.file_downloader,
+        temp_file_provider=TempFileProvider(),
+    )
+
+def test_install_pip_packages_prints_package_file_if_exception(context_with_conda_env_and_temp_file):
+
+    context_with_conda_env_and_temp_file.cmd_executor.execute.side_effect = Exception("An error occurred")
+
+    pkgs = [
+        CondaPackage(name="numpy", version="=1.2.3"),
+    ]
+    phase_one = Phase(
+        name="phase-1",
+        conda=CondaPackages(
+            packages=pkgs,
+            binary=CondaBinary.Micromamba,
+        ),
+    )
+    build_step = BuildStep(name="build-step-1", phases=[phase_one])
+    search_cache = SearchCache(build_step, phase_one, context_with_conda_env_and_temp_file)
+    with pytest.raises(Exception, match="An error occurred"):
+        install_conda_packages(search_cache, phase_one, context_with_conda_env_and_temp_file)
+    assert context_with_conda_env_and_temp_file.cmd_logger.err.mock_calls == [
+        call('Failed while installing conda packages: \nnumpy=1.2.3\n')
+    ]
