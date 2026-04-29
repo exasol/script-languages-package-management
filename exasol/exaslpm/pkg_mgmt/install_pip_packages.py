@@ -1,7 +1,11 @@
+from pathlib import Path
+
 from exasol.exaslpm.model.package_file_config import (
     Phase,
+    PipPackage,
 )
 from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.temp_file_provider import TempFileProvider
 from exasol.exaslpm.pkg_mgmt.install_common import (
     CommandExecInfo,
     run_cmd,
@@ -50,6 +54,52 @@ def _uninstall_build_tools_ephemerally(ctx: Context):
     run_cmd(apt_purge_cmd, ctx)
 
 
+def _prepare_requirements_file(
+    packages_to_install: list[PipPackage], temp_file: TempFileProvider.TemporaryFile
+):
+    with temp_file.open() as f:
+        for package in packages_to_install:
+            if not package.url:
+                print(f"{package.name} {package.version}", file=f)
+            else:
+                print(f"{package.name} @ {package.url}", file=f)
+
+
+def _build_install_cmds(
+    python_binary_path: Path,
+    search_cache: SearchCache,
+    temp_file: TempFileProvider.TemporaryFile,
+) -> CommandExecInfo:
+    install_pip_cmd = CommandExecInfo(
+        cmd=[
+            str(python_binary_path),
+            "-m",
+            "pip",
+            "install",
+            "-r",
+            str(temp_file.path),
+        ],
+        err="Failed while installing pip packages",
+    )
+    if search_cache.pip.needs_break_system_packages:
+        install_pip_cmd.cmd.append("--break-system-packages")
+    return install_pip_cmd
+
+
+def _run_install_cmds(
+    ctx: Context,
+    install_pip_cmd: CommandExecInfo,
+    temp_file: TempFileProvider.TemporaryFile,
+):
+    try:
+        run_cmd(install_pip_cmd, ctx)
+    except Exception as e:
+        ctx.cmd_logger.err(
+            f"Failed while installing pip packages: \n{temp_file.content}"
+        )
+        raise e
+
+
 def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
 
     packages_to_install = collect_pip_packages(search_cache.all_phases + [phase])
@@ -61,26 +111,10 @@ def install_pip_packages(search_cache: SearchCache, phase: Phase, ctx: Context):
         if phase.pip.install_build_tools_ephemerally:
             _install_build_tools_ephemerally(ctx)
         with ctx.temp_file_provider.create() as temp_file:
-            with temp_file.open() as f:
-                for package in packages_to_install:
-                    if not package.url:
-                        print(f"{package.name} {package.version}", file=f)
-                    else:
-                        print(f"{package.name} @ {package.url}", file=f)
-
-            install_pip_cmd = CommandExecInfo(
-                cmd=[
-                    str(python_binary_path),
-                    "-m",
-                    "pip",
-                    "install",
-                    "-r",
-                    str(temp_file.path),
-                ],
-                err="Failed while installing pip packages",
+            _prepare_requirements_file(packages_to_install, temp_file)
+            install_pip_cmd = _build_install_cmds(
+                python_binary_path, search_cache, temp_file
             )
-            if search_cache.pip.needs_break_system_packages:
-                install_pip_cmd.cmd.append("--break-system-packages")
-            run_cmd(install_pip_cmd, ctx)
+            _run_install_cmds(ctx, install_pip_cmd, temp_file)
         if phase.pip.install_build_tools_ephemerally:
             _uninstall_build_tools_ephemerally(ctx)

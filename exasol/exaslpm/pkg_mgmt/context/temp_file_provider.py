@@ -16,6 +16,10 @@ class TempFileProvider:
             with open(self.path, "w") as f:
                 yield f
 
+        @property
+        def content(self) -> str:
+            return self.path.read_text()
+
     @contextlib.contextmanager
     def create(self) -> Iterator[TemporaryFile]:
         with tempfile.TemporaryDirectory() as tmpdir:
