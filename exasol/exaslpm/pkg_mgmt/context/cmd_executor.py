@@ -23,22 +23,33 @@ class CommandFailedException(Exception):
 def stream_reader(
     pipe: Iterator[str],
     callback: Callable[[str | bytes], None],
-    exception_list: list[BaseException],
+    exception_list: list[BaseException] = None,
 ):
     invoke_callback = True
     while True:
         try:
             _val = next(pipe)
-            if invoke_callback:
-                callback(_val)
         except StopIteration:
             return
+        try:
+            if invoke_callback:
+                callback(_val)
         except BaseException as exc:
-            if not invoke_callback:
-                # Seems next(pipe) has raised an exception
-                return
-            exception_list.append(exc)
+            if exception_list is not None:
+                exception_list.append(exc)
             invoke_callback = False
+
+
+# def stream_reader(
+#     pipe: Iterator[str],
+#     callback: Callable[[str | bytes], None],
+# ):
+#     while True:
+#         try:
+#             _val = next(pipe)
+#             callback(_val)
+#         except StopIteration:
+#             return
 
 
 class CommandResult:
