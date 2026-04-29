@@ -10,3 +10,4 @@
 ## Refactorings
 
  - #101: Added error handling to write temp requirements to logging
+ - #100: Exported additional env variable

@@ -2,10 +2,14 @@ import platform
 import sys
 from collections.abc import Iterator
 from pathlib import Path
-from typing import TextIO
+from typing import (
+    Any,
+    TextIO,
+)
 
 from jinja2 import Template
 
+from exasol.exaslpm.model.package_file_config import Tools
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 PLATFORM_MACHINE_MAPPING = {
@@ -28,7 +32,7 @@ def _render_variable_value(variable_value: str) -> str:
     return template.render(platform=_mapped_platform(platform.machine()))
 
 
-def _check_uniquess_of_variables(
+def _check_uniqueness_of_variables(
     build_step_name: str,
     phase_name: str,
     existing_variables: dict[str, str],
@@ -41,6 +45,39 @@ def _check_uniquess_of_variables(
             )
 
 
+def _update_tools(
+    tools: Tools,
+    variables: dict[str, str],
+):
+    PREFIX = "EXASLPM_TOOLS_"
+
+    def flatten(prefix: str, value: Any):
+        if value is None:
+            return {}
+
+        # Nested Pydantic model
+        if isinstance(value, dict):
+            result = {}
+            for k, v in value.items():
+                new_prefix = f"{prefix}_{k}" if prefix else k
+                result.update(flatten(new_prefix, v))
+            return result
+
+        # Convert Path → str
+        if isinstance(value, Path):
+            value = str(value)
+
+        key = prefix.upper()
+        if key in variables:
+            raise ValueError(f"Duplicated tools entry {key}")
+        return {PREFIX + key: value}
+
+    for field, field_value in tools.model_dump().items():
+        variables.update(flatten(field, field_value))
+
+    return variables
+
+
 def _variables(context: Context) -> Iterator[tuple[str, str]]:
     previous_build_steps = context.history_file_manager.get_all_previous_build_steps()
     variables: dict[str, str] = {}
@@ -48,18 +85,21 @@ def _variables(context: Context) -> Iterator[tuple[str, str]]:
     for build_step in previous_build_steps:
         for phase in build_step.phases:
             if phase.variables:
-                _check_uniquess_of_variables(
+                _check_uniqueness_of_variables(
                     build_step.name, phase.name, variables, phase.variables
                 )
-                variables.update(phase.variables)
+                for variable_key, variable_value in phase.variables.items():
+                    variables[variable_key] = _render_variable_value(variable_value)
+            if phase.tools:
+                _update_tools(phase.tools, variables)
 
     for variable_key, variable_value in variables.items():
-        yield variable_key, _render_variable_value(variable_value)
+        yield variable_key, variable_value
 
 
 def _write_variables(context: Context, out_stream: TextIO) -> None:
     for variable_key, variable_value in _variables(context):
-        print(f"export {variable_key}={variable_value}", file=out_stream)
+        print(f'export {variable_key}="{variable_value}"', file=out_stream)
 
 
 def export_variables(
