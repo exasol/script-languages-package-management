@@ -36,6 +36,10 @@ class DockerTempFileProvider:
                 content=self.local_path.read_bytes(),
             )
 
+        @property
+        def content(self) -> str:
+            return self.local_path.read_text()
+
     @staticmethod
     def _make_unique_filename(prefix: str, suffix: str) -> str:
         ts = time.strftime("%Y%m%d-%H%M%S")

@@ -13,6 +13,8 @@ from exasol.exaslpm.model.package_file_config import (
     PipPackages,
     Tools,
 )
+from exasol.exaslpm.pkg_mgmt.context.context import Context
+from exasol.exaslpm.pkg_mgmt.context.temp_file_provider import TempFileProvider
 from exasol.exaslpm.pkg_mgmt.install_pip_packages import install_pip_packages
 from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
@@ -144,4 +146,47 @@ def test_install_pip_packages(
 
     assert context_with_python_env.file_access.check_binary.mock_calls == [
         call(Path("/usr/bin/test-python"))
+    ]
+
+
+@pytest.fixture
+def context_with_python_env_and_temp_file(context_with_python_env):
+    return Context(
+        cmd_logger=context_with_python_env.cmd_logger,
+        cmd_executor=context_with_python_env.cmd_executor,
+        history_file_manager=context_with_python_env.history_file_manager,
+        file_access=context_with_python_env.file_access,
+        file_downloader=context_with_python_env.file_downloader,
+        temp_file_provider=TempFileProvider(),
+    )
+
+
+def test_install_pip_packages_prints_package_file_if_exception(
+    context_with_python_env_and_temp_file,
+):
+
+    context_with_python_env_and_temp_file.cmd_executor.execute.side_effect = Exception(
+        "An error occurred"
+    )
+
+    pkgs = [
+        PipPackage(name="numpy", version="== 1.2.3"),
+    ]
+    phase_one = Phase(
+        name="phase-1",
+        pip=PipPackages(
+            packages=pkgs,
+            install_build_tools_ephemerally=False,
+        ),
+    )
+    build_step = BuildStep(name="build-step-1", phases=[phase_one])
+    search_cache = SearchCache(
+        build_step, phase_one, context_with_python_env_and_temp_file
+    )
+    with pytest.raises(Exception, match="An error occurred"):
+        install_pip_packages(
+            search_cache, phase_one, context_with_python_env_and_temp_file
+        )
+    assert context_with_python_env_and_temp_file.cmd_logger.err.mock_calls == [
+        call("Failed while installing pip packages: \nnumpy == 1.2.3\n")
     ]

@@ -1,6 +1,7 @@
 from test.integration.docker_test_environment.docker_test_container import (
     DockerTestContainer,
 )
+from test.integration.docker_test_environment.test_logger import LogCollector
 from test.integration.package_utils import ContainsCondaPackages
 
 import pytest
@@ -11,6 +12,7 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
@@ -82,3 +84,25 @@ def test_install_conda_packages(
     assert_packages_installed(
         docker_container, expected_packages, prepare_micromamba_env
     )
+
+
+def test_install_conda_packages_prints_requirements_file_if_exception(
+    docker_container,
+    incorrect_conda_packages_file_content,
+    docker_executor_context,
+    local_package_path,
+    prepare_micromamba_env,
+    python_version,
+):
+    conda_packages_file_yaml = to_yaml_str(incorrect_conda_packages_file_content)
+    local_package_path.write_text(conda_packages_file_yaml)
+    log_collector = LogCollector()
+    docker_executor_context.cmd_logger.error_callback = log_collector.log
+
+    with pytest.raises(CommandFailedException):
+        package_install(
+            package_file=local_package_path,
+            build_step_name="build_step_2",
+            context=docker_executor_context,
+        )
+    assert "invalid_conda_pkg=2.3.*" in log_collector.result
