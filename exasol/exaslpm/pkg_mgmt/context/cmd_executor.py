@@ -34,22 +34,13 @@ def stream_reader(
         try:
             if invoke_callback:
                 callback(_val)
-        except BaseException as exc:
+        # Skipping SonarQube's code-smell to not catch BaseException.
+        # We need to catch all unknown exceptions here.
+        except BaseException as exc: # NOSONAR
             if exception_list is not None:
                 exception_list.append(exc)
             invoke_callback = False
 
-
-# def stream_reader(
-#     pipe: Iterator[str],
-#     callback: Callable[[str | bytes], None],
-# ):
-#     while True:
-#         try:
-#             _val = next(pipe)
-#             callback(_val)
-#         except StopIteration:
-#             return
 
 
 class CommandResult:
@@ -105,9 +96,11 @@ class CommandResult:
         read_out.join()
         read_err.join()
 
-        if exception_list_stdout:
+        # Skipping SonarQube. It says exception_list_stdout is always empty.
+        # This is not true. They are populated inside the thread.
+        if exception_list_stdout: # NOSONAR
             raise exception_list_stdout[0]
-        if exception_list_stderr:
+        if exception_list_stderr: # NOSONAR
             raise exception_list_stderr[0]
 
         return return_code
