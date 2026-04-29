@@ -79,14 +79,15 @@ class CommandResult:
         consume_stdout: Callable[[str | bytes], None],
         consume_stderr: Callable[[str | bytes], None],
     ):
-        exception_list: list[BaseException] = []
+        exception_list_stdout: list[BaseException] = []
+        exception_list_stderr: list[BaseException] = []
 
         read_out = threading.Thread(
             target=stream_reader,
             args=(
                 self._stdout,
                 consume_stdout,
-                exception_list,
+                exception_list_stdout,
             ),
         )
         read_err = threading.Thread(
@@ -94,7 +95,7 @@ class CommandResult:
             args=(
                 self._stderr,
                 consume_stderr,
-                exception_list,
+                exception_list_stderr,
             ),
         )
 
@@ -104,8 +105,10 @@ class CommandResult:
         read_out.join()
         read_err.join()
 
-        if exception_list:
-            raise exception_list[0]
+        if exception_list_stdout:
+            raise exception_list_stdout[0]
+        if exception_list_stderr:
+            raise exception_list_stderr[0]
 
         return return_code
 
