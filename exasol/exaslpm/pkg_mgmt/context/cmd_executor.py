@@ -23,7 +23,7 @@ class CommandFailedException(Exception):
 def stream_reader(
     pipe: Iterator[str],
     callback: Callable[[str | bytes], None],
-    exception_list: list[BaseException] = None,
+    exception_list: list[BaseException] | None = None,
 ):
     invoke_callback = True
     while True:
