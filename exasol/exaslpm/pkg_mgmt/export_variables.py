@@ -45,35 +45,41 @@ def _check_uniqueness_of_variables(
             )
 
 
+def _build_tools_key(key: str) -> str:
+    PREFIX = "EXASLPM_TOOLS_"
+    key = PREFIX + key.upper()
+    return key
+
+
+def _flatten(variables: dict[str, str], prefix: str, value: Any):
+
+    if value is None:
+        return {}
+
+    # Nested dictionary
+    if isinstance(value, dict):
+        result = {}
+        for k, v in value.items():
+            new_prefix = f"{prefix}_{k}" if prefix else k
+            result.update(_flatten(variables, new_prefix, v))
+        return result
+
+    # Convert Path → str
+    if isinstance(value, Path):
+        value = str(value)
+    key = _build_tools_key(prefix)
+    if key in variables:
+        raise ValueError(f"Duplicated tools entry {key}")
+    return {key: value}
+
+
 def _update_tools(
     tools: Tools,
     variables: dict[str, str],
 ):
-    PREFIX = "EXASLPM_TOOLS_"
-
-    def flatten(prefix: str, value: Any):
-        if value is None:
-            return {}
-
-        # Nested Pydantic model
-        if isinstance(value, dict):
-            result = {}
-            for k, v in value.items():
-                new_prefix = f"{prefix}_{k}" if prefix else k
-                result.update(flatten(new_prefix, v))
-            return result
-
-        # Convert Path → str
-        if isinstance(value, Path):
-            value = str(value)
-
-        key = prefix.upper()
-        if key in variables:
-            raise ValueError(f"Duplicated tools entry {key}")
-        return {PREFIX + key: value}
 
     for field, field_value in tools.model_dump().items():
-        variables.update(flatten(field, field_value))
+        variables.update(_flatten(variables, field, field_value))
 
     return variables
 
