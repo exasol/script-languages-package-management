@@ -36,11 +36,10 @@ def stream_reader(
                 callback(_val)
         # Skipping SonarQube's code-smell to not catch BaseException.
         # We need to catch all unknown exceptions here.
-        except BaseException as exc: # NOSONAR
+        except BaseException as exc:  # NOSONAR
             if exception_list is not None:
                 exception_list.append(exc)
             invoke_callback = False
-
 
 
 class CommandResult:
@@ -98,9 +97,9 @@ class CommandResult:
 
         # Skipping SonarQube. It says exception_list_stdout is always empty.
         # This is not true. They are populated inside the thread.
-        if exception_list_stdout: # NOSONAR
+        if exception_list_stdout:  # NOSONAR
             raise exception_list_stdout[0]
-        if exception_list_stderr: # NOSONAR
+        if exception_list_stderr:  # NOSONAR
             raise exception_list_stderr[0]
 
         return return_code
