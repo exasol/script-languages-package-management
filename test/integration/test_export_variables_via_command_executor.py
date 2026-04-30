@@ -59,8 +59,10 @@ def test_export_variables_file(
     assert 'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"\n' not in out
 
     out_file = target_file.read_text()
-    assert prepare_variables.java_home in out_file
-    assert 'export PROTOBUF_DIR="/opt/protobuf"' in out_file
-    assert "{% if platform" not in out_file
-    assert 'export EXASLPM_TOOLS_MICROMAMBA_VERSION="2.5.0-1"\n' in out_file
-    assert 'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"\n' in out_file
+    out_lines = out_file.splitlines()
+    assert out_lines == [
+        'export EXASLPM_TOOLS_MICROMAMBA_VERSION="2.5.0-1"',
+        'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"',
+        prepare_variables.java_home,
+        'export PROTOBUF_DIR="/opt/protobuf"',
+    ]

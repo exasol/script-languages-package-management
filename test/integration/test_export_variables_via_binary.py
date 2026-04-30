@@ -48,6 +48,7 @@ def test_export_variables_stdout(docker_container, prepare_variables):
     ret, out = docker_container.run_exaslpm(["export-variables"])
 
     assert ret == 0
+
     assert prepare_variables.java_home in out
     assert 'export PROTOBUF_DIR="/opt/protobuf"' in out
     assert "{% if platform" not in out
@@ -70,8 +71,10 @@ def test_export_variables_file(docker_container, prepare_variables):
     assert ret == 0
 
     _, out_cat = docker_container.run(["cat", str(target_file)])
-    assert prepare_variables.java_home in out_cat
-    assert 'export PROTOBUF_DIR="/opt/protobuf"' in out_cat
-    assert "{% if platform" not in out_cat
-    assert 'export EXASLPM_TOOLS_MICROMAMBA_VERSION="2.5.0-1"\n' in out_cat
-    assert 'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"\n' in out_cat
+    out_lines = out_cat.splitlines()
+    assert out_lines == [
+        'export EXASLPM_TOOLS_MICROMAMBA_VERSION="2.5.0-1"',
+        'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"',
+        prepare_variables.java_home,
+        'export PROTOBUF_DIR="/opt/protobuf"',
+    ]
