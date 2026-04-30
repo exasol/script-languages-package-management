@@ -51,7 +51,7 @@ def _build_tools_key(key: str) -> str:
     return key
 
 
-def _flatten(variables: dict[str, str], prefix: str, value: Any):
+def _flatten(variables: dict[str, str], prefix: str, value: Any) -> dict[str, str]:
 
     if value is None:
         return {}
@@ -76,7 +76,7 @@ def _flatten(variables: dict[str, str], prefix: str, value: Any):
 def _update_tools(
     tools: Tools,
     variables: dict[str, str],
-):
+) -> dict[str, str]:
 
     for field, field_value in tools.model_dump().items():
         variables.update(_flatten(variables, field, field_value))
