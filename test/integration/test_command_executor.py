@@ -1,3 +1,5 @@
+import shutil
+
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandExecutor
 from exasol.exaslpm.pkg_mgmt.context.cmd_logger import StdLogger
 
@@ -58,3 +60,30 @@ def test_env_variable():
     assert ret_code == 0
     assert not stderr_lines
     assert "FOO=bar\n" in stdout_lines
+
+
+def test_consume_results_callback_failure():
+    # The following command produces a lot of stdout to fill the subprocess pipe.
+    # Once the callback raises, the reader thread must keep draining stdout without
+    # invoking the callback again, otherwise the subprocess causes a deadlock.
+    if shutil.which("apt-cache") is None:
+        pytest.skip("apt-cache is required for this integration test")
+
+    executor = CommandExecutor(StdLogger())
+    result = executor.execute(["apt-cache", "dumpavail"])
+    stdout_lines = []
+    stderr_lines = []
+
+    def consume_stdout(line, **kwargs):
+        stdout_lines.append(line)
+        raise RuntimeError("apt stdout callback failed")
+
+    def consume_stderr(line, **kwargs):
+        stderr_lines.append(line)
+
+    with pytest.raises(RuntimeError, match="Error while consuming stdout") as exc_info:
+        result.consume_results(consume_stdout, consume_stderr)
+
+    assert exc_info.value.__cause__ is not None
+    assert str(exc_info.value.__cause__) == "apt stdout callback failed"
+    assert len(stdout_lines) == 1

@@ -98,9 +98,13 @@ class CommandResult:
         # Skipping SonarQube. It says exception_list_stdout is always empty.
         # This is not true. They are populated inside the thread.
         if exception_list_stdout:  # NOSONAR
-            raise exception_list_stdout[0]
+            raise RuntimeError(
+                "Error while consuming stdout"
+            ) from exception_list_stdout[0]
         if exception_list_stderr:  # NOSONAR
-            raise exception_list_stderr[0]
+            raise RuntimeError(
+                "Error while consuming stderr"
+            ) from exception_list_stderr[0]
 
         return return_code
 
