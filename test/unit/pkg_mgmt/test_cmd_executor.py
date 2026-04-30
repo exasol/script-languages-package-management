@@ -216,9 +216,11 @@ def test_deadlock_on_stream_reader():
     stdout_consumer = MagicMock(side_effect=RuntimeError("stdout callback failed"))
     stderr_consumer = MagicMock()
 
-    with pytest.raises(RuntimeError, match="stdout callback failed"):
+    with pytest.raises(RuntimeError, match="Error while consuming stdout") as exc_info:
         cmd_result.consume_results(stdout_consumer, stderr_consumer)
 
+    assert exc_info.value.__cause__ is not None
+    assert str(exc_info.value.__cause__) == "stdout callback failed"
     stdout_consumer.assert_called_once_with("trigger\n")
 
 
