@@ -1,5 +1,7 @@
 import shutil
 
+import pytest
+
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandExecutor
 from exasol.exaslpm.pkg_mgmt.context.cmd_logger import StdLogger
 
