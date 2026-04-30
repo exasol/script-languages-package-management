@@ -23,13 +23,23 @@ class CommandFailedException(Exception):
 def stream_reader(
     pipe: Iterator[str],
     callback: Callable[[str | bytes], None],
+    exception_list: list[BaseException] | None = None,
 ):
+    invoke_callback = True
     while True:
         try:
             _val = next(pipe)
-            callback(_val)
         except StopIteration:
             return
+        try:
+            if invoke_callback:
+                callback(_val)
+        # Skipping SonarQube's code-smell to not catch BaseException.
+        # We need to catch all unknown exceptions here.
+        except BaseException as exc:  # NOSONAR
+            if exception_list is not None:
+                exception_list.append(exc)
+            invoke_callback = False
 
 
 class CommandResult:
@@ -59,11 +69,24 @@ class CommandResult:
         consume_stdout: Callable[[str | bytes], None],
         consume_stderr: Callable[[str | bytes], None],
     ):
+        exception_list_stdout: list[BaseException] = []
+        exception_list_stderr: list[BaseException] = []
+
         read_out = threading.Thread(
-            target=stream_reader, args=(self._stdout, consume_stdout)
+            target=stream_reader,
+            args=(
+                self._stdout,
+                consume_stdout,
+                exception_list_stdout,
+            ),
         )
         read_err = threading.Thread(
-            target=stream_reader, args=(self._stderr, consume_stderr)
+            target=stream_reader,
+            args=(
+                self._stderr,
+                consume_stderr,
+                exception_list_stderr,
+            ),
         )
 
         read_out.start()
@@ -71,6 +94,18 @@ class CommandResult:
         return_code = self.return_code()
         read_out.join()
         read_err.join()
+
+        # Skipping SonarQube. It says exception_list_stdout is always empty.
+        # This is not true. They are populated inside the thread.
+        if exception_list_stdout:  # NOSONAR
+            raise RuntimeError(
+                "Error while consuming stdout"
+            ) from exception_list_stdout[0]
+        if exception_list_stderr:  # NOSONAR
+            raise RuntimeError(
+                "Error while consuming stderr"
+            ) from exception_list_stderr[0]
+
         return return_code
 
     def print_results(self):

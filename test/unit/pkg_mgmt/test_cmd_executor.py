@@ -193,6 +193,37 @@ def test_command_results():
     assert ret_code == 10
 
 
+def test_deadlock_on_stream_reader():
+    logger = MagicMock(spec=CommandLogger)
+    executor = CommandExecutor(logger)
+
+    cmd_result = executor.execute(
+        [
+            sys.executable,
+            "-u",
+            "-c",
+            (
+                "import sys\n"
+                "sys.stdout.write('trigger\\n')\n"
+                "sys.stdout.flush()\n"
+                "for _ in range(512):\n"
+                "    sys.stdout.write('x' * 4096 + '\\n')\n"
+                "    sys.stdout.flush()\n"
+            ),
+        ]
+    )
+
+    stdout_consumer = MagicMock(side_effect=RuntimeError("stdout callback failed"))
+    stderr_consumer = MagicMock()
+
+    with pytest.raises(RuntimeError, match="Error while consuming stdout") as exc_info:
+        cmd_result.consume_results(stdout_consumer, stderr_consumer)
+
+    assert exc_info.value.__cause__ is not None
+    assert str(exc_info.value.__cause__) == "stdout callback failed"
+    stdout_consumer.assert_called_once_with("trigger\n")
+
+
 def test_protocol_logger():
     logger = MagicMock(spec=CommandLogger)
     cmd_result = mock_command_result(logger)
