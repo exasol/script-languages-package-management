@@ -35,7 +35,7 @@ def pytest_addoption(parser):
         "--test-image-ubuntu-version",
         action="store",
         help="Ubuntu version to use for testing",
-        default="24.04",
+        default="26.04",
     )
     parser.addoption(
         "--keep-docker-image",
