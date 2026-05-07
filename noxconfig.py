@@ -41,7 +41,13 @@ class Config(BaseConfig):
             runner="24.04", ubuntu_base_version_docker_test_image="24.04"
         ),
         IntegrationTestConfig(
+            runner="22.04", ubuntu_base_version_docker_test_image="26.04"
+        ),
+        IntegrationTestConfig(
             runner="24.04", ubuntu_base_version_docker_test_image="26.04"
+        ),
+        IntegrationTestConfig(
+            runner="26.04", ubuntu_base_version_docker_test_image="26.04"
         ),
     ]
 
@@ -49,6 +55,6 @@ class Config(BaseConfig):
 PROJECT_CONFIG = Config(
     root_path=Path(__file__).parent,
     project_name="exaslpm",
-    python_versions=("3.10", "3.11", "3.12"),
+    python_versions=("3.10", "3.11", "3.12", "3.13", "3.14"),
     exasol_versions=(),
 )
