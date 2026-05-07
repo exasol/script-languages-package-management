@@ -18,7 +18,7 @@ from exasol.exaslpm.pkg_mgmt.export_variables import export_variables
     Otherwise, it prints the environment variables to stdout.
     """),
 )
-def export_variables_command(out_file: pathlib.Path | None):
+def export_variables_command(out_file: pathlib.Path | None) -> None:
     """Export all variables from build history as shell environment variables."""
 
     export_variables(output_file=out_file, context=make_context())

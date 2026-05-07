@@ -39,7 +39,7 @@ def test_commit(tmp_path):
 
 def test_raise_error_invalid_package_file(tmp_path):
     yaml_file = """
-    invalid_somethong:
+    invalid_something:
     """
     package_file_path = tmp_path / "package.yaml"
     package_file_path.write_text(yaml_file)

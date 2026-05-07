@@ -101,6 +101,6 @@ def test_find_micromamba(phases):
     ],
 )
 def test_find_variable_unique(phases):
-    expected_err = rf"Found more than one result for micromamba: [Micromamba(version='1.2.3', root_prefix=PosixPath('/opt/conda'), comment=None), Micromamba(version='1.2.3', root_prefix=PosixPath('/opt/conda'), comment=None)]"
+    expected_err = r"Found more than one result for micromamba: [Micromamba(version='1.2.3', root_prefix=PosixPath('/opt/conda'), comment=None), Micromamba(version='1.2.3', root_prefix=PosixPath('/opt/conda'), comment=None)]"
     with pytest.raises(ValueError, match=re.escape(expected_err)):
         find_micromamba(phases)

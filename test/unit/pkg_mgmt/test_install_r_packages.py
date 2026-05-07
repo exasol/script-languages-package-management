@@ -33,8 +33,8 @@ def context_with_r_env(context_mock):
 
 
 def test_empty_packages(context_with_r_env):
-    rPackages = RPackages(packages=[])
-    phase_one = Phase(name="phase-1", r=rPackages)
+    r_packages = RPackages(packages=[])
+    phase_one = Phase(name="phase-1", r=r_packages)
     build_step = BuildStep(name="build-step-1", phases=[phase_one])
     search_cache = SearchCache(build_step, phase_one, context_with_r_env)
     install_r_packages(search_cache, phase_one, context_with_r_env)
@@ -51,8 +51,8 @@ TEST_PACKAGES = [
 
 
 def _make_build_step() -> BuildStep:
-    rPackages = RPackages(packages=TEST_PACKAGES)
-    phase_one = Phase(name="phase-1", r=rPackages)
+    r_packages = RPackages(packages=TEST_PACKAGES)
+    phase_one = Phase(name="phase-1", r=r_packages)
     build_step = BuildStep(name="build-step-1", phases=[phase_one])
     return build_step
 

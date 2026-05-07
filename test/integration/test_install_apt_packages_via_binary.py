@@ -39,7 +39,7 @@ def test_apt_install(docker_container, apt_package_file_content, cli_helper):
 def test_apt_install_error(docker_container, apt_package_file_content, cli_helper):
     apt_package_file_content.find_build_step("build_step_1").find_phase(
         "phase_1"
-    ).apt.packages[0].name = "unknowsoftware"
+    ).apt.packages[0].name = "unknownsoftware"
     apt_package_file_content_yaml = to_yaml_str(apt_package_file_content)
     apt_invalid_pkg_file = docker_container.make_and_upload_file(
         Path("/"), "apt_file_02", apt_package_file_content_yaml.encode("utf-8")
@@ -52,7 +52,7 @@ def test_apt_install_error(docker_container, apt_package_file_content, cli_helpe
         False,
     )
     assert ret != 0
-    assert "Unable to locate package unknowsoftware" in out
+    assert "Unable to locate package unknownsoftware" in out
 
 
 def _validate_build_step_history_file(

@@ -13,11 +13,11 @@ class PlatformConfig(BaseModel):
 
 class IntegrationTestConfig(BaseModel):
     """
-    Contains the mapping of Github runner Ubuntu version and Ubuntu version used in the target docker image,
+    Contains the mapping of GitHub runner Ubuntu version and Ubuntu version used in the target docker image,
     where the tests actually run.
     It's a limitation that those tests cannot run on all possible combinations of Ubuntu versions,
     because `exaslpm` cannot run on an older Ubuntu version, compared to the version on which it was built,
-    (incompatibel GLIBC version).
+    (incompatible GLIBC version).
     """
 
     runner: str

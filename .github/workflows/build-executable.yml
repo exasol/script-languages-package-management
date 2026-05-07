@@ -55,4 +55,3 @@ jobs:
         run: gh release upload ${{ inputs.release-tag }} "dist/$BINARY_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
