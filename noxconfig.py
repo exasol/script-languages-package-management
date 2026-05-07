@@ -46,9 +46,10 @@ class Config(BaseConfig):
         IntegrationTestConfig(
             runner="24.04", ubuntu_base_version_docker_test_image="26.04"
         ),
-        IntegrationTestConfig(
-            runner="26.04", ubuntu_base_version_docker_test_image="26.04"
-        ),
+        # GitHub does not support Ubuntu 26.04 runners yet - enable when available
+        # IntegrationTestConfig(
+        #     runner="26.04", ubuntu_base_version_docker_test_image="26.04"
+        # ),
     ]
 
 
