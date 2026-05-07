@@ -45,9 +45,7 @@ def test_install_conda_packages(
         conda_packages_file_content.build_steps[0].phases[4].conda.packages
     )
 
-    pkgs_before_install = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, prepare_micromamba_env
-    )
+    pkgs_before_install = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_before_install != ContainsCondaPackages(expected_packages)
 
     ret, out = docker_container.run_exaslpm(
@@ -57,10 +55,11 @@ def test_install_conda_packages(
     )
     assert ret == 0
 
-    pkgs_after_install = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, prepare_micromamba_env
-    )
+    pkgs_after_install = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_after_install == ContainsCondaPackages(expected_packages)
+
+    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell("bazel --help")
+    assert bazel_version_cmd_exit_code == 0
 
 
 def test_conda_packages_install_error(
@@ -101,9 +100,7 @@ def test_install_cuda_conda_packages(
         cuda_packages_file_content.build_steps[0].phases[2].conda.packages
     )
 
-    pkgs_before_install = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, prepare_micromamba_env
-    )
+    pkgs_before_install = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_before_install != ContainsCondaPackages(expected_packages)
 
     ret, out = docker_container.run_exaslpm(
@@ -113,7 +110,5 @@ def test_install_cuda_conda_packages(
     )
     assert ret == 0
 
-    pkgs_after_install = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, prepare_micromamba_env
-    )
+    pkgs_after_install = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_after_install == ContainsCondaPackages(expected_packages)
