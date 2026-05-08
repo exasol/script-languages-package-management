@@ -11,3 +11,7 @@
 
  - #101: Added error handling to write temp requirements to logging
  - #100: Exported additional env variable
+
+## Features:
+
+ - #102: Provide a custom env_activate script 

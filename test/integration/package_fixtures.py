@@ -383,6 +383,7 @@ def conda_packages_file_content() -> PackageFile:
                                     build="py314*",
                                 ),
                                 CondaPackage(name="pydantic", version="=2.*"),
+                                CondaPackage(name="bazel", version="=8.3.1"),
                             ],
                             binary=CondaBinary.Conda,
                         ),

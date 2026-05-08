@@ -16,6 +16,7 @@ from exasol.exaslpm.model.package_file_config import (
     Tools,
 )
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.context.temp_file_provider import TempFileProvider
 from exasol.exaslpm.pkg_mgmt.install_conda_packages import (
@@ -165,8 +166,8 @@ def test_install_pip_packages_prints_package_file_if_exception(
     context_with_conda_env_and_temp_file,
 ):
 
-    context_with_conda_env_and_temp_file.cmd_executor.execute.side_effect = Exception(
-        "An error occurred"
+    context_with_conda_env_and_temp_file.cmd_executor.execute.side_effect = (
+        CommandFailedException("An error occurred")
     )
 
     pkgs = [
@@ -183,7 +184,7 @@ def test_install_pip_packages_prints_package_file_if_exception(
     search_cache = SearchCache(
         build_step, phase_one, context_with_conda_env_and_temp_file
     )
-    with pytest.raises(Exception, match="An error occurred"):
+    with pytest.raises(CommandFailedException, match="An error occurred"):
         install_conda_packages(
             search_cache, phase_one, context_with_conda_env_and_temp_file
         )

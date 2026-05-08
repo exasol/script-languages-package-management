@@ -1,5 +1,6 @@
 import io
 import json
+import shlex
 import tarfile
 from os import PathLike
 from pathlib import Path
@@ -10,11 +11,9 @@ from docker.models.containers import Container
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     CondaPackage,
-    Micromamba,
     PipPackage,
     RPackage,
 )
-from exasol.exaslpm.pkg_mgmt.micromamba_env import create_mamba_env_variables
 
 
 class DockerTestContainer:
@@ -96,30 +95,26 @@ class DockerTestContainer:
             PipPackage(name=pkg["name"], version=pkg["version"]) for pkg in packages
         ]
 
-    def run_in_mamba_env(
+    def run_in_login_shell(
         self,
-        param_list: list[str],
-        micromamba: Micromamba,
+        cmd: list[str],
         check_exit_code: bool = True,
     ) -> tuple[int, str]:
         return self.run(
-            param_list,
+            ["bash", "-l", "-c", shlex.join(cmd)],
             check_exit_code=check_exit_code,
-            environment=create_mamba_env_variables(micromamba),
         )
 
-    def list_conda_packages(
-        self, binary: Path, micromamba: Micromamba
-    ) -> list[CondaPackage]:
-        _, out = self.run_in_mamba_env(
+    def list_conda_packages(self, binary: Path) -> list[CondaPackage]:
+        _, out = self.run_in_login_shell(
             [
                 str(binary),
                 "list",
                 "--json",
-            ],
-            micromamba,
+            ]
         )
-        packages = json.loads(out.strip())
+        json_data = out.strip()
+        packages = json.loads(json_data)
         return [
             CondaPackage(
                 name=pkg["name"],
