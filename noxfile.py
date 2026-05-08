@@ -18,7 +18,6 @@ import requests
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
 
-from exasol import exaslpm
 from noxconfig import (
     PROJECT_CONFIG,
     IntegrationTestConfig,
@@ -28,6 +27,7 @@ from noxconfig import (
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = ["format:fix"]
+
 
 def _current_platform_cfg(session: nox.Session) -> PlatformConfig:
     import platform
@@ -41,6 +41,16 @@ def _current_platform_cfg(session: nox.Session) -> PlatformConfig:
     machine = platform.machine()
     session.log(f"Current platform: {machine}")
     return supported_platforms[machine].value
+
+
+def _get_latest_gh_release(session: nox.Session) -> str:
+    latest_release_url = "https://api.github.com/repos/exasol/script-languages-package-management/releases/latest"
+    response = requests.get(latest_release_url)
+    response.raise_for_status()
+    response_json = response.json()
+    latest_release = response_json["name"]
+    session.log(f"Latest release: {latest_release}")
+    return latest_release
 
 
 def _build_binary(exe_name: str, clean_up, session: nox.Session):
@@ -222,16 +232,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
 
     docker_client = docker.from_env()
     current_platform = _current_platform_cfg(session)
-    latest_release  = session.run(
-        "gh", "release", "list", "--json", "name,isLatest", "--jq", ".[] | select(.isLatest) | .name",
-        silent=True,
-        external=True
-    )
-    if not latest_release:
-        session.error("Error getting latest release")
-    else:
-        latest_release = latest_release.strip()
-    session.warn(f"Found latest release: {latest_release}")
+    latest_release = _get_latest_gh_release(session)
 
     with TemporaryDirectory() as tmp_dir:
         tmp_path = Path(tmp_dir)

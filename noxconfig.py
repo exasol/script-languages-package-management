@@ -11,6 +11,7 @@ class PlatformConfig(BaseModel):
     docker_tag_suffix: str
     runner_suffix: str
 
+
 class PlatformConfigs(Enum):
     X86 = PlatformConfig(docker_tag_suffix="x86_64", runner_suffix="")
     ARM = PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm")
