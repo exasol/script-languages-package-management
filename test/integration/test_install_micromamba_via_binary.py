@@ -20,7 +20,7 @@ def test_install_micromamba(docker_container, micromamba_file_content, cli_helpe
     assert ret == 0
 
     micromamba_list_cmd_result_exit_code, _ = docker_container.run_in_login_shell(
-        f"{MICROMAMBA_PATH} list"
+        [str(MICROMAMBA_PATH), "list"]
     )
     assert micromamba_list_cmd_result_exit_code == 0
 

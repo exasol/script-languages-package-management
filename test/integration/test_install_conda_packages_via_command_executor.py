@@ -77,7 +77,9 @@ def test_install_conda_packages(
 
     assert_packages_installed(docker_container, expected_packages)
 
-    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell("bazel --help")
+    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell(
+        ["bazel", "--help"]
+    )
     assert bazel_version_cmd_exit_code == 0
 
 

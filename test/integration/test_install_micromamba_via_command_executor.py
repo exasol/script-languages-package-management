@@ -34,8 +34,8 @@ def test_install_micromamba(
         .tools.micromamba
     )
 
-    micromamba_cmd_result_exit_code, out = docker_container.run_in_mamba_env(
-        [str(MICROMAMBA_PATH), "list"], micromamba
+    micromamba_cmd_result_exit_code, out = docker_container.run_in_login_shell(
+        [str(MICROMAMBA_PATH), "list"]
     )
     assert micromamba_cmd_result_exit_code == 0
     assert 'List of packages in environment: "/opt/conda"' in out
