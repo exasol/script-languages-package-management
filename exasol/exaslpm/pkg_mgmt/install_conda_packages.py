@@ -6,6 +6,7 @@ from exasol.exaslpm.model.package_file_config import (
     CondaPackage,
     Phase,
 )
+from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_common import (
     CommandExecInfo,
@@ -81,7 +82,7 @@ def install_conda_packages(search_cache: SearchCache, phase: Phase, ctx: Context
             try:
                 for cmd in cmds:
                     run_cmd(cmd, ctx)
-            except Exception as e:
+            except CommandFailedException as e:
                 ctx.cmd_logger.err(
                     f"Failed while installing conda packages: \n{temp_file.content}"
                 )

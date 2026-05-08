@@ -29,6 +29,28 @@ from exasol.exaslpm.model.package_file_config import (
 )
 
 APT_PACKAGE_DEFS = {
+    "26.04": {
+        "locales": AptPackage(name="locales", version="2.43-2ubuntu*"),
+        "wget": AptPackage(name="wget", version="1.25.0-2ubuntu*"),
+        "curl": AptPackage(name="curl", version="8.18.0-1ubuntu*"),
+        "tree": AptPackage(name="tree", version="2.3.1*"),
+        "binutils": AptPackage(name="binutils", version="2.46*"),
+        "coreutils": AptPackage(name="coreutils", version="9.5-1ubuntu*"),
+        "libsmbclient-dev": AptPackage(
+            name="libsmbclient-dev", version="2:4.23.6+dfsg-1ubuntu*"
+        ),
+        "bzip2": AptPackage(
+            name="bzip2",
+            version="1.0.8-*",
+        ),
+        "ca-certificates": AptPackage(name="ca-certificates", version="20260223"),
+        "build-essential": AptPackage(name="build-essential", version="12.12ubuntu*"),
+        "git": AptPackage(name="git", version="1:2.53.0-1ubuntu*"),
+        "r-base-core": AptPackage(
+            name="r-base-core",
+            version="4.5.2-1ubuntu*",
+        ),
+    },
     "24.04": {
         "locales": AptPackage(name="locales", version="2.39-0ubuntu*"),
         "wget": AptPackage(name="wget", version="1.21.4-1ubuntu*"),
@@ -128,6 +150,7 @@ def python_version(ubuntu_version) -> str:
     python_versions = {
         "24.04": "python3.12",
         "22.04": "python3.10",
+        "26.04": "python3.14",
     }
     return python_versions[ubuntu_version]
 
@@ -360,6 +383,7 @@ def conda_packages_file_content() -> PackageFile:
                                     build="py314*",
                                 ),
                                 CondaPackage(name="pydantic", version="=2.*"),
+                                CondaPackage(name="bazel", version="=8.3.1"),
                             ],
                             binary=CondaBinary.Conda,
                         ),

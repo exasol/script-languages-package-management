@@ -29,7 +29,7 @@ homepage = "https://github.com/exasol/script-languages-package-management"
 
 dev = [
     "exasol-toolbox >=7.0.0, <8",
-    "pyinstaller >=6.19.0, <7.0.0",
+    "pyinstaller >=6.20.0, <7.0.0",
     "types-pyinstaller >=6.19.0.20260408, <7.0.0.0",
     "types-requests >=2.33.0.20260408, <3.0.0",
     "docker (>=7.1.0,<8.0.0) ; sys_platform != \"win32\"",
