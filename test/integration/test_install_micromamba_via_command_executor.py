@@ -25,14 +25,8 @@ def test_install_micromamba(
     )
 
     # 7 (from apt install, see exasol.exaslpm.pkg_mgmt.install_apt) +
-    # 2 (from install micromamba, see exasol.exaslpm.pkg_mgmt.install_micromamba)
+    # 3 (from install micromamba, see exasol.exaslpm.pkg_mgmt.install_micromamba)
     assert return_code_counter.result == 10
-
-    micromamba = (
-        micromamba_file_content.find_build_step("build_step_1")
-        .find_phase("phase_2")
-        .tools.micromamba
-    )
 
     micromamba_cmd_result_exit_code, out = docker_container.run_in_login_shell(
         [str(MICROMAMBA_PATH), "list"]
