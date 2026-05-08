@@ -56,6 +56,78 @@ def _build_binary(exe_name: str, clean_up, session: nox.Session):
         os.chdir(old_cwd)
 
 
+_BUILD_CONTAINER_IMAGE = "almalinux:8"
+_BUILD_IMAGE_TAG = "exaslpm-binary-build:latest"
+
+
+def _build_binary_build_image(session: nox.Session):
+    with TemporaryDirectory() as tmp_dir:
+        dockerfile_content = cleandoc(f"""
+            FROM {_BUILD_CONTAINER_IMAGE}
+            RUN dnf install -y -q epel-release && dnf install -y -q python3.12 python3.12-devel
+            RUN python3.12 -m ensurepip --upgrade
+            RUN python3.12 -m pip install --no-cache-dir nox pyinstaller 'exasol-toolbox>=7.0.0,<8' docker
+        """)
+        (Path(tmp_dir) / "Dockerfile").write_text(dockerfile_content)
+        session.run("docker", "build", "-t", _BUILD_IMAGE_TAG, str(tmp_dir), external=True)
+
+
+@nox.session(name="build-binary-build-image", python=False)
+def build_binary_build_image(session: nox.Session):
+    _build_binary_build_image(session)
+
+
+def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session):
+    if subprocess.run(
+        ["docker", "image", "inspect", _BUILD_IMAGE_TAG], capture_output=True
+    ).returncode != 0:
+        _build_binary_build_image(session)
+
+    pip_cmd = "python3.12 -m pip install --no-cache-dir ."
+    cleanup_flag = "--cleanup" if clean_up else ""
+    nox_cmd = (
+        f"PYTHONPATH=/project /usr/local/bin/nox -s build-standalone-binary "
+        f"-- --executable-name {exe_name} {cleanup_flag}"
+    )
+    chown_cmd = f"chown {os.getuid()}:{os.getgid()} dist/{exe_name}"
+
+    # Pre-create dist/ as the current user so we can move the root-owned binary out after the build.
+    (PROJECT_CONFIG.root_path / "dist").mkdir(exist_ok=True)
+
+    session.run(
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{str(PROJECT_CONFIG.root_path)}:/project",
+        "-w",
+        "/project",
+        _BUILD_IMAGE_TAG,
+        "sh",
+        "-c",
+        f"{pip_cmd} && {nox_cmd} && {chown_cmd}",
+        external=True,
+    )
+
+
+@nox.session(name="build-binary-manylinux", python=False)
+def build_binary_manylinux(session: nox.Session):
+    p = ArgumentParser(
+        usage='nox -s build-binary-manylinux -- --executable-name "exaslpm"',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument("--executable-name")
+    p.add_argument("--cleanup", action="store_true", help="Remove temporary files")
+    args = p.parse_args(session.posargs)
+    exe_name = args.executable_name
+    cleanup = args.cleanup
+
+    if not bool(exe_name):
+        session.error("PyInstaller needs a valid executable-name")
+    else:
+        _build_binary_manylinux(exe_name, cleanup, session)
+
+
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
 

@@ -14,10 +14,8 @@ class PlatformConfig(BaseModel):
 class IntegrationTestConfig(BaseModel):
     """
     Contains the mapping of GitHub runner Ubuntu version and Ubuntu version used in the target docker image,
-    where the tests actually run.
-    It's a limitation that those tests cannot run on all possible combinations of Ubuntu versions,
-    because `exaslpm` cannot run on an older Ubuntu version, compared to the version on which it was built,
-    (incompatible GLIBC version).
+    where the tests actually run. The binary is built inside a manylinux_2_28 Docker container,
+    making it compatible with all supported Ubuntu versions regardless of the runner version.
     """
 
     runner: str
@@ -36,9 +34,6 @@ class Config(BaseConfig):
         ),
         IntegrationTestConfig(
             runner="22.04", ubuntu_base_version_docker_test_image="24.04"
-        ),
-        IntegrationTestConfig(
-            runner="24.04", ubuntu_base_version_docker_test_image="24.04"
         ),
     ]
 
