@@ -73,7 +73,7 @@ class AptRepo(BaseModel):
 class AptPackages(BaseModel):
     repos: dict[str, AptRepo] | None = None
     packages: list[AptPackage]
-    no_doc: bool = False
+    no_doc: bool = True
     comment: None | str = None
 
     @overload
