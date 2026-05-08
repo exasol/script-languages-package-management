@@ -13,12 +13,10 @@ class PlatformConfig(BaseModel):
 
 class IntegrationTestConfig(BaseModel):
     """
-    Contains the mapping of GitHub runner Ubuntu version and Ubuntu version used in the target docker image,
-    where the tests actually run. The binary is built inside a manylinux_2_28 Docker container,
-    making it compatible with all supported Ubuntu versions regardless of the runner version.
+    Ubuntu version to use for the target docker image in integration tests.
+    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION in noxfile.py.
     """
 
-    runner: str
     ubuntu_base_version_docker_test_image: str
 
 
@@ -29,25 +27,9 @@ class Config(BaseConfig):
         PlatformConfig(docker_tag_suffix="x86_64", runner_suffix=""),
     ]
     integration_test_config: list[IntegrationTestConfig] = [
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="22.04"
-        ),
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="24.04"
-        ),
-        IntegrationTestConfig(
-            runner="24.04", ubuntu_base_version_docker_test_image="24.04"
-        ),
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="26.04"
-        ),
-        IntegrationTestConfig(
-            runner="24.04", ubuntu_base_version_docker_test_image="26.04"
-        ),
-        # GitHub does not support Ubuntu 26.04 runners yet - enable when available
-        # IntegrationTestConfig(
-        #     runner="26.04", ubuntu_base_version_docker_test_image="26.04"
-        # ),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="22.04"),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="24.04"),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="26.04"),
     ]
 
 

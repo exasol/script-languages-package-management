@@ -57,6 +57,7 @@ def _build_binary(exe_name: str, clean_up, session: nox.Session):
 
 
 _BUILD_CONTAINER_IMAGE = "almalinux:8"
+_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
 _BUILD_IMAGE_TAG = "exaslpm-binary-build:latest"
 
 
@@ -155,7 +156,7 @@ def matrix_int_test_config(_):
         python_version: str,
     ) -> dict[str, str]:
         return {
-            "runner": f"ubuntu-{int_test_cfg.runner}{platform.runner_suffix}",
+            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
             "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
             "python-version": python_version,
         }
@@ -165,6 +166,19 @@ def matrix_int_test_config(_):
         for platform in PROJECT_CONFIG.supported_platforms
         for int_test_cfg in PROJECT_CONFIG.integration_test_config
         for python_version in PROJECT_CONFIG.python_versions
+    ]
+    print(json.dumps({"include": config}))
+
+
+@nox.session(name="matrix:binary-int-test-config", python=False)
+def matrix_binary_int_test_config(_):
+    config = [
+        {
+            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
+        }
+        for platform in PROJECT_CONFIG.supported_platforms
+        for int_test_cfg in PROJECT_CONFIG.integration_test_config
     ]
     print(json.dumps({"include": config}))
 
