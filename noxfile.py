@@ -90,7 +90,13 @@ def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session)
         f"PYTHONPATH=/project /usr/local/bin/nox -s build-standalone-binary "
         f"-- --executable-name {exe_name} {cleanup_flag}"
     )
-    chown_cmd = f"chown {os.getuid()}:{os.getgid()} dist/{exe_name}"
+    uid_gid = f"{os.getuid()}:{os.getgid()}"
+    chown_cmd = (
+        f"chown {uid_gid} dist/{exe_name}; "
+        f"chown -R {uid_gid} build/{exe_name} 2>/dev/null; "
+        f"chown {uid_gid} {exe_name}.spec 2>/dev/null; "
+        f"true"
+    )
 
     # Pre-create dist/ as the current user so we can move the root-owned binary out after the build.
     (PROJECT_CONFIG.root_path / "dist").mkdir(exist_ok=True)
