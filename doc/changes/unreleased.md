@@ -11,6 +11,7 @@
 
  - #101: Added error handling to write temp requirements to logging
  - #100: Exported additional env variable
+ - #81: Changed building docker image to use executable from release  
 
 ## Features:
 
