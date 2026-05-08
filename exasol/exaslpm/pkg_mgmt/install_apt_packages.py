@@ -109,7 +109,7 @@ def exclude_doc_options() -> list[str]:
 
 
 def install_cmd_and_err(
-    all_pkgs: list[AptPackage], ctx: Context, no_doc: bool = False
+    all_pkgs: list[AptPackage], ctx: Context, no_doc: bool = True
 ) -> CommandExecInfo:
     if all_pkgs is None:
         raise ValueError("no apt packages defined")
