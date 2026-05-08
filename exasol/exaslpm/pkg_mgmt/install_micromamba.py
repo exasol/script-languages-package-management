@@ -14,6 +14,7 @@ from exasol.exaslpm.pkg_mgmt.install_common import (
 from exasol.exaslpm.pkg_mgmt.micromamba_env import micromamba_cmd_from_micromamba
 
 _MICROMAMBA_EXE = "bin/micromamba"
+_ACTIVATION_SCRIPT_PATH = Path("/usr") / "local" / "bin" / "_activate_current_env.sh"
 
 
 def _install_micromamba_exec(micromamba: Micromamba, ctx: Context):
@@ -49,7 +50,7 @@ def _install_micromamba_exec(micromamba: Micromamba, ctx: Context):
     run_cmd(create_env_cmd, ctx)
 
 
-def _install_activation_script(micromamba: Micromamba, ctx: Context) -> Path:
+def _install_activation_script(micromamba: Micromamba, ctx: Context) -> None:
     activation_script = cleandoc(f"""
         # shellcheck disable=SC2148
         
@@ -71,19 +72,16 @@ def _install_activation_script(micromamba: Micromamba, ctx: Context) -> Path:
           || mamba activate "{micromamba.env_name}" 2>/dev/null 1>2 \
           || micromamba activate "{micromamba.env_name}" 2>/dev/null 1>2
     """)
-    activation_script_path = Path("/usr") / "local" / "bin" / "_activate_current_env.sh"
+
     with ctx.temp_file_provider.create() as activation_script_temp_file:
         with activation_script_temp_file.open() as f:
             print(activation_script, file=f)
         ctx.file_access.copy_file(
-            activation_script_temp_file.path, activation_script_path
+            activation_script_temp_file.path, _ACTIVATION_SCRIPT_PATH
         )
-    return activation_script_path
 
 
-def _run_setup_for_activation_script(
-    micromamba: Micromamba, activation_script_path: Path, ctx: Context
-):
+def _run_setup_for_activation_script(micromamba: Micromamba, ctx: Context):
     install_activation_script = cleandoc(f"""
     #!/bin/bash
 
@@ -91,10 +89,10 @@ def _run_setup_for_activation_script(
     set -u
     set -o pipefail
     # Activate micromamba for the bash
-    echo "source {activation_script_path}" >> ~/.bashrc && \
-    echo "source {activation_script_path}" >> /etc/skel/.bashrc && \
-    ln -s {activation_script_path} /etc/profile.d/_activate_current_env.sh && \
-    chmod -R a+rx {activation_script_path}
+    echo "source {_ACTIVATION_SCRIPT_PATH}" >> ~/.bashrc && \
+    echo "source {_ACTIVATION_SCRIPT_PATH}" >> /etc/skel/.bashrc && \
+    ln -s {_ACTIVATION_SCRIPT_PATH} /etc/profile.d/_activate_current_env.sh && \
+    chmod -R a+rx {_ACTIVATION_SCRIPT_PATH}
 
     # Add conda lib directory to ld.so.conf
     echo "{micromamba.root_prefix}/lib" > /etc/ld.so.conf.d/conda.conf
@@ -105,7 +103,7 @@ def _run_setup_for_activation_script(
             print(install_activation_script, file=f)
         err_msg = cleandoc(f"""
             Failed while installing conda activation script
-            at {activation_script_path}:
+            at {_ACTIVATION_SCRIPT_PATH}:
             {install_activation_script}
             """)
         cmd = CommandExecInfo(
@@ -118,5 +116,5 @@ def install_micromamba(phase: Phase, ctx: Context):
     if phase.tools and phase.tools.micromamba:
         micromamba = phase.tools.micromamba
         _install_micromamba_exec(micromamba, ctx)
-        activation_script_path = _install_activation_script(micromamba, ctx)
-        _run_setup_for_activation_script(micromamba, activation_script_path, ctx)
+        _install_activation_script(micromamba, ctx)
+        _run_setup_for_activation_script(micromamba, ctx)
