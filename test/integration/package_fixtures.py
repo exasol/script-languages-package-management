@@ -206,6 +206,58 @@ def apt_pkg_file_no_doc(
     )
 
 
+@pytest.fixture
+def apt_pkg_file_with_doc_default(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    """Package file fixture without no_doc option (defaults to True, excludes docs)."""
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["wget"],
+                            ],
+                            # no_doc not specified - defaults to True, excludes docs
+                        ),
+                    )
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def apt_pkg_file_with_doc_false(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    """Package file fixture with no_doc=False (includes docs)."""
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["binutils"],
+                            ],
+                            no_doc=False,
+                        ),
+                    )
+                ],
+            ),
+        ]
+    )
+
+
 @pytest.fixture(
     params=["23.1", "25.3"],
     ids=["old", "new"],
