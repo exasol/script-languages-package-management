@@ -63,6 +63,7 @@ def test_export_variables_file(
     assert out_lines == [
         'export EXASLPM_TOOLS_MICROMAMBA_VERSION="2.5.0-1"',
         'export EXASLPM_TOOLS_MICROMAMBA_ROOT_PREFIX="/opt/conda"',
+        'export EXASLPM_TOOLS_MICROMAMBA_ENV_NAME="base"',
         prepare_variables.java_home,
         'export PROTOBUF_DIR="/opt/protobuf"',
     ]

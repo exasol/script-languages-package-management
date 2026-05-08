@@ -58,7 +58,9 @@ def test_install_conda_packages(
     pkgs_after_install = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_after_install == ContainsCondaPackages(expected_packages)
 
-    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell("bazel --help")
+    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell(
+        ["bazel", "--help"]
+    )
     assert bazel_version_cmd_exit_code == 0
 
 

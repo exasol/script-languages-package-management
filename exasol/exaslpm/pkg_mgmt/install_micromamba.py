@@ -49,7 +49,7 @@ def _install_micromamba_exec(micromamba: Micromamba, ctx: Context):
     run_cmd(create_env_cmd, ctx)
 
 
-def _install_activation_script(micromamba: Micromamba, ctx: Context):
+def _install_activation_script(micromamba: Micromamba, ctx: Context) -> Path:
     activation_script = cleandoc(f"""
         # shellcheck disable=SC2148
         
@@ -64,12 +64,12 @@ def _install_activation_script(micromamba: Micromamba, ctx: Context):
         fi
         
         # Initialize the current shell
-        eval "$("{_MICROMAMBA_EXE}" shell hook --shell=bash)"
+        eval "$("{_MICROMAMBA_EXE}" shell hook --shell=bash)" 2>/dev/null 1>2
         
         # For robustness, try all possible activate commands.
-        conda activate "{micromamba.env_name}" 2>/dev/null \
-          || mamba activate "{micromamba.env_name}" 2>/dev/null \
-          || micromamba activate "{micromamba.env_name}"
+        conda activate "{micromamba.env_name}" 2>/dev/null 1>2 \
+          || mamba activate "{micromamba.env_name}" 2>/dev/null 1>2 \
+          || micromamba activate "{micromamba.env_name}" 2>/dev/null 1>2
     """)
     activation_script_path = Path("/usr") / "local" / "bin" / "_activate_current_env.sh"
     with ctx.temp_file_provider.create() as activation_script_temp_file:
@@ -78,7 +78,12 @@ def _install_activation_script(micromamba: Micromamba, ctx: Context):
         ctx.file_access.copy_file(
             activation_script_temp_file.path, activation_script_path
         )
+    return activation_script_path
 
+
+def _run_setup_for_activation_script(
+    micromamba: Micromamba, activation_script_path: Path, ctx: Context
+):
     install_activation_script = cleandoc(f"""
     #!/bin/bash
 
@@ -113,4 +118,5 @@ def install_micromamba(phase: Phase, ctx: Context):
     if phase.tools and phase.tools.micromamba:
         micromamba = phase.tools.micromamba
         _install_micromamba_exec(micromamba, ctx)
-        _install_activation_script(micromamba, ctx)
+        activation_script_path = _install_activation_script(micromamba, ctx)
+        _run_setup_for_activation_script(micromamba, activation_script_path, ctx)

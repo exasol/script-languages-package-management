@@ -1,5 +1,6 @@
 import io
 import json
+import shlex
 import tarfile
 from os import PathLike
 from pathlib import Path
@@ -96,36 +97,23 @@ class DockerTestContainer:
 
     def run_in_login_shell(
         self,
-        cmd: str,
+        cmd: list[str],
         check_exit_code: bool = True,
     ) -> tuple[int, str]:
         return self.run(
-            ["bash", "-l", "-c", cmd],
+            ["bash", "-l", "-c", shlex.join(cmd)],
             check_exit_code=check_exit_code,
         )
 
     def list_conda_packages(self, binary: Path) -> list[CondaPackage]:
-        # Need to add a custom marker string to output (_BEGIN_MARKER) as .bash_rc might produce more output to stdout
-        # which pollutes the JSON output from micromamba list --json
-        # => Then we need to cut off everything before the marker.
-        _BEGIN_MARKER = "<begin_marker>"
         _, out = self.run_in_login_shell(
-            " ".join(
-                [
-                    "echo",
-                    f"'{_BEGIN_MARKER}'",
-                    "&&",
-                    str(binary),
-                    "list",
-                    "--json",
-                ]
-            )
+            [
+                str(binary),
+                "list",
+                "--json",
+            ]
         )
-
-        json_begin_marker_idx = out.find(_BEGIN_MARKER)
-        assert json_begin_marker_idx != -1, "Failed to find '<begin_marker>'"
-        json_begin_idx = json_begin_marker_idx + len(_BEGIN_MARKER)
-        json_data = out[json_begin_idx:].strip()
+        json_data = out.strip()
         packages = json.loads(json_data)
         return [
             CondaPackage(
