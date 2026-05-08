@@ -21,7 +21,7 @@ jobs:
       contents: read
 
   build:
-    name: Build Docker Images (BaseImage-${{matrix.base_img}}-Runner-${{matrix.runner}}-TargetTag-${{matrix.target_tag}})
+    name: Build Docker Images (BaseImage-${{matrix.base_img}}-Runner-${{matrix.runner}}-TargetTag-${{matrix.complete_docker_tag}})
     needs:
       - build-matrix-docker-image-config
     runs-on: ${{ matrix.runner }}

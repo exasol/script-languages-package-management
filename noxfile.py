@@ -162,12 +162,13 @@ def docker_image_config(_):
     and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
     Thus, there will be one configuration per supported ubuntu version and supported platform.
     """
+    runner_ubuntu = min(PROJECT_CONFIG.supported_ubuntu_versions)
 
     def _build_docker_build_image_config(
         runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
     ):
         return {
-            "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
+            "runner": f"ubuntu-{runner_ubuntu}{runner_suffix}",
             "base_img": f"ubuntu:{ubuntu_version}",
             "complete_docker_tag": _build_docker_img_tag(
                 ubuntu_version, docker_tag_suffix
@@ -183,6 +184,7 @@ def docker_image_config(_):
         for platform in PROJECT_CONFIG.supported_platforms
         for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
     ]
+
     print(json.dumps({"include": docker_image_config}))
 
 
