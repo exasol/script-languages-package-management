@@ -180,6 +180,32 @@ def apt_pkg_file_wildcard(
     )
 
 
+@pytest.fixture
+def apt_pkg_file_no_doc(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    """Package file fixture for testing no_doc option."""
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["curl"],
+                            ],
+                            no_doc=True,
+                        ),
+                    )
+                ],
+            ),
+        ]
+    )
+
+
 @pytest.fixture(
     params=["23.1", "25.3"],
     ids=["old", "new"],

@@ -11,3 +11,8 @@ This release fixes a bug where apt packages are installed without updating the a
 ## Refactoring
 
  - #115: Updated the PTB and workflow
+
+
+## Feature
+
+ - #130: Option to not include documentation while installing apt packages

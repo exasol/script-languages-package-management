@@ -174,3 +174,30 @@ def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_e
         install_apt_packages(apt_packages, context)
 
     context.cmd_logger.err.assert_any_call(expected_error)
+
+
+def test_install_apt_with_no_doc(context_mock):
+    pkgs = [
+        AptPackage(name="curl", version="7.68.0"),
+        AptPackage(name="requests", version="2.25.1"),
+    ]
+    apt_packages = AptPackages(packages=pkgs, no_doc=True)
+    install_apt_packages(apt_packages, context_mock)
+
+    # Verify that the install command includes doc exclusion options
+    install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
+    install_cmd = install_call[1][0]  # Extract the command from call args
+
+    # Check that the command contains the exclude options
+    assert "-o" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/doc/*" in install_cmd
+    assert "Dpkg::Options::=--path-include=/usr/share/doc/*/copyright" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/man/*" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/groff/*" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/info/*" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/lintian/*" in install_cmd
+    assert "Dpkg::Options::=--path-exclude=/usr/share/linda/*" in install_cmd
+
+    # Verify the packages are still at the end
+    assert "curl=7.68.0" in install_cmd
+    assert "requests=2.25.1" in install_cmd

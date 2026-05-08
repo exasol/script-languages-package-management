@@ -82,10 +82,41 @@ def load_config_and_err() -> CommandExecInfo:
     )
 
 
-def install_cmd_and_err(all_pkgs: list[AptPackage], ctx: Context) -> CommandExecInfo:
+def exclude_doc_options() -> list[str]:
+    """
+    To reduce the image size, we can exclude the docs
+    Returns apt-get dpkg options to exclude doc
+    Keeps copyright files
+    """
+    options = [
+        # Do not change the order of these options
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/doc/*",
+        "-o",
+        "Dpkg::Options::=--path-include=/usr/share/doc/*/copyright",
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/man/*",
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/groff/*",
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/info/*",
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/lintian/*",
+        "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/linda/*",
+    ]
+    return options
+
+
+def install_cmd_and_err(
+    all_pkgs: list[AptPackage], ctx: Context, no_doc: bool = False
+) -> CommandExecInfo:
     if all_pkgs is None:
         raise ValueError("no apt packages defined")
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
+
+    if no_doc:
+        install_cmd.extend(exclude_doc_options())
 
     wildcard_pkgs = [
         pkg for pkg in all_pkgs if pkg and pkg.version and "*" in pkg.version
@@ -109,7 +140,7 @@ def install_apt_packages(apt_packages: AptPackages, ctx: Context) -> int:
 
     run_cmd(update_cmd_and_err(), ctx)
 
-    run_cmd(install_cmd_and_err(apt_packages.packages, ctx), ctx)
+    run_cmd(install_cmd_and_err(apt_packages.packages, ctx, apt_packages.no_doc), ctx)
 
     run_cmd(clean_cmd_and_err(), ctx)
 
