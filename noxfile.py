@@ -67,7 +67,7 @@ def _build_binary_build_image(session: nox.Session):
             FROM {_BUILD_CONTAINER_IMAGE}
             RUN dnf install -y -q epel-release && dnf install -y -q python3.12 python3.12-devel
             RUN python3.12 -m ensurepip --upgrade
-            RUN python3.12 -m pip install --no-cache-dir nox pyinstaller 'exasol-toolbox>=7.0.0,<8' docker
+            RUN python3.12 -m pip install --no-cache-dir poetry
         """)
         (Path(tmp_dir) / "Dockerfile").write_text(dockerfile_content)
         session.run("docker", "build", "-t", _BUILD_IMAGE_TAG, str(tmp_dir), external=True)
@@ -84,11 +84,16 @@ def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session)
     ).returncode != 0:
         _build_binary_build_image(session)
 
-    pip_cmd = "python3.12 -m pip install --no-cache-dir ."
-    cleanup_flag = "--cleanup" if clean_up else ""
-    nox_cmd = (
-        f"PYTHONPATH=/project /usr/local/bin/nox -s build-standalone-binary "
-        f"-- --executable-name {exe_name} {cleanup_flag}"
+    script_relative = (PROJECT_CONFIG.source_code_path / "main.py").relative_to(PROJECT_CONFIG.root_path)
+    script_path = f"/project/{script_relative}"
+    install_cmd = "poetry install"
+    pyinstaller_cmd = (
+        f"poetry run python -m PyInstaller {script_path} "
+        f"--onefile --name {exe_name}"
+    )
+    cleanup_cmd = (
+        f"rm -f {exe_name}.spec; rm -rf build/{exe_name}; true"
+        if clean_up else "true"
     )
     uid_gid = f"{os.getuid()}:{os.getgid()}"
     chown_cmd = (
@@ -112,7 +117,7 @@ def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session)
         _BUILD_IMAGE_TAG,
         "sh",
         "-c",
-        f"{pip_cmd} && {nox_cmd} && {chown_cmd}",
+        f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}",
         external=True,
     )
 
