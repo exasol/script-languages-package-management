@@ -41,8 +41,11 @@ jobs:
           python-version: "3.10"
           poetry-version: "2.3.0"
 
+      - name: Build binary build image
+        run: poetry run -- nox -s build-binary-build-image
+
       - name: Build standalone executable
-        run: poetry run -- nox -s build-standalone-binary -- --executable-name "$BINARY_NAME"
+        run: poetry run -- nox -s build-binary-manylinux -- --executable-name "$BINARY_NAME"
 
       - name: Check binary
         run: |
