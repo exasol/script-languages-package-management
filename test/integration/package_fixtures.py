@@ -181,7 +181,7 @@ def apt_pkg_file_wildcard(
 
 
 @pytest.fixture
-def apt_pkg_file_no_doc(
+def apt_pkg_file_no_doc_true(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
     """Package file fixture for testing no_doc option."""
@@ -207,7 +207,7 @@ def apt_pkg_file_no_doc(
 
 
 @pytest.fixture
-def apt_pkg_file_with_doc_default(
+def apt_pkg_file_with_no_doc_default(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
     """Package file fixture without no_doc option (defaults to True, excludes docs)."""
@@ -221,7 +221,7 @@ def apt_pkg_file_with_doc_default(
                         apt=AptPackages(
                             packages=[
                                 apt_package_with_version["locales"],
-                                apt_package_with_version["wget"],
+                                apt_package_with_version["curl"],
                             ],
                             # no_doc not specified - defaults to True, excludes docs
                         ),
@@ -233,7 +233,7 @@ def apt_pkg_file_with_doc_default(
 
 
 @pytest.fixture
-def apt_pkg_file_with_doc_false(
+def apt_pkg_file_with_no_doc_false(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
     """Package file fixture with no_doc=False (includes docs)."""

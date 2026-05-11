@@ -1,6 +1,8 @@
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_utils import ContainsPackages
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
@@ -35,14 +37,19 @@ def test_apt_install(
     assert return_code_counter.result == 7
 
 
-def test_install_apt_no_doc_to_true(
+@pytest.mark.parametrize(
+    "no_doc_pkg_file", ["apt_pkg_file_no_doc_true", "apt_pkg_file_with_no_doc_default"]
+)
+def test_install_apt_no_doc(
     docker_container,
-    apt_pkg_file_no_doc,
+    no_doc_pkg_file,
     local_package_path,
     docker_executor_context,
+    request,
 ):
-    """Test: no_doc is True, hence documentation is excluded."""
-    apt_package_file_yaml = to_yaml_str(apt_pkg_file_no_doc)
+    """Test: When no_doc is True or not specified, documentation is excluded."""
+    no_doc_pkg_file = request.getfixturevalue(no_doc_pkg_file)
+    apt_package_file_yaml = to_yaml_str(no_doc_pkg_file)
     local_package_path.write_text(apt_package_file_yaml)
 
     package_install(
@@ -52,7 +59,7 @@ def test_install_apt_no_doc_to_true(
     )
 
     # curl, locales shall not have documentation
-    packages_to_check = ["curl", "locale"]
+    packages_to_check = ["locales", "curl"]
     excluded_paths = [
         "/usr/share/man",
         "/usr/share/info",
@@ -89,12 +96,12 @@ def test_install_apt_no_doc_to_true(
 
 def test_install_apt_no_doc_to_false(
     docker_container,
-    apt_pkg_file_with_doc_false,
+    apt_pkg_file_with_no_doc_false,
     local_package_path,
     docker_executor_context,
 ):
     """Test: no_doc is explicitly False, documentation IS installed."""
-    apt_package_file_yaml = to_yaml_str(apt_pkg_file_with_doc_false)
+    apt_package_file_yaml = to_yaml_str(apt_pkg_file_with_no_doc_false)
     local_package_path.write_text(apt_package_file_yaml)
 
     package_install(
@@ -115,33 +122,3 @@ def test_install_apt_no_doc_to_false(
     assert (
         output.strip() != ""
     ), "Expected binutils documentation files (other than copyright) in /usr/share/doc when no_doc=False"
-
-
-def test_install_apt_without_no_doc(
-    docker_container,
-    apt_pkg_file_with_doc_default,
-    local_package_path,
-    docker_executor_context,
-):
-    """Test: no_doc is not specified, hence doc is not included"""
-    apt_package_file_yaml = to_yaml_str(apt_pkg_file_with_doc_default)
-    local_package_path.write_text(apt_package_file_yaml)
-
-    package_install(
-        package_file=local_package_path,
-        build_step_name="build_step_1",
-        context=docker_executor_context,
-    )
-
-    # Check doc NOT installed
-    _, output = docker_container.run(
-        [
-            "sh",
-            "-c",
-            "find /usr/share/man -type f -name '*wget*' 2>/dev/null || true",
-        ],
-        check_exit_code=False,
-    )
-    assert (
-        output.strip() == ""
-    ), f"Expected no wget documentation in /usr/share/man, but found: {output.strip()}"

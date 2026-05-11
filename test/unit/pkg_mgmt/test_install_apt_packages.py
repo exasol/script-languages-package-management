@@ -39,20 +39,7 @@ def test_install_apt_packages(context_mock):
                 "-V",
                 "-y",
                 "--no-install-recommends",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/doc/*",
-                "-o",
-                "Dpkg::Options::=--path-include=/usr/share/doc/*/copyright",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/man/*",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/groff/*",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/info/*",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/lintian/*",
-                "-o",
-                "Dpkg::Options::=--path-exclude=/usr/share/linda/*",
+                *exclude_doc_options(),
                 "curl=7.68.0",
                 "requests=2.25.1",
             ],
@@ -204,13 +191,17 @@ def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_e
     context.cmd_logger.err.assert_any_call(expected_error)
 
 
-def test_install_apt_no_doc_to_true(context_mock):
-    """Test: no_doc is True, hence exclude options shall be there."""
+@pytest.mark.parametrize("no_doc_option", ["set_to_true", "no_mention"])
+def test_install_apt_no_doc(context_mock, no_doc_option):
+    """Test: When no_doc is True or not specified, documentation is excluded."""
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
         AptPackage(name="requests", version="2.25.1"),
     ]
-    apt_packages = AptPackages(packages=pkgs, no_doc=True)
+    if no_doc_option == "set_to_true":
+        apt_packages = AptPackages(packages=pkgs, no_doc=True)
+    else:
+        apt_packages = AptPackages(packages=pkgs)
     install_apt_packages(apt_packages, context_mock)
 
     install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
@@ -246,27 +237,6 @@ def test_install_apt_no_doc_to_false(context_mock):
     # Options to exclude docs should NOT be present
     assert "Dpkg::Options::=--path-exclude=/usr/share/doc/*" not in install_cmd
     assert "Dpkg::Options::=--path-exclude=/usr/share/man/*" not in install_cmd
-
-    # Packages shall still be installed
-    assert "curl=7.68.0" in install_cmd
-    assert "requests=2.25.1" in install_cmd
-
-
-def test_install_apt_without_no_doc(context_mock):
-    """Test: no_doc is not specified, hence exclude options shall be there."""
-    pkgs = [
-        AptPackage(name="curl", version="7.68.0"),
-        AptPackage(name="requests", version="2.25.1"),
-    ]
-    apt_packages = AptPackages(packages=pkgs)  # no_doc not specified, defaults to True
-    install_apt_packages(apt_packages, context_mock)
-
-    install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
-    install_cmd = install_call[1][0]
-
-    # Check if options are not included
-    assert "Dpkg::Options::=--path-exclude=/usr/share/doc/*" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/man/*" in install_cmd
 
     # Packages shall still be installed
     assert "curl=7.68.0" in install_cmd
