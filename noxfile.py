@@ -70,7 +70,9 @@ def _build_binary_build_image(session: nox.Session):
             RUN python3.12 -m pip install --no-cache-dir poetry
         """)
         (Path(tmp_dir) / "Dockerfile").write_text(dockerfile_content)
-        session.run("docker", "build", "-t", _BUILD_IMAGE_TAG, str(tmp_dir), external=True)
+        session.run(
+            "docker", "build", "-t", _BUILD_IMAGE_TAG, str(tmp_dir), external=True
+        )
 
 
 @nox.session(name="build-binary-build-image", python=False)
@@ -79,12 +81,17 @@ def build_binary_build_image(session: nox.Session):
 
 
 def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session):
-    if subprocess.run(
-        ["docker", "image", "inspect", _BUILD_IMAGE_TAG], capture_output=True
-    ).returncode != 0:
+    if (
+        subprocess.run(
+            ["docker", "image", "inspect", _BUILD_IMAGE_TAG], capture_output=True
+        ).returncode
+        != 0
+    ):
         _build_binary_build_image(session)
 
-    script_relative = (PROJECT_CONFIG.source_code_path / "main.py").relative_to(PROJECT_CONFIG.root_path)
+    script_relative = (PROJECT_CONFIG.source_code_path / "main.py").relative_to(
+        PROJECT_CONFIG.root_path
+    )
     script_path = f"/project/{script_relative}"
     install_cmd = "poetry install"
     pyinstaller_cmd = (
@@ -92,8 +99,7 @@ def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session)
         f"--onefile --name {exe_name}"
     )
     cleanup_cmd = (
-        f"rm -f {exe_name}.spec; rm -rf build/{exe_name}; true"
-        if clean_up else "true"
+        f"rm -f {exe_name}.spec; rm -rf build/{exe_name}; true" if clean_up else "true"
     )
     uid_gid = f"{os.getuid()}:{os.getgid()}"
     chown_cmd = (
