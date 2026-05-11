@@ -53,7 +53,7 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-binary-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-slow
+          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-binary-slow
           path: .coverage
           include-hidden-files: true
 
@@ -90,6 +90,6 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-package-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-slow
+          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-package-slow
           path: .coverage
           include-hidden-files: true
