@@ -180,11 +180,26 @@ def apt_pkg_file_wildcard(
     )
 
 
-@pytest.fixture
-def apt_pkg_file_no_doc_true(
+def _create_apt_pkg_file_with_no_doc_option(
     apt_package_with_version: dict[str, AptPackage],
+    package_keys: list[str],
+    no_doc: bool | None = None,
 ) -> PackageFile:
-    """Package file fixture for testing no_doc option."""
+    """
+    Helper function to create PackageFile with AptPackages and no_doc.
+
+    Args:
+        apt_package_with_version: apt packages
+        package_keys: Packages as keys
+        no_doc: True or False. If None, no_doc wont be specified
+    """
+    packages = [apt_package_with_version[key] for key in package_keys]
+    
+    # Build kwargs conditionally
+    apt_kwargs = {"packages": packages}
+    if no_doc is not None:
+        apt_kwargs["no_doc"] = no_doc
+    
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -192,13 +207,7 @@ def apt_pkg_file_no_doc_true(
                 phases=[
                     Phase(
                         name="phase_1",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                                apt_package_with_version["curl"],
-                            ],
-                            no_doc=True,
-                        ),
+                        apt=AptPackages(**apt_kwargs),
                     )
                 ],
             ),
@@ -207,28 +216,22 @@ def apt_pkg_file_no_doc_true(
 
 
 @pytest.fixture
+def apt_pkg_file_no_doc_true(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    """Set no_doc=True."""
+    return _create_apt_pkg_file_with_no_doc_option(
+        apt_package_with_version, ["locales", "curl"], no_doc=True
+    )
+
+
+@pytest.fixture
 def apt_pkg_file_with_no_doc_default(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
-    """Package file fixture without no_doc option (defaults to True, excludes docs)."""
-    return PackageFile(
-        build_steps=[
-            BuildStep(
-                name="build_step_1",
-                phases=[
-                    Phase(
-                        name="phase_1",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                                apt_package_with_version["curl"],
-                            ],
-                            # no_doc not specified - defaults to True, excludes docs
-                        ),
-                    )
-                ],
-            ),
-        ]
+    """Dont mention no_doc (defaults to True and excludes docs)."""
+    return _create_apt_pkg_file_with_no_doc_option(
+        apt_package_with_version, ["locales", "curl"], no_doc=None
     )
 
 
@@ -237,24 +240,8 @@ def apt_pkg_file_with_no_doc_false(
     apt_package_with_version: dict[str, AptPackage],
 ) -> PackageFile:
     """Package file fixture with no_doc=False (includes docs)."""
-    return PackageFile(
-        build_steps=[
-            BuildStep(
-                name="build_step_1",
-                phases=[
-                    Phase(
-                        name="phase_1",
-                        apt=AptPackages(
-                            packages=[
-                                apt_package_with_version["locales"],
-                                apt_package_with_version["binutils"],
-                            ],
-                            no_doc=False,
-                        ),
-                    )
-                ],
-            ),
-        ]
+    return _create_apt_pkg_file_with_no_doc_option(
+        apt_package_with_version, ["locales", "binutils"], no_doc=False
     )
 
 
