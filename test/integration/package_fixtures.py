@@ -194,12 +194,12 @@ def _create_apt_pkg_file_with_no_doc_option(
         no_doc: True or False. If None, no_doc wont be specified
     """
     packages = [apt_package_with_version[key] for key in package_keys]
-    
+
     # Build kwargs conditionally
     apt_kwargs = {"packages": packages}
     if no_doc is not None:
         apt_kwargs["no_doc"] = no_doc
-    
+
     return PackageFile(
         build_steps=[
             BuildStep(
