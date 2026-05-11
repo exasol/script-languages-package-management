@@ -17,22 +17,18 @@ from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
 
 def assert_packages_installed(
-    docker_container: DockerTestContainer, conda: CondaPackages, micromamba: Micromamba
+    docker_container: DockerTestContainer, conda: CondaPackages
 ) -> None:
     expected_packages = conda.packages
-    pkgs_in_container = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, micromamba
-    )
+    pkgs_in_container = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_in_container == ContainsCondaPackages(expected_packages)
 
 
 def assert_packages_not_installed(
-    docker_container: DockerTestContainer, conda: CondaPackages, micromamba: Micromamba
+    docker_container: DockerTestContainer, conda: CondaPackages
 ) -> None:
     expected_packages = conda.packages
-    pkgs_in_container = docker_container.list_conda_packages(
-        MICROMAMBA_PATH, micromamba
-    )
+    pkgs_in_container = docker_container.list_conda_packages(MICROMAMBA_PATH)
     assert pkgs_in_container != ContainsCondaPackages(expected_packages)
 
 
@@ -71,9 +67,7 @@ def test_install_conda_packages(
 
     expected_packages = conda_packages_file_content.build_steps[0].phases[4].conda
 
-    assert_packages_not_installed(
-        docker_container, expected_packages, prepare_micromamba_env
-    )
+    assert_packages_not_installed(docker_container, expected_packages)
 
     package_install(
         package_file=local_package_path,
@@ -81,9 +75,12 @@ def test_install_conda_packages(
         context=docker_executor_context,
     )
 
-    assert_packages_installed(
-        docker_container, expected_packages, prepare_micromamba_env
+    assert_packages_installed(docker_container, expected_packages)
+
+    bazel_version_cmd_exit_code, _ = docker_container.run_in_login_shell(
+        ["bazel", "--help"]
     )
+    assert bazel_version_cmd_exit_code == 0
 
 
 def test_install_conda_packages_prints_requirements_file_if_exception(

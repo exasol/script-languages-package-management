@@ -1,4 +1,7 @@
-from pathlib import Path
+from pathlib import (
+    Path,
+    PosixPath,
+)
 from test.unit.pkg_mgmt.utils import _named_params
 from unittest.mock import (
     call,
@@ -102,11 +105,26 @@ def test_install_micromamba(
         ),
         call.execute().print_results(),
         call.execute().return_code(),
+        call.execute(["bash", "path/to/temp/file"], env=None),
+        call.execute().print_results(),
+        call.execute().return_code(),
     ]
 
     assert context_mock.file_downloader.mock.mock_calls == [
         call(
             url="https://github.com/mamba-org/micromamba-releases/releases/download/2.5.0/micromamba-linux-64.tar.bz2",
             timeout_in_seconds=120,
+        )
+    ]
+
+    # Check 1 line of both temporary files
+    assert "# Initialize the current shell" in context_mock.temp_file_provider.result
+    assert (
+        "# Activate micromamba for the bash" in context_mock.temp_file_provider.result
+    )
+    assert context_mock.file_access.mock_calls == [
+        call.copy_file(
+            PosixPath("path/to/temp/file"),
+            PosixPath("/usr/local/bin/_activate_current_env.sh"),
         )
     ]

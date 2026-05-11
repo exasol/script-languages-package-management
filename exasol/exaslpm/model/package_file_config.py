@@ -233,6 +233,7 @@ class Pip(BaseModel):
 class Micromamba(BaseModel):
     version: str
     root_prefix: Path = Path("/opt/conda/")
+    env_name: str = "base"
     comment: None | str = None
 
 
