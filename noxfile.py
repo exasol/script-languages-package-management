@@ -240,7 +240,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         tmp_path = Path(tmp_dir)
         binary_name = f"exaslpm_linux_{current_platform.docker_tag_suffix}"
         url = f"https://github.com/exasol/script-languages-package-management/releases/download/{latest_release}/{binary_name}"
-        #Read the binary all at once. Size is ~25MB, which is not an issue.
+        # Read the binary all at once. Size is ~25MB, which is not an issue.
         response = requests.get(url)
         response.raise_for_status()
 
