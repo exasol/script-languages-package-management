@@ -21,7 +21,7 @@ jobs:
       contents: read
 
   build:
-    name: Build Docker Images (BaseImage-${{matrix.base_img}}-Runner-${{matrix.runner}}-TargetTag-${{matrix.target_tag}})
+    name: Build Docker Images (BaseImage-${{matrix.base_img}}-Runner-${{matrix.runner}}-TargetTag-${{matrix.complete_docker_tag}})
     needs:
       - build-matrix-docker-image-config
     runs-on: ${{ matrix.runner }}
@@ -35,8 +35,6 @@ jobs:
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
-        with:
-          ref: 'latest'
 
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@v6
@@ -45,7 +43,7 @@ jobs:
           poetry-version: "2.3.0"
 
       - name: Build and Push "${{env.REPO_NAME}}:${{matrix.complete_docker_tag}}"
-        run: poetry run -- nox -s build-docker-image -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
+        run: poetry run -- nox -s build-docker-image-from-latest-gh-release -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
         env:
           DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
@@ -61,8 +59,6 @@ jobs:
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
-        with:
-          ref: 'latest'
 
       - name: Setup Python & Poetry Environment
         uses: exasol/python-toolbox/.github/actions/python-environment@v6

@@ -6,11 +6,13 @@
 
  - #109: Convert conda channels from 'set' to 'list'
  - #86: Deadlock when an exception happens during stout/err
+ - #135: Fixed docker image build nightly job
 
 ## Refactorings
 
  - #101: Added error handling to write temp requirements to logging
  - #100: Exported additional env variable
+ - #81: Changed building docker image to use executable from release  
 
 ## Features:
 

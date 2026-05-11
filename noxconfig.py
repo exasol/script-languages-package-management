@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import Enum
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
@@ -9,6 +10,11 @@ from pydantic import BaseModel
 class PlatformConfig(BaseModel):
     docker_tag_suffix: str
     runner_suffix: str
+
+
+class PlatformConfigs(Enum):
+    X86 = PlatformConfig(docker_tag_suffix="x86_64", runner_suffix="")
+    ARM = PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm")
 
 
 class IntegrationTestConfig(BaseModel):
@@ -27,8 +33,8 @@ class IntegrationTestConfig(BaseModel):
 class Config(BaseConfig):
     supported_ubuntu_versions: list[str] = ["22.04", "24.04", "26.04"]
     supported_platforms: list[PlatformConfig] = [
-        PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm"),
-        PlatformConfig(docker_tag_suffix="x86_64", runner_suffix=""),
+        PlatformConfigs.ARM.value,
+        PlatformConfigs.X86.value,
     ]
     integration_test_config: list[IntegrationTestConfig] = [
         IntegrationTestConfig(

@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import shutil
+import stat
 import subprocess
 from argparse import ArgumentParser
 from importlib.metadata import version
@@ -12,6 +13,7 @@ from tempfile import TemporaryDirectory
 import docker
 import nox
 import PyInstaller.__main__
+import requests
 
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
@@ -20,10 +22,35 @@ from noxconfig import (
     PROJECT_CONFIG,
     IntegrationTestConfig,
     PlatformConfig,
+    PlatformConfigs,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
 nox.options.sessions = ["format:fix"]
+
+
+def _current_platform_cfg(session: nox.Session) -> PlatformConfig:
+    import platform
+
+    supported_platforms = {
+        "x86_64": PlatformConfigs.X86,
+        "amd64": PlatformConfigs.X86,
+        "aarch64": PlatformConfigs.ARM,
+        "arm64": PlatformConfigs.ARM,
+    }
+    machine = platform.machine()
+    session.log(f"Current platform: {machine}")
+    return supported_platforms[machine].value
+
+
+def _get_latest_gh_release(session: nox.Session) -> str:
+    latest_release_url = "https://api.github.com/repos/exasol/script-languages-package-management/releases/latest"
+    response = requests.get(latest_release_url)
+    response.raise_for_status()
+    response_json = response.json()
+    latest_release = response_json["name"]
+    session.log(f"Latest release: {latest_release}")
+    return latest_release
 
 
 def _build_binary(exe_name: str, clean_up, session: nox.Session):
@@ -135,12 +162,13 @@ def docker_image_config(_):
     and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
     Thus, there will be one configuration per supported ubuntu version and supported platform.
     """
+    runner_ubuntu = min(PROJECT_CONFIG.supported_ubuntu_versions)
 
     def _build_docker_build_image_config(
         runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
     ):
         return {
-            "runner": f"ubuntu-{ubuntu_version}{runner_suffix}",
+            "runner": f"ubuntu-{runner_ubuntu}{runner_suffix}",
             "base_img": f"ubuntu:{ubuntu_version}",
             "complete_docker_tag": _build_docker_img_tag(
                 ubuntu_version, docker_tag_suffix
@@ -156,6 +184,7 @@ def docker_image_config(_):
         for platform in PROJECT_CONFIG.supported_platforms
         for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
     ]
+
     print(json.dumps({"include": docker_image_config}))
 
 
@@ -182,8 +211,8 @@ def _get_docker_credentials_from_env() -> tuple[str, str]:
     return os.environ["DOCKER_USERNAME"], os.environ["DOCKER_PASSWORD"]
 
 
-@nox.session(name="build-docker-image", python=False)
-def build_docker_image(session: nox.Session):
+@nox.session(name="build-docker-image-from-latest-gh-release", python=False)
+def build_docker_image_from_latest_gh_release(session: nox.Session):
     """
     Builds a docker image for given Docker repository, docker tag (including the architecture)
     and base image name of the Ubuntu image (e.g. ubuntu:24.04)
@@ -202,12 +231,26 @@ def build_docker_image(session: nox.Session):
     base_img = args.base_img
     complete_docker_tag = args.complete_docker_tag
     repository = args.repository
-    _build_binary("exaslpm", True, session)
 
     docker_client = docker.from_env()
+    current_platform = _current_platform_cfg(session)
+    latest_release = _get_latest_gh_release(session)
+
     with TemporaryDirectory() as tmp_dir:
-        shutil.copy(PROJECT_CONFIG.root_path / "dist" / "exaslpm", str(tmp_dir))
-        dockerfile_path = Path(tmp_dir) / "Dockerfile"
+        tmp_path = Path(tmp_dir)
+        binary_name = f"exaslpm_linux_{current_platform.docker_tag_suffix}"
+        url = f"https://github.com/exasol/script-languages-package-management/releases/download/{latest_release}/{binary_name}"
+        # Read the binary all at once. Size is ~25MB, which is not an issue.
+        response = requests.get(url)
+        response.raise_for_status()
+
+        exaslpm_path = tmp_path / "exaslpm"
+
+        if response.status_code == 200:
+            with open(exaslpm_path, "wb") as f:
+                f.write(response.content)
+        exaslpm_path.chmod(exaslpm_path.stat().st_mode | stat.S_IEXEC)
+        dockerfile_path = tmp_path / "Dockerfile"
 
         dockerfile_content = cleandoc(f"""
         FROM {base_img}
@@ -219,11 +262,6 @@ def build_docker_image(session: nox.Session):
         docker_client.images.build(
             path=str(tmp_dir), tag=f"{repository}:{complete_docker_tag}"
         )
-    docker_user, docker_pwd = _get_docker_credentials_from_env()
-    auth_config = {
-        "username": docker_user,
-        "password": docker_pwd,
-    }
     # Test exaslpm before we push the image to DockerHub
     session.log("Checking exaslpm in new docker image.")
     exaslpm_help_string = session.run(
@@ -243,6 +281,11 @@ def build_docker_image(session: nox.Session):
             f"Running exaslpm using new docker image did not succeed. \noutput:\n'{exaslpm_help_string}'"
         )
     session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
+    docker_user, docker_pwd = _get_docker_credentials_from_env()
+    auth_config = {
+        "username": docker_user,
+        "password": docker_pwd,
+    }
     session.log("Pushing now new image to Docker Hub.")
     _push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
