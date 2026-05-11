@@ -110,15 +110,17 @@ def test_install_apt_no_doc_to_false(
         context=docker_executor_context,
     )
 
-    # Check if documentation for binutils IS installed
-    _, output = docker_container.run(
-        [
-            "sh",
-            "-c",
-            "find /usr/share/doc/binutils* -type f ! -name 'copyright' 2>/dev/null | head -5 || true",
-        ],
-        check_exit_code=False,
-    )
-    assert (
-        output.strip() != ""
-    ), "Expected binutils documentation files (other than copyright) in /usr/share/doc when no_doc=False"
+    # Check if documentation for both locales and binutils IS installed
+    packages_to_check = ["locales", "binutils"]
+    for pkg in packages_to_check:
+        _, output = docker_container.run(
+            [
+                "sh",
+                "-c",
+                f"find /usr/share/doc/{pkg}* -type f ! -name 'copyright' 2>/dev/null | head -5 || true",
+            ],
+            check_exit_code=False,
+        )
+        assert (
+            output.strip() != ""
+        ), f"Expected {pkg} documentation files (other than copyright) in /usr/share/doc when no_doc=False"

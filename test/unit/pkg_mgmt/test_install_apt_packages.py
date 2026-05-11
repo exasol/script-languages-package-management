@@ -194,17 +194,11 @@ def test_install_apt_no_doc(context_mock, no_doc_option):
     install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
     install_cmd = install_call[1][0]  # Extract the command from call args
 
-    # Check that the command contains the exclude options
-    assert "-o" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/doc/*" in install_cmd
-    assert "Dpkg::Options::=--path-include=/usr/share/doc/*/copyright" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/man/*" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/groff/*" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/info/*" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/lintian/*" in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/linda/*" in install_cmd
+    # Check that the command contains all exclude doc options
+    for option in exclude_doc_options():
+        assert option in install_cmd, f"Expected {option} in install command"
 
-    # Verify the packages are still at the end
+    # Packages shall still be installed
     assert "curl=7.68.0" in install_cmd
     assert "requests=2.25.1" in install_cmd
 
@@ -220,10 +214,6 @@ def test_install_apt_no_doc_to_false(context_mock):
 
     install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
     install_cmd = install_call[1][0]
-
-    # Options to exclude docs should NOT be present
-    assert "Dpkg::Options::=--path-exclude=/usr/share/doc/*" not in install_cmd
-    assert "Dpkg::Options::=--path-exclude=/usr/share/man/*" not in install_cmd
 
     # Packages shall still be installed
     assert "curl=7.68.0" in install_cmd
