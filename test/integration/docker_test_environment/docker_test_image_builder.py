@@ -14,7 +14,7 @@ def _build_binary(target_path: Path, target_exec_bin_name: str):
         [
             "nox",
             "-s",
-            "build-binary-manylinux",
+            "build-binary-almalinux",
             "--",
             "--executable-name",
             target_exec_bin_name,

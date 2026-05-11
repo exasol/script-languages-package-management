@@ -80,7 +80,7 @@ def build_binary_build_image(session: nox.Session):
     _build_binary_build_image(session)
 
 
-def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session):
+def _build_binary_almalinux(exe_name: str, clean_up: bool, session: nox.Session):
     if (
         subprocess.run(
             ["docker", "image", "inspect", _BUILD_IMAGE_TAG], capture_output=True
@@ -128,10 +128,10 @@ def _build_binary_manylinux(exe_name: str, clean_up: bool, session: nox.Session)
     )
 
 
-@nox.session(name="build-binary-manylinux", python=False)
-def build_binary_manylinux(session: nox.Session):
+@nox.session(name="build-binary-almalinux", python=False)
+def build_binary_almalinux(session: nox.Session):
     p = ArgumentParser(
-        usage='nox -s build-binary-manylinux -- --executable-name "exaslpm"',
+        usage='nox -s build-binary-almalinux -- --executable-name "exaslpm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--executable-name")
@@ -143,7 +143,7 @@ def build_binary_manylinux(session: nox.Session):
     if not bool(exe_name):
         session.error("PyInstaller needs a valid executable-name")
     else:
-        _build_binary_manylinux(exe_name, cleanup, session)
+        _build_binary_almalinux(exe_name, cleanup, session)
 
 
 @nox.session(name="build-standalone-binary", python=False)

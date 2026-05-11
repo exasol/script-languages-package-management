@@ -45,7 +45,7 @@ jobs:
         run: poetry run -- nox -s build-binary-build-image
 
       - name: Build standalone executable
-        run: poetry run -- nox -s build-binary-manylinux -- --executable-name "$BINARY_NAME"
+        run: poetry run -- nox -s build-binary-almalinux -- --executable-name "$BINARY_NAME"
 
       - name: Check binary
         run: |
