@@ -1,9 +1,9 @@
 from copy import deepcopy
 from pathlib import Path
 
-from exasol.exaslpm.model.serialization import to_yaml_str
-
 import pytest
+
+from exasol.exaslpm.model.serialization import to_yaml_str
 
 pytestmark = pytest.mark.via_binary
 

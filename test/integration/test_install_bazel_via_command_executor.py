@@ -1,9 +1,9 @@
 from test.integration.validate_bazel import validate_bazel
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
-
-import pytest
 
 pytestmark = pytest.mark.via_command_executor
 

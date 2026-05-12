@@ -141,7 +141,11 @@ def _build_binary_in_container(exe_name: str, clean_up: bool, session: nox.Sessi
 
     container = client.containers.run(
         image=_BUILD_IMAGE_TAG,
-        command=["sh", "-c", f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}"],
+        command=[
+            "sh",
+            "-c",
+            f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}",
+        ],
         volumes={str(PROJECT_CONFIG.root_path): {"bind": "/project", "mode": "rw"}},
         working_dir="/project",
         detach=True,

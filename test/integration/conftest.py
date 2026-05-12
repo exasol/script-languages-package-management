@@ -155,6 +155,5 @@ def pytest_collection_finish(session: pytest.Session) -> None:
     if unmarked:
         pytest.fail(
             "The following integration tests are missing a required marker "
-            f"({', '.join(sorted(required_markers))}):\n"
-            + "\n".join(unmarked)
+            f"({', '.join(sorted(required_markers))}):\n" + "\n".join(unmarked)
         )
