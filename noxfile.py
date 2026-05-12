@@ -97,9 +97,11 @@ def _build_binary_build_image(session: nox.Session):
             RUN python3.12 -m pip install --no-cache-dir poetry
         """)
         (Path(tmp_dir) / "Dockerfile").write_text(dockerfile_content)
-        session.run(
-            "docker", "build", "-t", _BUILD_IMAGE_TAG, str(tmp_dir), external=True
-        )
+        client = docker.from_env()
+        _, build_logs = client.images.build(path=str(tmp_dir), tag=_BUILD_IMAGE_TAG)
+        for log in build_logs:
+            if "stream" in log:
+                print(log["stream"], end="", flush=True)
 
 
 @nox.session(name="build-binary-build-image", python=False)
@@ -108,12 +110,10 @@ def build_binary_build_image(session: nox.Session):
 
 
 def _build_binary_in_container(exe_name: str, clean_up: bool, session: nox.Session):
-    if (
-        subprocess.run(
-            ["docker", "image", "inspect", _BUILD_IMAGE_TAG], capture_output=True
-        ).returncode
-        != 0
-    ):
+    client = docker.from_env()
+    try:
+        client.images.get(_BUILD_IMAGE_TAG)
+    except docker.errors.ImageNotFound:
         _build_binary_build_image(session)
 
     script_relative = (PROJECT_CONFIG.source_code_path / "main.py").relative_to(
@@ -139,20 +139,23 @@ def _build_binary_in_container(exe_name: str, clean_up: bool, session: nox.Sessi
     # Pre-create dist/ as the current user so we can move the root-owned binary out after the build.
     (PROJECT_CONFIG.root_path / "dist").mkdir(exist_ok=True)
 
-    session.run(
-        "docker",
-        "run",
-        "--rm",
-        "-v",
-        f"{str(PROJECT_CONFIG.root_path)}:/project",
-        "-w",
-        "/project",
-        _BUILD_IMAGE_TAG,
-        "sh",
-        "-c",
-        f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}",
-        external=True,
+    container = client.containers.run(
+        image=_BUILD_IMAGE_TAG,
+        command=["sh", "-c", f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}"],
+        volumes={str(PROJECT_CONFIG.root_path): {"bind": "/project", "mode": "rw"}},
+        working_dir="/project",
+        detach=True,
+        stdout=True,
+        stderr=True,
     )
+    try:
+        for chunk in container.logs(stream=True, follow=True):
+            print(chunk.decode("utf-8"), end="", flush=True)
+        result = container.wait()
+        if result["StatusCode"] != 0:
+            session.error(f"Build container exited with status {result['StatusCode']}")
+    finally:
+        container.remove(force=True)
 
 
 @nox.session(name="build-binary-in-container", python=False)
