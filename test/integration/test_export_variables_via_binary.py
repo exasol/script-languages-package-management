@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.via_binary
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 
 

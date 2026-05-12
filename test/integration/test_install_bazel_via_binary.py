@@ -3,6 +3,10 @@ from test.integration.validate_bazel import validate_bazel
 
 from exasol.exaslpm.model.serialization import to_yaml_str
 
+import pytest
+
+pytestmark = pytest.mark.via_binary
+
 
 def test_install_bazel(docker_container, bazel_file_content, cli_helper):
     bazel_file_yaml = to_yaml_str(bazel_file_content)

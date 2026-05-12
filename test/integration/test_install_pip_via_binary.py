@@ -3,6 +3,10 @@ from pathlib import Path
 
 from exasol.exaslpm.model.serialization import to_yaml_str
 
+import pytest
+
+pytestmark = pytest.mark.via_binary
+
 
 def test_install_pip(
     docker_container, pip_package_file_content, python_version, cli_helper

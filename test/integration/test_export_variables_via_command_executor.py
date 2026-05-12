@@ -1,5 +1,7 @@
 import pytest
 
+pytestmark = pytest.mark.via_command_executor
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.export_variables import export_variables
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install

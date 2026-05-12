@@ -141,3 +141,20 @@ def docker_executor_context(
         file_downloader=docker_file_downloader,
         temp_file_provider=docker_temp_file_provider,
     )
+
+
+def pytest_collection_finish(session: pytest.Session) -> None:
+    integration_dir = Path(__file__).parent
+    required_markers = {"via_binary", "via_command_executor"}
+    unmarked = [
+        item.nodeid
+        for item in session.items
+        if Path(item.fspath).is_relative_to(integration_dir)
+        and not (required_markers & {m.name for m in item.iter_markers()})
+    ]
+    if unmarked:
+        pytest.fail(
+            "The following integration tests are missing a required marker "
+            f"({', '.join(sorted(required_markers))}):\n"
+            + "\n".join(unmarked)
+        )

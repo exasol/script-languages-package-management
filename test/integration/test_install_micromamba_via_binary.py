@@ -4,6 +4,10 @@ from pathlib import Path
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 
+import pytest
+
+pytestmark = pytest.mark.via_binary
+
 
 def test_install_micromamba(docker_container, micromamba_file_content, cli_helper):
     micromamba_file_yaml = to_yaml_str(micromamba_file_content)

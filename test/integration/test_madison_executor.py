@@ -16,6 +16,10 @@ from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
     MadisonParser,
 )
 
+import pytest
+
+pytestmark = pytest.mark.via_command_executor
+
 
 def _update_apt_metadata(docker_container: DockerTestContainer) -> None:
     docker_container.run(["apt-get", "-y", "update"])

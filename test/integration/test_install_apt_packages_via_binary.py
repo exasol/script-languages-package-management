@@ -12,6 +12,10 @@ from exasol.exaslpm.model.package_file_config import (
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
 
+import pytest
+
+pytestmark = pytest.mark.via_binary
+
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):
     apt_package_file_yaml = to_yaml_str(apt_package_file_content)

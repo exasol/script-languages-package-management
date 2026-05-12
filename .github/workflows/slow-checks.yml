@@ -47,7 +47,7 @@ jobs:
 
       - name: Run Binary Integration Tests
         id: run-binary-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -k "via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "via_binary"
 
       - name: Upload Artifacts
         id: upload-artifacts
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run Package Integration Tests
         id: run-package-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -k "not via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "not via_binary"
 
       - name: Upload Artifacts
         id: upload-artifacts
