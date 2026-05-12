@@ -2,6 +2,8 @@ import shutil
 
 import pytest
 
+pytestmark = pytest.mark.via_command_executor
+
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandExecutor
 from exasol.exaslpm.pkg_mgmt.context.cmd_logger import StdLogger
 

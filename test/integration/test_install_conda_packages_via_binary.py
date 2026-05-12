@@ -3,6 +3,8 @@ from test.integration.package_utils import ContainsCondaPackages
 
 import pytest
 
+pytestmark = pytest.mark.via_binary
+
 from exasol.exaslpm.model.package_file_config import Micromamba
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH

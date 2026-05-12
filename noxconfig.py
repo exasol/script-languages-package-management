@@ -19,14 +19,10 @@ class PlatformConfigs(Enum):
 
 class IntegrationTestConfig(BaseModel):
     """
-    Contains the mapping of GitHub runner Ubuntu version and Ubuntu version used in the target docker image,
-    where the tests actually run.
-    It's a limitation that those tests cannot run on all possible combinations of Ubuntu versions,
-    because `exaslpm` cannot run on an older Ubuntu version, compared to the version on which it was built,
-    (incompatible GLIBC version).
+    Ubuntu version to use for the target docker image in integration tests.
+    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION in noxfile.py.
     """
 
-    runner: str
     ubuntu_base_version_docker_test_image: str
 
 
@@ -37,25 +33,9 @@ class Config(BaseConfig):
         PlatformConfigs.X86.value,
     ]
     integration_test_config: list[IntegrationTestConfig] = [
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="22.04"
-        ),
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="24.04"
-        ),
-        IntegrationTestConfig(
-            runner="24.04", ubuntu_base_version_docker_test_image="24.04"
-        ),
-        IntegrationTestConfig(
-            runner="22.04", ubuntu_base_version_docker_test_image="26.04"
-        ),
-        IntegrationTestConfig(
-            runner="24.04", ubuntu_base_version_docker_test_image="26.04"
-        ),
-        # GitHub does not support Ubuntu 26.04 runners yet - enable when available
-        # IntegrationTestConfig(
-        #     runner="26.04", ubuntu_base_version_docker_test_image="26.04"
-        # ),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="22.04"),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="24.04"),
+        IntegrationTestConfig(ubuntu_base_version_docker_test_image="26.04"),
     ]
 
 

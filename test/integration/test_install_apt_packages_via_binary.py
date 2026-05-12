@@ -4,6 +4,7 @@ from test.integration.docker_test_environment.docker_test_container import (
 )
 from test.integration.package_utils import ContainsPackages
 
+import pytest
 import yaml
 
 from exasol.exaslpm.model.package_file_config import (
@@ -11,6 +12,8 @@ from exasol.exaslpm.model.package_file_config import (
     PackageFile,
 )
 from exasol.exaslpm.model.serialization import to_yaml_str
+
+pytestmark = pytest.mark.via_binary
 
 
 def test_apt_install(docker_container, apt_package_file_content, cli_helper):

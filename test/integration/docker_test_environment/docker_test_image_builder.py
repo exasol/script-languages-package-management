@@ -14,7 +14,7 @@ def _build_binary(target_path: Path, target_exec_bin_name: str):
         [
             "nox",
             "-s",
-            "build-standalone-binary",
+            "build-binary-in-container",
             "--",
             "--executable-name",
             target_exec_bin_name,

@@ -83,6 +83,103 @@ def _build_binary(exe_name: str, clean_up, session: nox.Session):
         os.chdir(old_cwd)
 
 
+_BUILD_CONTAINER_IMAGE = "almalinux:8"
+_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
+_BUILD_IMAGE_TAG = "exaslpm-binary-build:latest"
+
+
+def _build_binary_build_image(session: nox.Session):
+    with TemporaryDirectory() as tmp_dir:
+        dockerfile_content = cleandoc(f"""
+            FROM {_BUILD_CONTAINER_IMAGE}
+            RUN dnf install -y -q epel-release && dnf install -y -q python3.12 python3.12-devel
+            RUN python3.12 -m ensurepip --upgrade
+            RUN python3.12 -m pip install --no-cache-dir poetry
+        """)
+        (Path(tmp_dir) / "Dockerfile").write_text(dockerfile_content)
+        client = docker.from_env()
+        _, build_logs = client.images.build(path=str(tmp_dir), tag=_BUILD_IMAGE_TAG)
+        for log in build_logs:
+            if isinstance(log, dict) and "stream" in log:
+                print(log["stream"], end="", flush=True)
+
+
+@nox.session(name="build-binary-build-image", python=False)
+def build_binary_build_image(session: nox.Session):
+    _build_binary_build_image(session)
+
+
+def _build_binary_in_container(exe_name: str, clean_up: bool, session: nox.Session):
+    client = docker.from_env()
+    try:
+        client.images.get(_BUILD_IMAGE_TAG)
+    except docker.errors.ImageNotFound:
+        _build_binary_build_image(session)
+
+    script_relative = (PROJECT_CONFIG.source_code_path / "main.py").relative_to(
+        PROJECT_CONFIG.root_path
+    )
+    script_path = f"/project/{script_relative}"
+    install_cmd = "poetry install"
+    pyinstaller_cmd = (
+        f"poetry run python -m PyInstaller {script_path} "
+        f"--onefile --name {exe_name}"
+    )
+    cleanup_cmd = (
+        f"rm -f {exe_name}.spec; rm -rf build/{exe_name}; true" if clean_up else "true"
+    )
+    uid_gid = f"{os.getuid()}:{os.getgid()}"
+    chown_cmd = (
+        f"chown {uid_gid} dist/{exe_name}; "
+        f"chown -R {uid_gid} build/{exe_name} 2>/dev/null; "
+        f"chown {uid_gid} {exe_name}.spec 2>/dev/null; "
+        f"true"
+    )
+
+    # Pre-create dist/ as the current user so we can move the root-owned binary out after the build.
+    (PROJECT_CONFIG.root_path / "dist").mkdir(exist_ok=True)
+
+    container = client.containers.run(
+        image=_BUILD_IMAGE_TAG,
+        command=[
+            "sh",
+            "-c",
+            f"{install_cmd} && {pyinstaller_cmd} && {cleanup_cmd} && {chown_cmd}",
+        ],
+        volumes={str(PROJECT_CONFIG.root_path): {"bind": "/project", "mode": "rw"}},
+        working_dir="/project",
+        detach=True,
+        stdout=True,
+        stderr=True,
+    )
+    try:
+        for chunk in container.logs(stream=True, follow=True):
+            print(chunk.decode("utf-8"), end="", flush=True)
+        result = container.wait()
+        if result["StatusCode"] != 0:
+            session.error(f"Build container exited with status {result['StatusCode']}")
+    finally:
+        container.remove(force=True)
+
+
+@nox.session(name="build-binary-in-container", python=False)
+def build_binary_in_container(session: nox.Session):
+    p = ArgumentParser(
+        usage='nox -s build-binary-in-container -- --executable-name "exaslpm"',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument("--executable-name")
+    p.add_argument("--cleanup", action="store_true", help="Remove temporary files")
+    args = p.parse_args(session.posargs)
+    exe_name = args.executable_name
+    cleanup = args.cleanup
+
+    if not bool(exe_name):
+        session.error("PyInstaller needs a valid executable-name")
+    else:
+        _build_binary_in_container(exe_name, cleanup, session)
+
+
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
 
@@ -110,7 +207,7 @@ def matrix_int_test_config(_):
         python_version: str,
     ) -> dict[str, str]:
         return {
-            "runner": f"ubuntu-{int_test_cfg.runner}{platform.runner_suffix}",
+            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
             "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
             "python-version": python_version,
         }
@@ -120,6 +217,19 @@ def matrix_int_test_config(_):
         for platform in PROJECT_CONFIG.supported_platforms
         for int_test_cfg in PROJECT_CONFIG.integration_test_config
         for python_version in PROJECT_CONFIG.python_versions
+    ]
+    print(json.dumps({"include": config}))
+
+
+@nox.session(name="matrix:binary-int-test-config", python=False)
+def matrix_binary_int_test_config(_):
+    config = [
+        {
+            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
+        }
+        for platform in PROJECT_CONFIG.supported_platforms
+        for int_test_cfg in PROJECT_CONFIG.integration_test_config
     ]
     print(json.dumps({"include": config}))
 

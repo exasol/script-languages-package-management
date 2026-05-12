@@ -8,6 +8,8 @@ from test.integration.package_utils import ContainsPipPackages
 
 import pytest
 
+pytestmark = pytest.mark.via_command_executor
+
 from exasol.exaslpm.model.package_file_config import (
     PackageFile,
     PipPackages,

@@ -1,8 +1,12 @@
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
+
+pytestmark = pytest.mark.via_binary
 
 
 def test_install_micromamba(docker_container, micromamba_file_content, cli_helper):

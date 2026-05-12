@@ -45,6 +45,10 @@ build-backend = "poetry.core.masonry.api"
 testpaths = [
     "test"
 ]
+markers = [
+    "via_binary: tests that execute the compiled exaslpm binary",
+    "via_command_executor: tests that use the Python command executor API",
+]
 
 [tool.coverage.run]
 relative_files = true

@@ -1,8 +1,12 @@
 from test.integration.docker_test_environment.test_logger import StringMatchCounter
 from test.integration.package_utils import ContainsPackages
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
+
+pytestmark = pytest.mark.via_command_executor
 
 
 def test_apt_install(

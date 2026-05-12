@@ -3,6 +3,8 @@ from test.integration.package_utils import ContainsPackages
 
 import pytest
 
+pytestmark = pytest.mark.via_binary
+
 from exasol.exaslpm.model.serialization import to_yaml_str
 
 

@@ -4,14 +4,61 @@ on:
   workflow_call:
 
 jobs:
+  build-matrix-binary-int-test-config:
+    name: Generate Build Matrix for binary integration tests
+    uses: ./.github/workflows/matrix-binary-int-test-config.yml
+    permissions:
+      contents: read
+
   build-matrix-int-test-config:
-    name: Generate Build Matrix for integration tests
+    name: Generate Build Matrix for package integration tests
     uses: ./.github/workflows/matrix-int-test-config.yml
     permissions:
       contents: read
 
-  tests:
-    name: Integration-Tests (Python-${{ matrix.python-version }} Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
+  binary-tests:
+    name: Binary-Integration-Tests (Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
+    needs:
+      - build-matrix-binary-int-test-config
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.build-matrix-binary-int-test-config.outputs.matrix) }}
+
+    steps:
+      - name: Check out Repository
+        id: check-out-repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python & Poetry Environment
+        id: set-up-python-and-poetry-environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v7
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Build binary build image
+        id: build-binary-build-image
+        run: poetry run -- nox -s build-binary-build-image
+
+      - name: Run Binary Integration Tests
+        id: run-binary-integration-tests
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "via_binary"
+
+      - name: Upload Artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-binary-slow
+          path: .coverage
+          include-hidden-files: true
+
+  package-tests:
+    name: Package-Integration-Tests (Python-${{ matrix.python-version }} Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
     needs:
       - build-matrix-int-test-config
     runs-on: ${{ matrix.runner }}
@@ -35,14 +82,14 @@ jobs:
           python-version: ${{ matrix.python-version }}
           poetry-version: "2.3.0"
 
-      - name: Run Integration Tests
-        id: run-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}}
+      - name: Run Package Integration Tests
+        id: run-package-integration-tests
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "not via_binary"
 
       - name: Upload Artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-slow
+          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-package-slow
           path: .coverage
           include-hidden-files: true

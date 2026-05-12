@@ -6,6 +6,8 @@ from test.integration.package_utils import ContainsCondaPackages
 
 import pytest
 
+pytestmark = pytest.mark.via_command_executor
+
 from exasol.exaslpm.model.package_file_config import (
     CondaPackages,
     Micromamba,
