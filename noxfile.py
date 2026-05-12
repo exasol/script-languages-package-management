@@ -100,7 +100,7 @@ def _build_binary_build_image(session: nox.Session):
         client = docker.from_env()
         _, build_logs = client.images.build(path=str(tmp_dir), tag=_BUILD_IMAGE_TAG)
         for log in build_logs:
-            if "stream" in log:
+            if isinstance(log, dict) and "stream" in log:
                 print(log["stream"], end="", flush=True)
 
 
