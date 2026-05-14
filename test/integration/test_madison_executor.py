@@ -9,12 +9,16 @@ from test.integration.docker_test_environment.test_logger import (
     TestLogger,
 )
 
+import pytest
+
 from exasol.exaslpm.model.package_file_config import AptPackage
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.search.apt_madison_parser import (
     MadisonExecutor,
     MadisonParser,
 )
+
+pytestmark = pytest.mark.via_command_executor
 
 
 def _update_apt_metadata(docker_container: DockerTestContainer) -> None:

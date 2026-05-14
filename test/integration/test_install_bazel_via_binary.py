@@ -1,7 +1,11 @@
 from pathlib import Path
 from test.integration.validate_bazel import validate_bazel
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
+
+pytestmark = pytest.mark.via_binary
 
 
 def test_install_bazel(docker_container, bazel_file_content, cli_helper):

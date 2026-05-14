@@ -7,6 +7,8 @@ from exasol.exaslpm.model.package_file_config import DocOption
 from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.install_packages import package_install
 
+pytestmark = pytest.mark.via_command_executor
+
 
 def test_apt_install(
     docker_container,

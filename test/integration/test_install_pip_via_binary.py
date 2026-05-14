@@ -1,7 +1,11 @@
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 from exasol.exaslpm.model.serialization import to_yaml_str
+
+pytestmark = pytest.mark.via_binary
 
 
 def test_install_pip(
