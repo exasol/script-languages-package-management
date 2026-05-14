@@ -1,6 +1,7 @@
 from exasol.exaslpm.model.package_file_config import (
     AptPackage,
     AptPackages,
+    DocOption,
 )
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.install_common import (
@@ -109,13 +110,13 @@ def exclude_doc_options() -> list[str]:
 
 
 def install_cmd_and_err(
-    all_pkgs: list[AptPackage], ctx: Context, no_doc: bool = True
+    all_pkgs: list[AptPackage], ctx: Context, doc_option: DocOption = DocOption.MINIMIZE
 ) -> CommandExecInfo:
     if all_pkgs is None:
         raise ValueError("no apt packages defined")
     install_cmd = ["apt-get", "install", "-V", "-y", "--no-install-recommends"]
 
-    if no_doc:
+    if doc_option == DocOption.MINIMIZE:
         install_cmd.extend(exclude_doc_options())
 
     wildcard_pkgs = [
@@ -140,7 +141,9 @@ def install_apt_packages(apt_packages: AptPackages, ctx: Context) -> int:
 
     run_cmd(update_cmd_and_err(), ctx)
 
-    run_cmd(install_cmd_and_err(apt_packages.packages, ctx, apt_packages.no_doc), ctx)
+    run_cmd(
+        install_cmd_and_err(apt_packages.packages, ctx, apt_packages.doc_option), ctx
+    )
 
     run_cmd(clean_cmd_and_err(), ctx)
 

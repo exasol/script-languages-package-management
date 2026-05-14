@@ -178,43 +178,27 @@ def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_e
     context.cmd_logger.err.assert_any_call(expected_error)
 
 
-@pytest.mark.parametrize("no_doc_option", ["set_to_true", "no_mention"])
-def test_install_apt_no_doc(context_mock, no_doc_option):
-    """Test: When no_doc is True or not specified, documentation is excluded."""
+@pytest.mark.parametrize(
+    "doc_option_param", [DocOption.MINIMIZE, DocOption.SYSTEM_DEFAULT]
+)
+def test_install_apt_no_doc(context_mock, doc_option_param):
     pkgs = [
         AptPackage(name="curl", version="7.68.0"),
-        AptPackage(name="requests", version="2.25.1"),
     ]
-    if no_doc_option == "set_to_true":
-        apt_packages = AptPackages(packages=pkgs, no_doc=True)
-    else:
-        apt_packages = AptPackages(packages=pkgs)
-    install_apt_packages(apt_packages, context_mock)
+    apt_packages = AptPackages(packages=pkgs, doc_option=doc_option_param)
 
-    install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
-    install_cmd = install_call[1][0]  # Extract the command from call args
-
-    # Check that the command contains all exclude doc options
-    for option in exclude_doc_options():
-        assert option in install_cmd, f"Expected {option} in install command"
-
-    # Packages shall still be installed
-    assert "curl=7.68.0" in install_cmd
-    assert "requests=2.25.1" in install_cmd
-
-
-def test_install_apt_no_doc_to_false(context_mock):
-    """Test: no_doc is False, exclude options shall not be there."""
-    pkgs = [
-        AptPackage(name="curl", version="7.68.0"),
-        AptPackage(name="requests", version="2.25.1"),
-    ]
-    apt_packages = AptPackages(packages=pkgs, no_doc=False)
     install_apt_packages(apt_packages, context_mock)
 
     install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
     install_cmd = install_call[1][0]
 
+    if doc_option_param == DocOption.MINIMIZE:
+        for option in exclude_doc_options():
+            assert option in install_cmd, f"Expected {option} in install command"
+    if doc_option_param == DocOption.SYSTEM_DEFAULT:
+        assert (
+            "Dpkg::Options::=--path-exclude" not in install_cmd
+        ), "No exclude doc options in install command shall be there"
+
     # Packages shall still be installed
     assert "curl=7.68.0" in install_cmd
-    assert "requests=2.25.1" in install_cmd

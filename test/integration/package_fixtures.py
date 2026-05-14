@@ -180,26 +180,15 @@ def apt_pkg_file_wildcard(
     )
 
 
-def _create_apt_pkg_file_with_no_doc_option(
+@pytest.fixture
+def apt_pkg_file_no_doc(
     apt_package_with_version: dict[str, AptPackage],
-    package_keys: list[str],
-    no_doc: bool | None = None,
 ) -> PackageFile:
     """
-    Helper function to create PackageFile with AptPackages and no_doc.
-
-    Args:
-        apt_package_with_version: apt packages
-        package_keys: Packages as keys
-        no_doc: True or False. If None, no_doc wont be specified
+    Both curl and locales are needed.
+    curl needs locale-gen; hence locales needs to be installed.
+    locales doesn't have man pages; hence curl needs to be installed.
     """
-    packages = [apt_package_with_version[key] for key in package_keys]
-
-    # Build kwargs conditionally
-    apt_kwargs = {"packages": packages}
-    if no_doc is not None:
-        apt_kwargs["no_doc"] = no_doc
-
     return PackageFile(
         build_steps=[
             BuildStep(
@@ -207,41 +196,16 @@ def _create_apt_pkg_file_with_no_doc_option(
                 phases=[
                     Phase(
                         name="phase_1",
-                        apt=AptPackages(**apt_kwargs),
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["curl"],
+                            ],
+                        ),
                     )
                 ],
             ),
         ]
-    )
-
-
-@pytest.fixture
-def apt_pkg_file_no_doc_true(
-    apt_package_with_version: dict[str, AptPackage],
-) -> PackageFile:
-    """Set no_doc=True."""
-    return _create_apt_pkg_file_with_no_doc_option(
-        apt_package_with_version, ["locales", "curl"], no_doc=True
-    )
-
-
-@pytest.fixture
-def apt_pkg_file_with_no_doc_default(
-    apt_package_with_version: dict[str, AptPackage],
-) -> PackageFile:
-    """Dont mention no_doc (defaults to True and excludes docs)."""
-    return _create_apt_pkg_file_with_no_doc_option(
-        apt_package_with_version, ["locales", "curl"], no_doc=None
-    )
-
-
-@pytest.fixture
-def apt_pkg_file_with_no_doc_false(
-    apt_package_with_version: dict[str, AptPackage],
-) -> PackageFile:
-    """Package file fixture with no_doc=False (includes docs)."""
-    return _create_apt_pkg_file_with_no_doc_option(
-        apt_package_with_version, ["locales", "binutils"], no_doc=False
     )
 
 

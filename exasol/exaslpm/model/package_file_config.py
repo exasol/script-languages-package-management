@@ -19,6 +19,13 @@ import exasol.exaslpm.model.package_file_config_validation as package_file_confi
 CURRENT_VERSION = "1.0.0"
 
 
+class DocOption(Enum):
+    """Enum for package documentation handling options."""
+
+    MINIMIZE = 1
+    SYSTEM_DEFAULT = 2
+
+
 class ValidationConfig(BaseModel):
     version_mandatory: bool = True
 
@@ -73,7 +80,7 @@ class AptRepo(BaseModel):
 class AptPackages(BaseModel):
     repos: dict[str, AptRepo] | None = None
     packages: list[AptPackage]
-    no_doc: bool = True
+    doc_option: DocOption = DocOption.MINIMIZE
     comment: None | str = None
 
     @overload
