@@ -120,7 +120,7 @@ def _build_binary_in_container(exe_name: str, clean_up: bool, session: nox.Sessi
         PROJECT_CONFIG.root_path
     )
     script_path = f"/project/{script_relative}"
-    install_cmd = "poetry install"
+    install_cmd = "poetry config virtualenvs.in-project false && poetry install"
     pyinstaller_cmd = (
         f"poetry run python -m PyInstaller {script_path} "
         f"--onefile --name {exe_name}"
