@@ -50,24 +50,31 @@ def test_install_apt_no_doc(
     local_package_path,
     docker_executor_context,
 ):
-    # It is better to purge packages to ensure clean state
-    docker_container.run(
-        ["sh", "-c", "apt-get purge -y locales curl 2>/dev/null"],
-        check_exit_code=False,
-    )
 
     # Better to clear any existing dpkg cfg
     docker_container.run(
         [
             "sh",
             "-c",
-            "rm -f /etc/dpkg/dpkg.cfg.d/excludes /etc/dpkg/dpkg.cfg.d/*excludes*",
+            "rm -f /etc/dpkg/dpkg.cfg.d/*excludes*",
         ],
         check_exit_code=False,
     )
 
-    # "unminimize"; if not, docs wont be installed even with SYSTEM_DEFAULT
+    # Update package cache after clearing dpkg config
+    docker_container.run(
+        ["apt-get", "update", "-y"],
+        check_exit_code=False,
+    )
+
+    # For SYSTEM_DEFAULT, install man-db and unminimize
     if doc_option_param == DocOption.SYSTEM_DEFAULT:
+        # Install man-db and unminimize
+        docker_container.run(
+            ["sh", "-c", "apt-get install -y man-db unminimize"],
+            check_exit_code=False,
+        )
+        # Run unminimize to restore docs. time consuming
         docker_container.run(
             ["sh", "-c", "yes | unminimize"],
             check_exit_code=False,

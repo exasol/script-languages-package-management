@@ -96,6 +96,8 @@ def exclude_doc_options() -> list[str]:
         "-o",
         "Dpkg::Options::=--path-include=/usr/share/doc/*/copyright",
         "-o",
+        "Dpkg::Options::=--path-exclude=/usr/share/doc/*/changelog*",
+        "-o",
         "Dpkg::Options::=--path-exclude=/usr/share/man/*",
         "-o",
         "Dpkg::Options::=--path-exclude=/usr/share/groff/*",

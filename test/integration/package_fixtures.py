@@ -186,7 +186,7 @@ def apt_pkg_file_no_doc(
 ) -> PackageFile:
     """
     Both curl and locales are needed.
-    curl needs locale-gen; hence locales needs to be installed.
+    `exaslpm` calls `locale-gen`; hence locales needs to be installed.
     locales doesn't have man pages; hence curl needs to be installed.
     """
     return PackageFile(
