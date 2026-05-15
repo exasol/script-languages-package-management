@@ -38,12 +38,11 @@ class DockerTestContainer:
     def run_exaslpm(
         self, param_list: list[str], check_exit_code: bool = True
     ) -> tuple[int, str]:
-        exit_code, output = self.container.exec_run(
-            [str(self.exaslpm_info.exaslpm_path_in_container)] + param_list
+        param_list.insert(0, str(self.exaslpm_info.exaslpm_path_in_container))
+        return self.run_in_login_shell(
+            param_list,
+            check_exit_code,
         )
-        if check_exit_code:
-            assert exit_code == 0, output.decode("utf-8")
-        return exit_code, output.decode("utf-8")
 
     def remove(self) -> None:
         self.container.remove(force=True)

@@ -16,4 +16,6 @@
 
 ## Features:
 
- - #102: Provide a custom env_activate script 
+ - #102: Provide a custom env_activate script
+ - #119: Added 'list_all_installed_packages' command
+ - 

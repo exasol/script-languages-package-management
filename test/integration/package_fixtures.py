@@ -46,10 +46,16 @@ APT_PACKAGE_DEFS = {
         "ca-certificates": AptPackage(name="ca-certificates", version="20260223"),
         "build-essential": AptPackage(name="build-essential", version="12.12ubuntu*"),
         "git": AptPackage(name="git", version="1:2.53.0-1ubuntu*"),
+        # No CRAN-maintained R packages have been released for 26.04 yet
         "r-base-core": AptPackage(
             name="r-base-core",
             version="4.5.2-1ubuntu*",
         ),
+        "r-base-core_ubuntu": AptPackage(
+            name="r-base-core",
+            version="4.5.2-1ubuntu*",
+        ),
+        "python3-dev": AptPackage(name="python3-dev", version="3.14.3*"),
     },
     "24.04": {
         "locales": AptPackage(name="locales", version="2.39-0ubuntu*"),
@@ -72,6 +78,11 @@ APT_PACKAGE_DEFS = {
             name="r-base-core",
             version="4.5.2-1.2404.0",
         ),
+        "r-base-core_ubuntu": AptPackage(
+            name="r-base-core",
+            version="4.3.3-2build*",
+        ),
+        "python3-dev": AptPackage(name="python3-dev", version="3.12.3*"),
     },
     "22.04": {
         "locales": AptPackage(name="locales", version="2.35-0ubuntu*"),
@@ -96,6 +107,11 @@ APT_PACKAGE_DEFS = {
             name="r-base-core",
             version="4.5.2-1.2204.0",
         ),
+        "r-base-core_ubuntu": AptPackage(
+            name="r-base-core",
+            version="4.1.2-1ubuntu*",
+        ),
+        "python3-dev": AptPackage(name="python3-dev", version="3.10.6*"),
     },
 }
 
@@ -383,7 +399,7 @@ def conda_packages_file_content() -> PackageFile:
                         conda=CondaPackages(
                             packages=[CondaPackage(name="mamba", version="=2.3.*")],
                             binary=CondaBinary.Micromamba,
-                            channels={"conda-forge"},
+                            channels=["conda-forge"],
                         ),
                     ),
                     Phase(
@@ -437,7 +453,7 @@ def incorrect_conda_packages_file_content() -> PackageFile:
                                 CondaPackage(name="invalid_conda_pkg", version="=2.3.*")
                             ],
                             binary=CondaBinary.Micromamba,
-                            channels={"conda-forge"},
+                            channels=["conda-forge"],
                         ),
                     ),
                 ],
@@ -659,7 +675,7 @@ def cuda_packages_file_content() -> PackageFile:
                         conda=CondaPackages(
                             packages=[CondaPackage(name="mamba", version="=2.3.*")],
                             binary=CondaBinary.Micromamba,
-                            channels={"conda-forge"},
+                            channels=["conda-forge"],
                         ),
                     ),
                     Phase(
@@ -670,7 +686,7 @@ def cuda_packages_file_content() -> PackageFile:
                     Phase(
                         name="phase_3",
                         conda=CondaPackages(
-                            channels={"conda-forge", "nvidia"},
+                            channels=["conda-forge", "nvidia"],
                             packages=[
                                 CondaPackage(name="nss", version="=3.100"),
                                 CondaPackage(name="pyarrow", version="=22.0.0"),
@@ -683,4 +699,69 @@ def cuda_packages_file_content() -> PackageFile:
                 ],
             ),
         ]
+    )
+
+
+@pytest.fixture
+def list_all_installed_packages_file_content(apt_package_with_version) -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="apt_package",
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["python3-dev"],
+                                apt_package_with_version["r-base-core_ubuntu"],
+                                apt_package_with_version["bzip2"],
+                                apt_package_with_version["ca-certificates"],
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="python",
+                        tools=Tools(python_binary_path=Path(f"/usr/bin/python3")),
+                    ),
+                    Phase(
+                        name="pip",
+                        tools=Tools(
+                            pip=Pip(version="26.1.1", needs_break_system_packages=True)
+                        ),
+                    ),
+                    Phase(
+                        name="pip_package",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(name="Jinja2", version=" >=3.1.6, <4.0.0"),
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="rscript",
+                        tools=Tools(r_binary_path=Path("/usr/bin/Rscript")),
+                    ),
+                    Phase(
+                        name="r_package",
+                        r=RPackages(
+                            packages=[RPackage(name="poorman", version="0.2.7")]
+                        ),
+                    ),
+                    Phase(
+                        name="micromamba",
+                        tools=Tools(micromamba=Micromamba(version="2.5.0-1")),
+                    ),
+                    Phase(
+                        name="phase_1",
+                        conda=CondaPackages(
+                            packages=[CondaPackage(name="zstd", version="=1.5.7")],
+                            binary=CondaBinary.Micromamba,
+                            channels=["conda-forge"],
+                        ),
+                    ),
+                ],
+            ),
+        ],
     )

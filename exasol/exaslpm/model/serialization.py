@@ -1,11 +1,12 @@
 import yaml
 
+from exasol.exaslpm.model.installed_packages_config import InstalledPackages
 from exasol.exaslpm.model.package_file_config import PackageFile
 
 
-def to_yaml_str(model: PackageFile) -> str:
+def to_yaml_str(model: PackageFile | InstalledPackages) -> str:
     """
-    Converts the given PackageFile model to a YAML string.
+    Converts the given model to a YAML string.
     Note: Uses (mode="JSON") for correct serialization of `Path` objects.
     """
     d = model.model_dump(mode="json", exclude_none=True)

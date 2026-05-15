@@ -14,11 +14,11 @@ class CommandLogger(Protocol):
 class StdLogger:
     @staticmethod
     def info(msg: str, **kwargs) -> None:
-        StdLogger._log(msg, sys.stdout, **kwargs)
+        StdLogger._log(msg, sys.stderr, **kwargs)
 
     @staticmethod
     def warn(msg: str, **kwargs) -> None:
-        StdLogger._log(msg, sys.stdout, **kwargs)
+        StdLogger._log(msg, sys.stderr, **kwargs)
 
     @staticmethod
     def err(msg: str, **kwargs) -> None:
