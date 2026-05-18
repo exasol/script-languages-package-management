@@ -61,14 +61,13 @@ def test_install_apt_no_doc(
         check_exit_code=False,
     )
 
-    # Update package cache after clearing dpkg config
-    docker_container.run(
-        ["apt-get", "update", "-y"],
-        check_exit_code=False,
-    )
-
     # For SYSTEM_DEFAULT, install man-db and unminimize
     if doc_option_param == DocOption.SYSTEM_DEFAULT:
+        # Update package cache after clearing dpkg config
+        docker_container.run(
+            ["apt-get", "update", "-y"],
+            check_exit_code=False,
+        )
         # Install man-db and unminimize
         docker_container.run(
             ["sh", "-c", "apt-get install -y man-db unminimize"],
