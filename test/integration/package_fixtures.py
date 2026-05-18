@@ -180,6 +180,35 @@ def apt_pkg_file_wildcard(
     )
 
 
+@pytest.fixture
+def apt_pkg_file_no_doc(
+    apt_package_with_version: dict[str, AptPackage],
+) -> PackageFile:
+    """
+    Both curl and locales are needed.
+    `exaslpm` calls `locale-gen`; hence locales needs to be installed.
+    locales doesn't have man pages; hence curl needs to be installed.
+    """
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_1",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        apt=AptPackages(
+                            packages=[
+                                apt_package_with_version["locales"],
+                                apt_package_with_version["curl"],
+                            ],
+                        ),
+                    )
+                ],
+            ),
+        ]
+    )
+
+
 @pytest.fixture(
     params=["23.1", "25.3"],
     ids=["old", "new"],

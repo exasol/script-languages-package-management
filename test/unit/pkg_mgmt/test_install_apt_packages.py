@@ -39,6 +39,7 @@ def test_install_apt_packages(context_mock):
                 "-V",
                 "-y",
                 "--no-install-recommends",
+                *exclude_doc_options(),
                 "curl=7.68.0",
                 "requests=2.25.1",
             ],
@@ -99,6 +100,7 @@ def test_install_apt_packages_with_wildcard(context_mock):
                 "-V",
                 "-y",
                 "--no-install-recommends",
+                *exclude_doc_options(),
                 "curl=7.68.0-1ubuntu2.25",
                 "requests=2.25.1",
             ],
@@ -174,3 +176,29 @@ def test_install_apt_packages_negative_cases(context_mock, fail_step, expected_e
         install_apt_packages(apt_packages, context)
 
     context.cmd_logger.err.assert_any_call(expected_error)
+
+
+@pytest.mark.parametrize(
+    "doc_option_param", [DocOption.MINIMIZE, DocOption.SYSTEM_DEFAULT]
+)
+def test_install_apt_no_doc(context_mock, doc_option_param):
+    pkgs = [
+        AptPackage(name="curl", version="7.68.0"),
+    ]
+    apt_packages = AptPackages(packages=pkgs, doc_option=doc_option_param)
+
+    install_apt_packages(apt_packages, context_mock)
+
+    install_call = context_mock.cmd_executor.mock_calls[3]  # 4th is install cmd
+    install_cmd = install_call[1][0]
+
+    if doc_option_param == DocOption.MINIMIZE:
+        for option in exclude_doc_options():
+            assert option in install_cmd, f"Expected {option} in install command"
+    if doc_option_param == DocOption.SYSTEM_DEFAULT:
+        assert (
+            "Dpkg::Options::=--path-exclude" not in install_cmd
+        ), "No exclude doc options in install command shall be there"
+
+    # Packages shall still be installed
+    assert "curl=7.68.0" in install_cmd
