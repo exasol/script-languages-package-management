@@ -1,8 +1,6 @@
 import json
 
-from exasol.exaslpm.model.installed_packages_config import (
-    Package,
-)
+from exasol.exaslpm.model.package_file_config import CondaPackage
 from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
@@ -40,14 +38,17 @@ class MicromambaExecutor:
 
 class MicromambaParser:
     @staticmethod
-    def parse_micromamba_output(micromamba_output: str, _: Context) -> list[Package]:
-        installed_packages: list[Package] = []
+    def parse_micromamba_output(
+        micromamba_output: str, _: Context
+    ) -> list[CondaPackage]:
+        installed_packages: list[CondaPackage] = []
         if micromamba_output:
             parsed_micromamba_output = json.loads(micromamba_output)
             for parsed_micromamba_out_item in parsed_micromamba_output:
-                package = Package(
+                package = CondaPackage(
                     name=parsed_micromamba_out_item["name"],
                     version=parsed_micromamba_out_item["version"],
+                    channel=parsed_micromamba_out_item["channel"],
                 )
                 installed_packages.append(package)
         return installed_packages

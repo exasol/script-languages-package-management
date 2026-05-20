@@ -1,4 +1,4 @@
-from exasol.exaslpm.model.installed_packages_config import Package
+from exasol.exaslpm.model.package_file_config import Package
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.csv_installed_package_parser import parse_csv_output

@@ -25,12 +25,17 @@ def test_no_history_empty_lists_expected(docker_container):
 
 
 def verify_package_exists_fail_otherwise(
-    installed_packages, expected_package_name: str, expected_package_version: str
+    installed_packages,
+    expected_package_name: str,
+    expected_package_version: str,
+    conda_channel: str | None = None,
 ) -> None:
     for package in installed_packages:
         if package["name"] == expected_package_name and package["version"].startswith(
             expected_package_version
         ):
+            if conda_channel and package["channel"] != conda_channel:
+                continue
             return
     pytest.fail(
         f"Package: '{expected_package_name}' with version: '{expected_package_version}' not in installed packages: {installed_packages}"
@@ -60,4 +65,6 @@ def test_list_all_installed_packages(
     )
     verify_package_exists_fail_otherwise(installed_packages["pip"], "Jinja2", "3")
     verify_package_exists_fail_otherwise(installed_packages["r"], "poorman", "0.2.7")
-    verify_package_exists_fail_otherwise(installed_packages["conda"], "zstd", "1.5.7")
+    verify_package_exists_fail_otherwise(
+        installed_packages["conda"], "zstd", "1.5.7", "conda-forge"
+    )
