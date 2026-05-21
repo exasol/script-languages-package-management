@@ -43,7 +43,10 @@ def verify_package_exists_fail_otherwise(
 
 
 def test_list_all_installed_packages(
-    docker_container, list_all_installed_packages_file_content, cli_helper
+    docker_container,
+    list_all_installed_packages_file_content,
+    cli_helper,
+    python_version,
 ):
     package_file_yaml = to_yaml_str(list_all_installed_packages_file_content)
 
@@ -61,7 +64,7 @@ def test_list_all_installed_packages(
     assert ret == 0
     installed_packages = yaml.safe_load(out)
     verify_package_exists_fail_otherwise(
-        installed_packages["apt"], "python3-dev", "3.14.3"
+        installed_packages["apt"], "python3-dev", python_version[6:]
     )
     verify_package_exists_fail_otherwise(installed_packages["pip"], "Jinja2", "3")
     verify_package_exists_fail_otherwise(installed_packages["r"], "poorman", "0.2.7")

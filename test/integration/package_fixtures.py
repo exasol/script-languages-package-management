@@ -164,8 +164,8 @@ def apt_package_file_content(
 @pytest.fixture
 def python_version(ubuntu_version) -> str:
     python_versions = {
-        "24.04": "python3.12",
         "22.04": "python3.10",
+        "24.04": "python3.12",
         "26.04": "python3.14",
     }
     return python_versions[ubuntu_version]
