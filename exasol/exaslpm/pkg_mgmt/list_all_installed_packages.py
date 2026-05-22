@@ -1,6 +1,5 @@
 from exasol.exaslpm.model.installed_packages_config import InstalledPackages
 from exasol.exaslpm.model.package_file_config import BuildStep
-from exasol.exaslpm.model.serialization import to_yaml_str
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.get_installed_apt_packages import (
     get_installed_apt_packages,
@@ -11,7 +10,7 @@ from exasol.exaslpm.pkg_mgmt.get_installed_conda_packages import (
 from exasol.exaslpm.pkg_mgmt.get_installed_pip_packages import (
     get_installed_pip_packages,
 )
-from exasol.exaslpm.pkg_mgmt.get_installed_rscript_packages import (
+from exasol.exaslpm.pkg_mgmt.get_installed_r_packages import (
     get_installed_r_packages,
 )
 
@@ -35,13 +34,13 @@ def get_installed_packages(
     return installed_packages
 
 
-def list_all_installed_packages(context: Context) -> str:
+def list_all_installed_packages(context: Context) -> InstalledPackages:
     context.history_file_manager.check_consistency()
     used_package_types: dict[str, bool] = get_used_package_types(context)
     installed_packages: InstalledPackages = get_installed_packages(
         used_package_types, context
     )
-    return to_yaml_str(installed_packages)
+    return installed_packages
 
 
 def get_used_package_types(context: Context) -> dict[str, bool]:

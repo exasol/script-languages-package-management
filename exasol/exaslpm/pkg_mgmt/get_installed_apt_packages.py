@@ -1,12 +1,12 @@
-from exasol.exaslpm.model.package_file_config import Package
+from exasol.exaslpm.model.package_file_config import AptPackage
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
-from exasol.exaslpm.pkg_mgmt.csv_installed_package_parser import parse_csv_output
+from exasol.exaslpm.pkg_mgmt.cvs_installed_packages_parser import parse_csv_output
 
 
-def get_installed_apt_packages(context: Context):
+def get_installed_apt_packages(context: Context) -> list[AptPackage]:
     csv_output = AptExecutor.execute_apt(context)
-    return AptParser.parse_csv_output(csv_output, context)
+    return AptParser.parse_csv_output(csv_output)
 
 
 class AptExecutor:
@@ -36,5 +36,8 @@ class AptExecutor:
 
 class AptParser:
     @staticmethod
-    def parse_csv_output(csv_output: list[str], context: Context) -> list[Package]:
-        return parse_csv_output(csv_output, context)
+    def parse_csv_output(csv_output: list[str]) -> list[AptPackage]:
+        return [
+            AptPackage.model_validate(package.model_dump())
+            for package in parse_csv_output(csv_output)
+        ]

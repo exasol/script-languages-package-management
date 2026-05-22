@@ -1,13 +1,13 @@
 import json
 
-from exasol.exaslpm.model.package_file_config import Package
+from exasol.exaslpm.model.package_file_config import PipPackage
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 
-def get_installed_pip_packages(context: Context):
+def get_installed_pip_packages(context: Context) -> list[PipPackage]:
     pip_output = PipExecutor.execute_pip(context)
-    return PipParser.parse_pip_output(pip_output, context)
+    return PipParser.parse_pip_output(pip_output)
 
 
 class PipExecutor:
@@ -37,12 +37,12 @@ class PipExecutor:
 
 class PipParser:
     @staticmethod
-    def parse_pip_output(pip_output: str, _: Context) -> list[Package]:
-        installed_packages: list[Package] = []
+    def parse_pip_output(pip_output: str) -> list[PipPackage]:
+        installed_packages: list[PipPackage] = []
         if pip_output:
             parsed_pip_out = json.loads(pip_output)
             for parsed_pip_out_item in parsed_pip_out:
-                package = Package(
+                package = PipPackage(
                     name=parsed_pip_out_item["name"],
                     version=parsed_pip_out_item["version"],
                 )

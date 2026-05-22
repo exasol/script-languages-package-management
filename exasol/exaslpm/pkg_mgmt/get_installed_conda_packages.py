@@ -6,9 +6,9 @@ from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 
-def get_installed_conda_packages(context: Context):
+def get_installed_conda_packages(context: Context) -> list[CondaPackage]:
     micromamba_output = MicromambaExecutor.execute_micromamba(context)
-    return MicromambaParser.parse_micromamba_output(micromamba_output, context)
+    return MicromambaParser.parse_micromamba_output(micromamba_output)
 
 
 class MicromambaExecutor:
@@ -38,9 +38,7 @@ class MicromambaExecutor:
 
 class MicromambaParser:
     @staticmethod
-    def parse_micromamba_output(
-        micromamba_output: str, _: Context
-    ) -> list[CondaPackage]:
+    def parse_micromamba_output(micromamba_output: str) -> list[CondaPackage]:
         installed_packages: list[CondaPackage] = []
         if micromamba_output:
             parsed_micromamba_output = json.loads(micromamba_output)
