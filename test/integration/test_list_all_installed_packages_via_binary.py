@@ -1,8 +1,19 @@
 from pathlib import Path
+from test.integration.package_utils import (
+    ContainsCondaPackages,
+    ContainsPackages,
+    ContainsPipPackages,
+)
 
 import pytest
 import yaml
 
+from exasol.exaslpm.model.package_file_config import (
+    AptPackage,
+    CondaPackage,
+    PipPackage,
+    RPackage,
+)
 from exasol.exaslpm.model.serialization import to_yaml_str
 
 pytestmark = pytest.mark.via_binary
@@ -40,24 +51,6 @@ def test_out_file_parameter(docker_container):
     )
 
 
-def verify_package_exists_fail_otherwise(
-    installed_packages,
-    expected_package_name: str,
-    expected_package_version: str,
-    conda_channel: str | None = None,
-) -> None:
-    for package in installed_packages:
-        if package["name"] == expected_package_name and package["version"].startswith(
-            expected_package_version
-        ):
-            if conda_channel and package["channel"] != conda_channel:
-                continue
-            return
-    pytest.fail(
-        f"Package: '{expected_package_name}' with version: '{expected_package_version}' not in installed packages: {installed_packages}"
-    )
-
-
 def test_list_all_installed_packages(
     docker_container,
     list_all_installed_packages_file_content,
@@ -79,11 +72,34 @@ def test_list_all_installed_packages(
 
     assert ret == 0
     installed_packages = yaml.safe_load(out)
-    verify_package_exists_fail_otherwise(
-        installed_packages["apt"], "python3-dev", python_version[6:]
+
+    installed_apt_packages = [
+        AptPackage.model_validate(apt_package)
+        for apt_package in installed_packages["apt"]
+    ]
+    assert installed_apt_packages == ContainsPackages(
+        [AptPackage(name="python3-dev", version=f"{python_version[6:]}*")]
     )
-    verify_package_exists_fail_otherwise(installed_packages["pip"], "Jinja2", "3")
-    verify_package_exists_fail_otherwise(installed_packages["r"], "poorman", "0.2.7")
-    verify_package_exists_fail_otherwise(
-        installed_packages["conda"], "zstd", "1.5.7", "conda-forge"
+
+    installed_pip_packages = [
+        PipPackage.model_validate(pip_package)
+        for pip_package in installed_packages["pip"]
+    ]
+    assert installed_pip_packages == ContainsPipPackages(
+        [PipPackage(name="Jinja2", version=">=3.1.6, <4.0.0")]
+    )
+
+    installed_r_packages = [
+        RPackage.model_validate(r_package) for r_package in installed_packages["r"]
+    ]
+    assert installed_r_packages == ContainsPackages(
+        [RPackage(name="poorman", version="0.2.7")]
+    )
+
+    installed_conda_packages = [
+        CondaPackage.model_validate(conda_package)
+        for conda_package in installed_packages["conda"]
+    ]
+    assert installed_conda_packages == ContainsCondaPackages(
+        [CondaPackage(name="zstd", version="=1.5.7", channel="conda-forge")]
     )
