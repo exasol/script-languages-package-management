@@ -92,8 +92,14 @@ TEST_BUILD_STEP_LIST_ALL_INSTALLED_PACKAGES_PIP = BuildStep(
     phases=[
         Phase(
             name="phase 1",
+            tools=Tools(
+                python_binary_path=Path("/usr/bin/python3"),
+            ),
+        ),
+        Phase(
+            name="phase 2",
             pip=PipPackages(packages=[PipPackage(name="pydantic", version="2.13.4")]),
-        )
+        ),
     ],
 )
 
@@ -102,8 +108,12 @@ TEST_BUILD_STEP_LIST_ALL_INSTALLED_PACKAGES_R = BuildStep(
     phases=[
         Phase(
             name="phase 1",
+            tools=Tools(r_binary_path=Path("/usr/bin/Rscript")),
+        ),
+        Phase(
+            name="phase 2",
             r=RPackages(packages=[RPackage(name="poorman", version="0.2.7")]),
-        )
+        ),
     ],
 )
 

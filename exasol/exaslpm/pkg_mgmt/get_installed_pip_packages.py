@@ -1,20 +1,29 @@
 import json
+from pathlib import Path
 
 from exasol.exaslpm.model.package_file_config import PipPackage
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 
-def get_installed_pip_packages(context: Context) -> list[PipPackage]:
-    pip_output = PipExecutor.execute_pip(context)
+def get_installed_pip_packages(context: Context, python_path: Path) -> list[PipPackage]:
+    pip_output = PipExecutor.execute_pip(context, python_path)
     return PipParser.parse_pip_output(pip_output)
 
 
 class PipExecutor:
     @staticmethod
-    def execute_pip(context: Context) -> str:
+    def execute_pip(context: Context, python_path: Path) -> str:
         # python3 -m pip list --format json --no-cache-dir
-        cmd = ["python3", "-m", "pip", "list", "--format", "json", "--no-cache-dir"]
+        cmd = [
+            str(python_path),
+            "-m",
+            "pip",
+            "list",
+            "--format",
+            "json",
+            "--no-cache-dir",
+        ]
         cmd_res = context.cmd_executor.execute(cmd)
 
         stdout_lines: list[str] = []

@@ -1,21 +1,23 @@
 import json
+from pathlib import Path
 
 from exasol.exaslpm.model.package_file_config import CondaPackage
-from exasol.exaslpm.pkg_mgmt.constants import MICROMAMBA_PATH
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 
 
-def get_installed_conda_packages(context: Context) -> list[CondaPackage]:
-    micromamba_output = MicromambaExecutor.execute_micromamba(context)
+def get_installed_conda_packages(
+    context: Context, micromamba_path: Path
+) -> list[CondaPackage]:
+    micromamba_output = MicromambaExecutor.execute_micromamba(context, micromamba_path)
     return MicromambaParser.parse_micromamba_output(micromamba_output)
 
 
 class MicromambaExecutor:
     @staticmethod
-    def execute_micromamba(context: Context) -> str:
+    def execute_micromamba(context: Context, micromamba_path: Path) -> str:
         # micromamba list --json
-        cmd = [str(MICROMAMBA_PATH), "list", "--json"]
+        cmd = [str(micromamba_path), "list", "--json"]
         cmd_res = context.cmd_executor.execute(cmd)
 
         stdout_lines: list[str] = []

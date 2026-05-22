@@ -1,20 +1,22 @@
+from pathlib import Path
+
 from exasol.exaslpm.model.package_file_config import RPackage
 from exasol.exaslpm.pkg_mgmt.context.cmd_executor import CommandFailedException
 from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.csv_installed_packages_parser import parse_csv_output
 
 
-def get_installed_r_packages(context: Context) -> list[RPackage]:
-    csv_output = RscriptExecutor.execute_rscript(context)
+def get_installed_r_packages(context: Context, r_path: Path) -> list[RPackage]:
+    csv_output = RscriptExecutor.execute_rscript(context, r_path)
     return RscriptParser.parse_rscript_output(csv_output)
 
 
 class RscriptExecutor:
     @staticmethod
-    def execute_rscript(context: Context) -> list[str]:
+    def execute_rscript(context: Context, r_path: Path) -> list[str]:
         # Rscript -e 'write.table(installed.packages()[,c("Package","Version")], sep=",", row.names=FALSE, col.names=FALSE)'
         cmd = [
-            "Rscript",
+            str(r_path),
             "-e",
             'write.table(installed.packages()[,c("Package","Version")], sep=",", row.names=FALSE, col.names=FALSE)',
         ]

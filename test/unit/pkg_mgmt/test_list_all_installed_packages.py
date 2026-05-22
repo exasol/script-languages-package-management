@@ -44,7 +44,15 @@ def test_get_installed_packages_empty_history(context_mock) -> None:
             TEST_BUILD_STEP_LIST_ALL_INSTALLED_PACKAGES_PIP,
             json.dumps([{"name": "pydantic", "version": "2.13.4"}]),
             call.execute(
-                ["python3", "-m", "pip", "list", "--format", "json", "--no-cache-dir"]
+                [
+                    "/usr/bin/python3",
+                    "-m",
+                    "pip",
+                    "list",
+                    "--format",
+                    "json",
+                    "--no-cache-dir",
+                ]
             ),
             InstalledPackages(
                 pip=[PipPackage(name="pydantic", version="2.13.4", comment=None)]
@@ -55,7 +63,7 @@ def test_get_installed_packages_empty_history(context_mock) -> None:
             "poorman,0.2.7",
             call.execute(
                 [
-                    "Rscript",
+                    "/usr/bin/Rscript",
                     "-e",
                     'write.table(installed.packages()[,c("Package","Version")], sep=",", row.names=FALSE, col.names=FALSE)',
                 ]
