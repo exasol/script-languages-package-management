@@ -8,20 +8,36 @@ from exasol.exaslpm.model.serialization import to_yaml_str
 pytestmark = pytest.mark.via_binary
 
 
+EXPECTED_EMPTY_INSTALLED_PACKAGES_YAML = """
+version: 1.0.0
+apt: []
+conda: []
+pip: []
+r: []
+
+"""
+
+
 def test_no_history_empty_lists_expected(docker_container):
 
     ret, out = docker_container.run_exaslpm(["list-all-installed-packages"])
 
     assert ret == 0
-    expected_yaml = """
-    version: 1.0.0
-    apt: []
-    conda: []
-    pip: []
-    r: []
+    assert yaml.safe_load(out) == yaml.safe_load(EXPECTED_EMPTY_INSTALLED_PACKAGES_YAML)
 
-    """
-    assert yaml.safe_load(out) == yaml.safe_load(expected_yaml)
+
+def test_out_file_parameter(docker_container):
+
+    target_file = Path("/tmp/installed_packages.yml")
+    ret, out = docker_container.run_exaslpm(
+        ["list-all-installed-packages", "--out-file", str(target_file)]
+    )
+    assert ret == 0
+
+    _, out_cat = docker_container.run(["cat", str(target_file)])
+    assert yaml.safe_load(out_cat) == yaml.safe_load(
+        EXPECTED_EMPTY_INSTALLED_PACKAGES_YAML
+    )
 
 
 def verify_package_exists_fail_otherwise(
