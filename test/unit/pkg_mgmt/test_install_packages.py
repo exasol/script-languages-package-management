@@ -9,6 +9,7 @@ from unittest.mock import (
 
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
+from pydantic import HttpUrl
 
 import exasol.exaslpm.pkg_mgmt.install_packages as install_packages
 from exasol.exaslpm.model.package_file_config import (
@@ -68,13 +69,6 @@ def mock_install_pip_packages(monkeypatch: MonkeyPatch) -> MagicMock:
 
 
 @pytest.fixture
-def mock_install_micromamba(monkeypatch: MonkeyPatch) -> MagicMock:
-    mock_function_to_mock = MagicMock()
-    monkeypatch.setattr(install_packages, "install_micromamba", mock_function_to_mock)
-    return mock_function_to_mock
-
-
-@pytest.fixture
 def mock_install_conda_packages(monkeypatch: MonkeyPatch) -> MagicMock:
     mock_function_to_mock = MagicMock()
     monkeypatch.setattr(
@@ -126,7 +120,7 @@ def _build_apt_rep_package(enable_apt_repo: bool = False) -> AptPackages | None:
             repos={
                 "some_ppa": AptRepo(
                     entry="deb some_ppa",
-                    key_url="https://some.key.server",
+                    key_url=HttpUrl("https://some.key.server"),
                     out_file="some_ppa.list",
                 )
             },
@@ -153,7 +147,7 @@ def _build_tools_package(
     )
 
 
-def _build_pip_packages(enable_pip_packages: bool = False) -> CondaPackages | None:
+def _build_pip_packages(enable_pip_packages: bool = False) -> PipPackages | None:
     return (
         PipPackages(packages=[PipPackage(name="numpy", version="1.2.3")])
         if enable_pip_packages
