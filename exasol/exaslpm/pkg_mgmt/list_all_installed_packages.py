@@ -51,10 +51,7 @@ def get_all_phases(context: Context) -> list[Phase]:
         context.history_file_manager.get_all_previous_build_steps()
     )
     # collect all phases from all build steps known to the HistoryFileManager
-    phases = []
-    for build_step in build_steps:
-        phases.extend(build_step.phases)
-    return phases
+    return [phase for build_step in build_steps for phase in build_step.phases]
 
 
 def list_all_installed_packages(context: Context) -> InstalledPackages:
