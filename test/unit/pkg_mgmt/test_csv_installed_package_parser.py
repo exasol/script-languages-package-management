@@ -1,5 +1,5 @@
 from exasol.exaslpm.model.package_file_config import Package
-from exasol.exaslpm.pkg_mgmt.cvs_installed_packages_parser import parse_csv_output
+from exasol.exaslpm.pkg_mgmt.csv_installed_packages_parser import parse_csv_output
 
 
 def test_parse_csv_output_success() -> None:
