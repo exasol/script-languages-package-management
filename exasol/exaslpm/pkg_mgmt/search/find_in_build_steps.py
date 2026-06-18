@@ -66,13 +66,20 @@ def find_variable(variable_name: str, phases: list[Phase]) -> str:
     return result[0]
 
 
-def find_pip(phases: list[Phase]) -> Pip:
+def find_optional_pip(phases: list[Phase]) -> Pip | None:
     result = [phase.tools.pip for phase in phases if phase.tools and phase.tools.pip]
     if len(result) > 1:
         raise ValueError(f"Found more than one result for pip: {result}")
     if len(result) == 0:
-        raise ValueError("Pip not found")
+        return None
     return result[0]
+
+
+def find_pip(phases: list[Phase]) -> Pip:
+    result = find_optional_pip(phases)
+    if result is None:
+        raise ValueError("Pip not found")
+    return result
 
 
 def find_micromamba(phases: list[Phase]) -> Micromamba:

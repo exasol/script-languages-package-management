@@ -307,6 +307,27 @@ def pip_packages_file_content() -> PackageFile:
 
 
 @pytest.fixture
+def conda_pip_packages_file_content() -> PackageFile:
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_3",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        pip=PipPackages(
+                            packages=[
+                                PipPackage(name="jinja2", version=" >=3.1.6, <4.0.0"),
+                            ]
+                        ),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
 def incorrect_pip_packages_file_content() -> PackageFile:
     return PackageFile(
         build_steps=[
@@ -384,6 +405,44 @@ def micromamba_file_content(
                     Phase(
                         name="phase_2",
                         tools=Tools(micromamba=Micromamba(version="2.5.0-1")),
+                    ),
+                ],
+            ),
+        ]
+    )
+
+
+@pytest.fixture
+def conda_python_package_content(
+    apt_package_with_version: dict[str, AptPackage], python_version: str
+) -> PackageFile:
+    PYTHON_CONDA_PKG_VERSIONS = {
+        "python3.10": "=3.10.4",
+        "python3.12": "=3.12.13",
+        "python3.14": "=3.14.6",
+    }
+    return PackageFile(
+        build_steps=[
+            BuildStep(
+                name="build_step_2",
+                phases=[
+                    Phase(
+                        name="phase_1",
+                        conda=CondaPackages(
+                            packages=[
+                                CondaPackage(
+                                    name="python",
+                                    version=PYTHON_CONDA_PKG_VERSIONS[python_version],
+                                ),
+                                CondaPackage(name="git", version="=2.54.0"),
+                            ]
+                        ),
+                    ),
+                    Phase(
+                        name="phase_2",
+                        tools=Tools(
+                            python_binary_path=f"/opt/conda/bin/{python_version}"
+                        ),
                     ),
                 ],
             ),

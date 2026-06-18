@@ -9,6 +9,7 @@ import pytest
 pytestmark = pytest.mark.via_command_executor
 
 from exasol.exaslpm.model.package_file_config import (
+    CondaPackage,
     CondaPackages,
     Micromamba,
 )
@@ -57,6 +58,25 @@ def prepare_micromamba_env(
     )
 
 
+@pytest.fixture
+def prepare_python(
+    docker_container,
+    local_package_path,
+    conda_python_package_content,
+    prepare_micromamba_env,
+    docker_executor_context,
+) -> None:
+    micromamba_package_file_yaml = to_yaml_str(conda_python_package_content)
+    local_package_path.write_text(micromamba_package_file_yaml)
+
+    package_install(
+        package_file=local_package_path,
+        build_step_name="build_step_2",
+        context=docker_executor_context,
+    )
+    return prepare_micromamba_env
+
+
 def test_install_conda_packages(
     docker_container,
     conda_packages_file_content,
@@ -68,6 +88,7 @@ def test_install_conda_packages(
     local_package_path.write_text(conda_packages_file_yaml)
 
     expected_packages = conda_packages_file_content.build_steps[0].phases[4].conda
+    assert expected_packages
 
     assert_packages_not_installed(docker_container, expected_packages)
 
@@ -83,6 +104,40 @@ def test_install_conda_packages(
         ["bazel", "--help"]
     )
     assert bazel_version_cmd_exit_code == 0
+
+
+def test_install_pip_packages_in_conda(
+    docker_container,
+    conda_pip_packages_file_content,
+    docker_executor_context,
+    local_package_path,
+    prepare_python,
+):
+    pip_packages_file_yaml = to_yaml_str(conda_pip_packages_file_content)
+    local_package_path.write_text(pip_packages_file_yaml)
+
+    expected_pip_packages = (
+        conda_pip_packages_file_content.build_steps[0].phases[0].pip.packages
+    )
+    assert expected_pip_packages
+    expected_conda_packages = CondaPackages(
+        packages=[
+            CondaPackage(name=pip_pkg.name, version=pip_pkg.version)
+            for pip_pkg in expected_pip_packages
+        ]
+    )
+    assert_packages_not_installed(docker_container, expected_conda_packages)
+
+    log_collector = LogCollector()
+    docker_executor_context.cmd_logger.error_callback = log_collector.log
+
+    package_install(
+        package_file=local_package_path,
+        build_step_name="build_step_3",
+        context=docker_executor_context,
+    )
+
+    assert_packages_installed(docker_container, expected_conda_packages)
 
 
 def test_install_conda_packages_prints_requirements_file_if_exception(
