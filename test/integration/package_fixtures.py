@@ -43,7 +43,9 @@ APT_PACKAGE_DEFS = {
             name="bzip2",
             version="1.0.8-*",
         ),
-        "ca-certificates": AptPackage(name="ca-certificates", version="20260601~26.04.1"),
+        "ca-certificates": AptPackage(
+            name="ca-certificates", version="20260601~26.04.1"
+        ),
         "build-essential": AptPackage(name="build-essential", version="12.12ubuntu*"),
         "git": AptPackage(name="git", version="1:2.53.0-1ubuntu*"),
         # No CRAN-maintained R packages have been released for 26.04 yet
@@ -71,7 +73,9 @@ APT_PACKAGE_DEFS = {
             name="bzip2",
             version="1.0.8-*",
         ),
-        "ca-certificates": AptPackage(name="ca-certificates", version="20260601~24.04.1"),
+        "ca-certificates": AptPackage(
+            name="ca-certificates", version="20260601~24.04.1"
+        ),
         "build-essential": AptPackage(name="build-essential", version="12.10ubuntu*"),
         "git": AptPackage(name="git", version="1:2.43.0-1ubuntu*"),
         "r-base-core": AptPackage(
