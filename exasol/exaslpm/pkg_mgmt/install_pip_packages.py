@@ -81,7 +81,7 @@ def _build_install_cmds(
         ],
         err="Failed while installing pip packages",
     )
-    if search_cache.pip.needs_break_system_packages:
+    if search_cache.has_pip and search_cache.pip.needs_break_system_packages:
         install_pip_cmd.cmd.append("--break-system-packages")
     return install_pip_cmd
 

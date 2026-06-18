@@ -19,15 +19,17 @@ from exasol.exaslpm.pkg_mgmt.install_pip_packages import install_pip_packages
 from exasol.exaslpm.pkg_mgmt.search.search_cache import SearchCache
 
 
-@pytest.fixture
-def context_with_python_env(context_mock):
+@pytest.fixture(params=[True, False], ids=["with_pip", "without_pip"])
+def context_with_python_env(request, context_mock):
+    with_pip = request.param
     phase_python_binary = Phase(
         name="phase-python-bin",
         tools=Tools(python_binary_path=Path("/usr/bin/test-python")),
     )
     phase_pip = Phase(name="phase-pip", tools=Tools(pip=Pip(version="25.5")))
+    phases = [phase_python_binary, phase_pip] if with_pip else [phase_python_binary]
     context_mock.history_file_manager.build_steps = [
-        BuildStep(name="prev-build-step", phases=[phase_python_binary, phase_pip])
+        BuildStep(name="prev-build-step", phases=phases)
     ]
     return context_mock
 

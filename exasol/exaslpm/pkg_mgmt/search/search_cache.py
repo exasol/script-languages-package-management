@@ -11,6 +11,7 @@ from exasol.exaslpm.pkg_mgmt.context.context import Context
 from exasol.exaslpm.pkg_mgmt.search.find_in_build_steps import (
     find_binary,
     find_micromamba,
+    find_optional_pip,
     find_phases_of_build_steps,
     find_pip,
     find_variable,
@@ -66,6 +67,15 @@ class SearchCache:
                 variable_name, self._all_phases
             )
         return self._variables[variable_name]
+
+    @property
+    def has_pip(self) -> bool:
+        if self._pip is not None:
+            return True
+        self._pip = find_optional_pip(
+            self._all_phases,
+        )
+        return self._pip is not None
 
     @property
     def pip(self) -> Pip:
