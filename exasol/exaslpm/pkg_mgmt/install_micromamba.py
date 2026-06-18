@@ -13,7 +13,7 @@ from exasol.exaslpm.pkg_mgmt.install_common import (
 )
 from exasol.exaslpm.pkg_mgmt.micromamba_env import micromamba_cmd_from_micromamba
 
-_MICROMAMBA_EXE = "bin/micromamba"
+_MICROMAMBA_EXE = "/bin/micromamba"
 _ACTIVATION_SCRIPT_PATH = Path("/usr") / "local" / "bin" / "_activate_current_env.sh"
 
 
