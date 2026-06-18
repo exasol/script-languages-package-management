@@ -13,7 +13,8 @@ from exasol.exaslpm.pkg_mgmt.install_common import (
 )
 from exasol.exaslpm.pkg_mgmt.micromamba_env import micromamba_cmd_from_micromamba
 
-_MICROMAMBA_EXE = "bin/micromamba"
+_MICROMAMBA_EXE_RELATIVE_PATH = "bin/micromamba"
+_MICROMAMBA_EXE_ABS_PATH = f"/{_MICROMAMBA_EXE_RELATIVE_PATH}"
 _ACTIVATION_SCRIPT_PATH = Path("/usr") / "local" / "bin" / "_activate_current_env.sh"
 
 
@@ -36,7 +37,7 @@ def _install_micromamba_exec(micromamba: Micromamba, ctx: Context):
                 str(get_micromamba_tar),
                 "-C",
                 "/",
-                _MICROMAMBA_EXE,
+                _MICROMAMBA_EXE_RELATIVE_PATH,
             ],
             err="Failed while extracting micromamba",
         )
@@ -65,7 +66,7 @@ def _install_activation_script(micromamba: Micromamba, ctx: Context) -> None:
         fi
         
         # Initialize the current shell
-        eval "$("{_MICROMAMBA_EXE}" shell hook --shell=bash)" 2>/dev/null 1>2
+        eval "$("{_MICROMAMBA_EXE_ABS_PATH}" shell hook --shell=bash)" 2>/dev/null 1>2
         
         # For robustness, try all possible activate commands.
         conda activate "{micromamba.env_name}" 2>/dev/null 1>2 \
