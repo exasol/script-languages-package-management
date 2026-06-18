@@ -2,7 +2,7 @@
 
 ## Summary
 
-This hotfix release fixe a bug related to the conda env activate script.
+This hotfix release fixes a bug related to the conda env activate script.
 
 ## Bugfixes
 
