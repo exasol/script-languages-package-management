@@ -17,6 +17,7 @@ import requests
 
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *
+from nox import Session
 
 from noxconfig import (
     PROJECT_CONFIG,
@@ -330,7 +331,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
     and then pushes the image to DockerHub.
     """
     p = ArgumentParser(
-        usage='nox -s build-docker-image -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --complete-docker-tag "24.04-arm"',
+        usage='nox -s build-docker-image-from-latest-gh-release -- --base-img "ubuntu:24.04" --repository "exasol/slc_base --complete-docker-tag "24.04-arm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--base-img")
@@ -362,12 +363,13 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         exaslpm_path.chmod(exaslpm_path.stat().st_mode | stat.S_IEXEC)
         dockerfile_path = tmp_path / "Dockerfile"
 
-        exaslpm_target_path = "/opt/bin/"
+        exaslpm_target_path = "/opt/bin"
 
         dockerfile_content = cleandoc(f"""
         FROM {base_img}
-        COPY exaslpm {exaslpm_target_path}
-        ENV EXASLPM={exaslpm_path}/exaslpm
+        COPY exaslpm {exaslpm_target_path}/
+        ENV PATH="${{PATH}}:{exaslpm_target_path}"
+        ENV EXASLPM={exaslpm_target_path}/exaslpm
         """)
 
         dockerfile_path.write_text(dockerfile_content)
@@ -377,23 +379,28 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         )
     # Test exaslpm before we push the image to DockerHub
     session.log("Checking exaslpm in new docker image.")
-    exaslpm_help_string = session.run(
-        "docker",
-        "run",
-        f"{repository}:{complete_docker_tag}",
-        "$EXASLPM",
-        "--help",
-        silent=True,
+    _run_exaslpm_in_docker_container(
+        "Running exaslpm with absolute path using new docker image",
+        [f"{exaslpm_target_path}/exaslpm", "--help"],
+        complete_docker_tag,
+        repository,
+        session,
     )
-    if (
-        not exaslpm_help_string
-        or "EXASLPM - Exasol Script Languages Package Management"
-        not in exaslpm_help_string
-    ):
-        session.error(
-            f"Running exaslpm using new docker image did not succeed. \noutput:\n'{exaslpm_help_string}'"
-        )
-    session.log(f"Running exaslpm succeeded.\noutput:\n'{exaslpm_help_string}'")
+    _run_exaslpm_in_docker_container(
+        "Running exaslpm with env variable using new docker image",
+        ["bash", "-c", "$EXASLPM --help"],
+        complete_docker_tag,
+        repository,
+        session,
+    )
+    _run_exaslpm_in_docker_container(
+        "Running exaslpm using $PATH in bash using new docker image",
+        ["bash", "-c", "exaslpm --help"],
+        complete_docker_tag,
+        repository,
+        session,
+    )
+
     docker_user, docker_pwd = _get_docker_credentials_from_env()
     auth_config = {
         "username": docker_user,
@@ -403,6 +410,34 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
     _push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
+
+
+def _run_exaslpm_in_docker_container(
+    run_message: str,
+    docker_args: list[str],
+    complete_docker_tag,
+    repository,
+    session: Session,
+):
+    # Test exaslpm env variable before we push the image to DockerHub
+    session.log(run_message)
+    exaslpm_help_string = session.run(
+        "docker",
+        "run",
+        f"{repository}:{complete_docker_tag}",
+        *docker_args,
+        silent=True,
+    )
+    if (
+        not exaslpm_help_string
+        or "EXASLPM - Exasol Script Languages Package Management"
+        not in exaslpm_help_string
+    ):
+        session.error(
+            f"{run_message} did not succeed. \noutput:\n'{exaslpm_help_string}'"
+        )
+
+    session.log(f"{run_message} succeeded.\noutput:\n'{exaslpm_help_string}'")
 
 
 @nox.session(name="build-docker-manifests", python=False)

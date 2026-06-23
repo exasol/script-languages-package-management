@@ -20,4 +20,6 @@ HELP_MESSAGE = cleandoc(f"""
 @click.group(help=HELP_MESSAGE)
 @click.version_option(version=exaslpm_version)
 def cli():
-    pass
+    """
+    CLI group for Exasol Script Languages Package Management
+    """
