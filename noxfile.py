@@ -362,9 +362,12 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         exaslpm_path.chmod(exaslpm_path.stat().st_mode | stat.S_IEXEC)
         dockerfile_path = tmp_path / "Dockerfile"
 
+        exaslpm_target_path = "/opt/bin/"
+
         dockerfile_content = cleandoc(f"""
         FROM {base_img}
-        COPY exaslpm /usr/local/bin/
+        COPY exaslpm {exaslpm_target_path}
+        ENV EXASLPM={exaslpm_path}/exaslpm
         """)
 
         dockerfile_path.write_text(dockerfile_content)
@@ -378,7 +381,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         "docker",
         "run",
         f"{repository}:{complete_docker_tag}",
-        "exaslpm",
+        "$EXASLPM",
         "--help",
         silent=True,
     )
