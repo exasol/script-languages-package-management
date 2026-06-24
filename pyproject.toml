@@ -18,9 +18,6 @@ packages = [
     { include = "exasol" },
 ]
 
-[project.scripts]
-exaslpm = 'exasol.exaslpm.main:main'
-
 [poetry.urls]
 repository = "https://github.com/exasol/script-languages-package-management"
 homepage = "https://github.com/exasol/script-languages-package-management"
