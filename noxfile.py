@@ -406,7 +406,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
         "username": docker_user,
         "password": docker_pwd,
     }
-    session.log("Pushing now new image to Docker Hub.")
+    session.log("Pushing new image to Docker Hub.")
     _push_image_safe(
         docker_client, repository, complete_docker_tag, auth_config=auth_config
     )
