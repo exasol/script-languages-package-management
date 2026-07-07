@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from importlib.metadata import version
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
@@ -87,6 +88,34 @@ class Config(BaseConfig):
                 for platform in self.supported_platforms
             ]
         }
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def docker_image_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for Docker image builds."""
+        runner_ubuntu = min(self.supported_ubuntu_versions)
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{runner_ubuntu}{platform.runner_suffix}",
+                    "base_img": f"ubuntu:{ubuntu_version}",
+                    "complete_docker_tag": _build_docker_img_tag(
+                        ubuntu_version, platform.docker_tag_suffix
+                    ),
+                }
+                for platform in self.supported_platforms
+                for ubuntu_version in self.supported_ubuntu_versions
+            ]
+        }
+
+
+def _build_docker_prefix_tag() -> str:
+    __version__ = version("exasol-script-languages-package-management")
+    return f"exaslpm-{__version__}-ubuntu"
+
+
+def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str) -> str:
+    return f"{_build_docker_prefix_tag()}-{ubuntu_version}-{docker_tag_suffix}"
 
 
 PROJECT_CONFIG = Config(

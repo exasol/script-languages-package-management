@@ -16,7 +16,9 @@ on:
 jobs:
   build-matrix-docker-image-config:
     name: Generate Build Matrix for runners
-    uses: ./.github/workflows/matrix-docker-image-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["docker_image_config"]'
     permissions:
       contents: read
 
@@ -29,7 +31,8 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix) }}
+      matrix:
+        include: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix).docker_image_config.include }}
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6

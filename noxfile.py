@@ -5,7 +5,6 @@ import shutil
 import stat
 import subprocess
 from argparse import ArgumentParser
-from importlib.metadata import version
 from inspect import cleandoc
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -18,9 +17,12 @@ import requests
 from nox import Session
 
 from noxconfig import (
+    _build_docker_img_tag,
+    _build_docker_prefix_tag,
     PROJECT_CONFIG,
     PlatformConfig,
-    PlatformConfigs, _INTEGRATION_TEST_RUNNER_VERSION,
+    PlatformConfigs,
+    _INTEGRATION_TEST_RUNNER_VERSION,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -193,50 +195,6 @@ def build_standalone_binary(session: nox.Session):
         session.error("PyInstaller needs a valid executable-name")
     else:
         _build_binary(exe_name, cleanup, session)
-
-
-def _build_docker_prefix_tag():
-    __version__ = version("exasol-script-languages-package-management")
-
-    return f"exaslpm-{__version__}-ubuntu"
-
-
-def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
-    return f"{_build_docker_prefix_tag()}-{ubuntu_version}-{docker_tag_suffix}"
-
-
-@nox.session(name="matrix:docker-image-config", python=False)
-def docker_image_config(_):
-    """
-    Returns configuration for the GitHub runner which builds the Docker images.
-    Each entry consists of "runner" (e.g. ubuntu-24.04), "base_img" (e.g. ubuntu:24.04)
-    and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
-    Thus, there will be one configuration per supported ubuntu version and supported platform.
-    """
-    runner_ubuntu = min(PROJECT_CONFIG.supported_ubuntu_versions)
-
-    def _build_docker_build_image_config(
-            runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
-    ):
-        return {
-            "runner": f"ubuntu-{runner_ubuntu}{runner_suffix}",
-            "base_img": f"ubuntu:{ubuntu_version}",
-            "complete_docker_tag": _build_docker_img_tag(
-                ubuntu_version, docker_tag_suffix
-            ),
-        }
-
-    docker_image_config = [
-        _build_docker_build_image_config(
-            runner_suffix=platform.runner_suffix,
-            ubuntu_version=ubuntu_version,
-            docker_tag_suffix=platform.docker_tag_suffix,
-        )
-        for platform in PROJECT_CONFIG.supported_platforms
-        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
-    ]
-
-    print(json.dumps({"include": docker_image_config}))
 
 
 def _push_image_safe(client, repository, tag, auth_config):
