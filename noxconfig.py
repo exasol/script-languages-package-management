@@ -5,7 +5,10 @@ from importlib.metadata import version
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
-from pydantic import BaseModel, computed_field
+from pydantic import (
+    BaseModel,
+    computed_field,
+)
 
 
 class PlatformConfig(BaseModel):

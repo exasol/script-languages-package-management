@@ -8,21 +8,21 @@ from inspect import cleandoc
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import PyInstaller.__main__
 import docker
-import requests
 import nox
+import PyInstaller.__main__
+import requests
 
 # imports all nox task provided by the toolbox
 from exasol.toolbox.nox.tasks import *  # pylint: disable=wildcard-import disable=unused-wildcard-import
 from nox import Session
 
 from noxconfig import (
-    _build_docker_img_tag,
-    _build_docker_prefix_tag,
     PROJECT_CONFIG,
     PlatformConfig,
     PlatformConfigs,
+    _build_docker_img_tag,
+    _build_docker_prefix_tag,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -311,11 +311,11 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
 
 
 def _run_exaslpm_in_docker_container(
-        run_message: str,
-        docker_args: list[str],
-        complete_docker_tag,
-        repository,
-        session: Session,
+    run_message: str,
+    docker_args: list[str],
+    complete_docker_tag,
+    repository,
+    session: Session,
 ):
     # Test exaslpm env variable before we push the image to DockerHub
     session.log(run_message)
@@ -327,9 +327,9 @@ def _run_exaslpm_in_docker_container(
         silent=True,
     )
     if (
-            not exaslpm_help_string
-            or "EXASLPM - Exasol Script Languages Package Management"
-            not in exaslpm_help_string
+        not exaslpm_help_string
+        or "EXASLPM - Exasol Script Languages Package Management"
+        not in exaslpm_help_string
     ):
         session.error(
             f"{run_message} did not succeed. \noutput:\n'{exaslpm_help_string}'"
