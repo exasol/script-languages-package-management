@@ -14,7 +14,9 @@ on:
 jobs:
   build-matrix-executable-config:
     name: Generate Build Matrix for building executable
-    uses: ./.github/workflows/matrix-build-executable-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["build_executable_config"]'
     permissions:
       contents: read
 
@@ -26,11 +28,12 @@ jobs:
       labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix) }}
+      matrix:
+        include: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix).build_executable_config.include }}
     permissions:
       contents: write
     env:
-      BINARY_NAME: "exaslpm_linux_${{matrix.binary-suffix}}"
+      BINARY_NAME: "exaslpm_linux_${{matrix.binary_suffix}}"
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6

@@ -73,6 +73,21 @@ class Config(BaseConfig):
             ]
         }
 
+    @computed_field  # type: ignore[misc]
+    @property
+    def build_executable_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for executable builds."""
+        min_ubuntu_version = min(self.supported_ubuntu_versions)
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{min_ubuntu_version}{platform.runner_suffix}",
+                    "binary_suffix": platform.docker_tag_suffix,
+                }
+                for platform in self.supported_platforms
+            ]
+        }
+
 
 PROJECT_CONFIG = Config(
     root_path=Path(__file__).parent,
