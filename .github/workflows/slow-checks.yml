@@ -6,7 +6,9 @@ on:
 jobs:
   build-matrix-binary-int-test-config:
     name: Generate Build Matrix for binary integration tests
-    uses: ./.github/workflows/matrix-binary-int-test-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["binary_int_test_config"]'
     permissions:
       contents: read
 
@@ -19,7 +21,7 @@ jobs:
       contents: read
 
   binary-tests:
-    name: Binary-Integration-Tests (Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
+    name: Binary-Integration-Tests (Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu_img_int_test}})
     needs:
       - build-matrix-binary-int-test-config
     runs-on: ${{ matrix.runner }}
@@ -29,7 +31,8 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-binary-int-test-config.outputs.matrix) }}
+      matrix:
+        include: ${{ fromJson(needs.build-matrix-binary-int-test-config.outputs.matrix).binary_int_test_config.include }}
 
     steps:
       - name: Check out Repository
@@ -49,13 +52,13 @@ jobs:
 
       - name: Run Binary Integration Tests
         id: run-binary-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "via_binary"
 
       - name: Upload Artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-binary-slow
+          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-binary-slow
           path: .coverage
           include-hidden-files: true
 

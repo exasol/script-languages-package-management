@@ -58,6 +58,21 @@ class Config(BaseConfig):
             ]
         }
 
+    @computed_field  # type: ignore[misc]
+    @property
+    def binary_int_test_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for binary integration tests."""
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+                    "ubuntu_img_int_test": int_test_cfg.ubuntu_base_version_docker_test_image,
+                }
+                for platform in self.supported_platforms
+                for int_test_cfg in self.integration_test_config
+            ]
+        }
+
 
 PROJECT_CONFIG = Config(
     root_path=Path(__file__).parent,

@@ -195,19 +195,6 @@ def build_standalone_binary(session: nox.Session):
         _build_binary(exe_name, cleanup, session)
 
 
-@nox.session(name="matrix:binary-int-test-config", python=False)
-def matrix_binary_int_test_config(_):
-    config = [
-        {
-            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
-            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
-        }
-        for platform in PROJECT_CONFIG.supported_platforms
-        for int_test_cfg in PROJECT_CONFIG.integration_test_config
-    ]
-    print(json.dumps({"include": config}))
-
-
 def _build_docker_prefix_tag():
     __version__ = version("exasol-script-languages-package-management")
 
