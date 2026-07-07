@@ -31,8 +31,7 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      matrix:
-        include: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix).docker_image_config.include }}
+      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix).docker_image_config[0] }}
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6

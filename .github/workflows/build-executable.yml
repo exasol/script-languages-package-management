@@ -28,8 +28,7 @@ jobs:
       labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        include: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix).build_executable_config.include }}
+      matrix: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix).build_executable_config[0] }}
     permissions:
       contents: write
     env:
