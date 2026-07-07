@@ -53,7 +53,7 @@ jobs:
 
       - name: Run Binary Integration Tests
         id: run-binary-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "via_binary" # zizmor: ignore[template-injection] - matrix values are controlled by this workflow's generated matrix
 
       - name: Upload Artifacts
         id: upload-artifacts
@@ -93,7 +93,7 @@ jobs:
 
       - name: Run Package Integration Tests
         id: run-package-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "not via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "not via_binary" # zizmor: ignore[template-injection] - matrix values are controlled by this workflow's generated matrix
 
       - name: Upload Artifacts
         id: upload-artifacts
