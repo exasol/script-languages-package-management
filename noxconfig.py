@@ -4,7 +4,7 @@ from enum import Enum
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 
 
 class PlatformConfig(BaseModel):
@@ -17,10 +17,13 @@ class PlatformConfigs(Enum):
     ARM = PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm")
 
 
+_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
+
+
 class IntegrationTestConfig(BaseModel):
     """
     Ubuntu version to use for the target docker image in integration tests.
-    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION in noxfile.py.
+    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION.
     """
 
     ubuntu_base_version_docker_test_image: str
@@ -37,6 +40,23 @@ class Config(BaseConfig):
         IntegrationTestConfig(ubuntu_base_version_docker_test_image="24.04"),
         IntegrationTestConfig(ubuntu_base_version_docker_test_image="26.04"),
     ]
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def int_test_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for package integration tests."""
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+                    "python_version": python_version,
+                    "ubuntu_img_int_test": int_test_cfg.ubuntu_base_version_docker_test_image,
+                }
+                for platform in self.supported_platforms
+                for int_test_cfg in self.integration_test_config
+                for python_version in self.python_versions
+            ]
+        }
 
 
 PROJECT_CONFIG = Config(

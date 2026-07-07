@@ -10,20 +10,17 @@ from inspect import cleandoc
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import PyInstaller.__main__
 import docker
 import nox
-import PyInstaller.__main__
 import requests
-
 # imports all nox task provided by the toolbox
-from exasol.toolbox.nox.tasks import *
 from nox import Session
 
 from noxconfig import (
     PROJECT_CONFIG,
-    IntegrationTestConfig,
     PlatformConfig,
-    PlatformConfigs,
+    PlatformConfigs, _INTEGRATION_TEST_RUNNER_VERSION,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -85,7 +82,6 @@ def _build_binary(exe_name: str, clean_up, session: nox.Session):
 
 
 _BUILD_CONTAINER_IMAGE = "almalinux:8"
-_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
 _BUILD_IMAGE_TAG = "exaslpm-binary-build:latest"
 
 
@@ -183,7 +179,6 @@ def build_binary_in_container(session: nox.Session):
 
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
-
     p = ArgumentParser(
         usage='nox -s build-standalone-binary -- --executable-name "exaslpm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -198,28 +193,6 @@ def build_standalone_binary(session: nox.Session):
         session.error("PyInstaller needs a valid executable-name")
     else:
         _build_binary(exe_name, cleanup, session)
-
-
-@nox.session(name="matrix:int-test-config", python=False)
-def matrix_int_test_config(_):
-    def _build_config(
-        int_test_cfg: IntegrationTestConfig,
-        platform: PlatformConfig,
-        python_version: str,
-    ) -> dict[str, str]:
-        return {
-            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
-            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
-            "python-version": python_version,
-        }
-
-    config = [
-        _build_config(int_test_cfg, platform, python_version)
-        for platform in PROJECT_CONFIG.supported_platforms
-        for int_test_cfg in PROJECT_CONFIG.integration_test_config
-        for python_version in PROJECT_CONFIG.python_versions
-    ]
-    print(json.dumps({"include": config}))
 
 
 @nox.session(name="matrix:binary-int-test-config", python=False)
@@ -244,8 +217,8 @@ def _build_docker_prefix_tag():
 @nox.session(name="matrix:executable-build-config", python=False)
 def matrix_executable_build_config(_):
     def _build_config(
-        ubuntu_version: str,
-        platform: PlatformConfig,
+            ubuntu_version: str,
+            platform: PlatformConfig,
     ) -> dict[str, str]:
         return {
             "runner": f"ubuntu-{ubuntu_version}{platform.runner_suffix}",
@@ -276,7 +249,7 @@ def docker_image_config(_):
     runner_ubuntu = min(PROJECT_CONFIG.supported_ubuntu_versions)
 
     def _build_docker_build_image_config(
-        runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
+            runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
     ):
         return {
             "runner": f"ubuntu-{runner_ubuntu}{runner_suffix}",
@@ -413,11 +386,11 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
 
 
 def _run_exaslpm_in_docker_container(
-    run_message: str,
-    docker_args: list[str],
-    complete_docker_tag,
-    repository,
-    session: Session,
+        run_message: str,
+        docker_args: list[str],
+        complete_docker_tag,
+        repository,
+        session: Session,
 ):
     # Test exaslpm env variable before we push the image to DockerHub
     session.log(run_message)
@@ -429,9 +402,9 @@ def _run_exaslpm_in_docker_container(
         silent=True,
     )
     if (
-        not exaslpm_help_string
-        or "EXASLPM - Exasol Script Languages Package Management"
-        not in exaslpm_help_string
+            not exaslpm_help_string
+            or "EXASLPM - Exasol Script Languages Package Management"
+            not in exaslpm_help_string
     ):
         session.error(
             f"{run_message} did not succeed. \noutput:\n'{exaslpm_help_string}'"
