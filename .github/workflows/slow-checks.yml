@@ -6,18 +6,22 @@ on:
 jobs:
   build-matrix-binary-int-test-config:
     name: Generate Build Matrix for binary integration tests
-    uses: ./.github/workflows/matrix-binary-int-test-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["binary_int_test_config"]'
     permissions:
       contents: read
 
   build-matrix-int-test-config:
     name: Generate Build Matrix for package integration tests
-    uses: ./.github/workflows/matrix-int-test-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["int_test_config"]'
     permissions:
       contents: read
 
   binary-tests:
-    name: Binary-Integration-Tests (Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
+    name: Binary-Integration-Tests (Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu_img_int_test}})
     needs:
       - build-matrix-binary-int-test-config
     runs-on: ${{ matrix.runner }}
@@ -27,16 +31,18 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-binary-int-test-config.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.build-matrix-binary-int-test-config.outputs.matrix).binary_int_test_config[0] }}
 
     steps:
       - name: Check out Repository
         id: check-out-repository
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set up Python & Poetry Environment
         id: set-up-python-and-poetry-environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v7
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
@@ -47,18 +53,19 @@ jobs:
 
       - name: Run Binary Integration Tests
         id: run-binary-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "via_binary" # zizmor: ignore[template-injection] - matrix values are controlled by this workflow's generated matrix
 
       - name: Upload Artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-binary-slow
+          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-binary-slow
           path: .coverage
           include-hidden-files: true
+          overwrite: false
 
   package-tests:
-    name: Package-Integration-Tests (Python-${{ matrix.python-version }} Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu-img-int-test}})
+    name: Package-Integration-Tests (Python-${{ matrix.python_version }} Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu_img_int_test}})
     needs:
       - build-matrix-int-test-config
     runs-on: ${{ matrix.runner }}
@@ -68,28 +75,31 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-int-test-config.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.build-matrix-int-test-config.outputs.matrix).int_test_config[0] }}
 
     steps:
       - name: Check out Repository
         id: check-out-repository
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Set up Python & Poetry Environment
         id: set-up-python-and-poetry-environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v7
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.python_version }}
           poetry-version: "2.3.0"
 
       - name: Run Package Integration Tests
         id: run-package-integration-tests
-        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu-img-int-test}} -m "not via_binary"
+        run: poetry run -- nox -s test:integration -- --coverage --test-image-ubuntu-version ${{matrix.ubuntu_img_int_test}} -m "not via_binary" # zizmor: ignore[template-injection] - matrix values are controlled by this workflow's generated matrix
 
       - name: Upload Artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-python${{ matrix.python-version }}-${{matrix.runner}}-${{matrix.ubuntu-img-int-test}}-package-slow
+          name: coverage-python${{ matrix.python_version }}-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-package-slow
           path: .coverage
           include-hidden-files: true
+          overwrite: false

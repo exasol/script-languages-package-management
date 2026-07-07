@@ -1,11 +1,9 @@
 import argparse
-import json
 import os
 import shutil
 import stat
 import subprocess
 from argparse import ArgumentParser
-from importlib.metadata import version
 from inspect import cleandoc
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -16,14 +14,15 @@ import PyInstaller.__main__
 import requests
 
 # imports all nox task provided by the toolbox
-from exasol.toolbox.nox.tasks import *
+from exasol.toolbox.nox.tasks import *  # pylint: disable=wildcard-import disable=unused-wildcard-import
 from nox import Session
 
 from noxconfig import (
     PROJECT_CONFIG,
-    IntegrationTestConfig,
     PlatformConfig,
     PlatformConfigs,
+    _build_docker_img_tag,
+    _build_docker_prefix_tag,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
@@ -85,7 +84,6 @@ def _build_binary(exe_name: str, clean_up, session: nox.Session):
 
 
 _BUILD_CONTAINER_IMAGE = "almalinux:8"
-_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
 _BUILD_IMAGE_TAG = "exaslpm-binary-build:latest"
 
 
@@ -183,7 +181,6 @@ def build_binary_in_container(session: nox.Session):
 
 @nox.session(name="build-standalone-binary", python=False)
 def build_standalone_binary(session: nox.Session):
-
     p = ArgumentParser(
         usage='nox -s build-standalone-binary -- --executable-name "exaslpm"',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -198,105 +195,6 @@ def build_standalone_binary(session: nox.Session):
         session.error("PyInstaller needs a valid executable-name")
     else:
         _build_binary(exe_name, cleanup, session)
-
-
-@nox.session(name="matrix:int-test-config", python=False)
-def matrix_int_test_config(_):
-    def _build_config(
-        int_test_cfg: IntegrationTestConfig,
-        platform: PlatformConfig,
-        python_version: str,
-    ) -> dict[str, str]:
-        return {
-            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
-            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
-            "python-version": python_version,
-        }
-
-    config = [
-        _build_config(int_test_cfg, platform, python_version)
-        for platform in PROJECT_CONFIG.supported_platforms
-        for int_test_cfg in PROJECT_CONFIG.integration_test_config
-        for python_version in PROJECT_CONFIG.python_versions
-    ]
-    print(json.dumps({"include": config}))
-
-
-@nox.session(name="matrix:binary-int-test-config", python=False)
-def matrix_binary_int_test_config(_):
-    config = [
-        {
-            "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
-            "ubuntu-img-int-test": int_test_cfg.ubuntu_base_version_docker_test_image,
-        }
-        for platform in PROJECT_CONFIG.supported_platforms
-        for int_test_cfg in PROJECT_CONFIG.integration_test_config
-    ]
-    print(json.dumps({"include": config}))
-
-
-def _build_docker_prefix_tag():
-    __version__ = version("exasol-script-languages-package-management")
-
-    return f"exaslpm-{__version__}-ubuntu"
-
-
-@nox.session(name="matrix:executable-build-config", python=False)
-def matrix_executable_build_config(_):
-    def _build_config(
-        ubuntu_version: str,
-        platform: PlatformConfig,
-    ) -> dict[str, str]:
-        return {
-            "runner": f"ubuntu-{ubuntu_version}{platform.runner_suffix}",
-            "binary-suffix": platform.docker_tag_suffix,
-        }
-
-    min_ubuntu_version = min(PROJECT_CONFIG.supported_ubuntu_versions)
-
-    config = [
-        _build_config(min_ubuntu_version, platform)
-        for platform in PROJECT_CONFIG.supported_platforms
-    ]
-    print(json.dumps({"include": config}))
-
-
-def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str):
-    return f"{_build_docker_prefix_tag()}-{ubuntu_version}-{docker_tag_suffix}"
-
-
-@nox.session(name="matrix:docker-image-config", python=False)
-def docker_image_config(_):
-    """
-    Returns configuration for the GitHub runner which builds the Docker images.
-    Each entry consists of "runner" (e.g. ubuntu-24.04), "base_img" (e.g. ubuntu:24.04)
-    and "complete_docker_tag" (e.g. "exaslpm-ubuntu-24.04-x86_64").
-    Thus, there will be one configuration per supported ubuntu version and supported platform.
-    """
-    runner_ubuntu = min(PROJECT_CONFIG.supported_ubuntu_versions)
-
-    def _build_docker_build_image_config(
-        runner_suffix: str, ubuntu_version: str, docker_tag_suffix: str
-    ):
-        return {
-            "runner": f"ubuntu-{runner_ubuntu}{runner_suffix}",
-            "base_img": f"ubuntu:{ubuntu_version}",
-            "complete_docker_tag": _build_docker_img_tag(
-                ubuntu_version, docker_tag_suffix
-            ),
-        }
-
-    docker_image_config = [
-        _build_docker_build_image_config(
-            runner_suffix=platform.runner_suffix,
-            ubuntu_version=ubuntu_version,
-            docker_tag_suffix=platform.docker_tag_suffix,
-        )
-        for platform in PROJECT_CONFIG.supported_platforms
-        for ubuntu_version in PROJECT_CONFIG.supported_ubuntu_versions
-    ]
-
-    print(json.dumps({"include": docker_image_config}))
 
 
 def _push_image_safe(client, repository, tag, auth_config):

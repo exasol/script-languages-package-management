@@ -16,7 +16,9 @@ on:
 jobs:
   build-matrix-docker-image-config:
     name: Generate Build Matrix for runners
-    uses: ./.github/workflows/matrix-docker-image-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["docker_image_config"]'
     permissions:
       contents: read
 
@@ -29,21 +31,21 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix) }}
-
-
+      matrix: ${{ fromJson(needs.build-matrix-docker-image-config.outputs.matrix).docker_image_config[0] }}
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v6
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
 
       - name: Build and Push "${{env.REPO_NAME}}:${{matrix.complete_docker_tag}}"
-        run: poetry run -- nox -s build-docker-image-from-latest-gh-release -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}"
+        run: poetry run -- nox -s build-docker-image-from-latest-gh-release -- --base-img "${{matrix.base_img}}" --repository "$REPO_NAME" --complete-docker-tag "${{matrix.complete_docker_tag}}" # zizmor: ignore[template-injection] - matrix values are controlled by this workflow's generated matrix
         env:
           DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
@@ -55,13 +57,14 @@ jobs:
       - build
     permissions:
       contents: read
-
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v6
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
@@ -72,7 +75,6 @@ jobs:
           DOCKER_USERNAME: ${{ secrets.CI4_DOCKERHUB_USERNAME }}
           DOCKER_PASSWORD: ${{ secrets.CI4_DOCKERHUB_TOKEN }}
 
-
   report:
     if: ${{ failure() }}
     needs:
@@ -80,10 +82,12 @@ jobs:
       - build-manifest
     name: Report status to slack
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
     steps:
       - name: Report failure Status to Slack channel
         id: report-failure-status-slack
-        uses: ravsamhq/notify-slack-action@v2
+        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # 2.5.0
         with:
           status: failure
           token: ${{ secrets.GITHUB_TOKEN }}

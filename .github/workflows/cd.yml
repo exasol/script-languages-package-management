@@ -1,3 +1,6 @@
+# This is nearly completely generated except for `tags` `'!latest'`.
+# This will be resolved in:
+#   https://github.com/exasol/script-languages-package-management/issues/149
 name: CD
 
 on:
@@ -24,12 +27,11 @@ jobs:
     secrets:
       PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
-  standalone-executable:
-    needs: [build-and-publish]
-    name: Create a standalone linux executable
-    uses: ./.github/workflows/build-executable.yml
-    with:
-      release-tag: ${{ github.ref_name }}
+  cd-extension:
+    name: Extension
+    uses: ./.github/workflows/cd-extension.yml
+    needs:
+      - build-and-publish
     permissions:
       contents: write
 

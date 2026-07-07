@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 from enum import Enum
+from importlib.metadata import version
 from pathlib import Path
 
 from exasol.toolbox.config import BaseConfig
-from pydantic import BaseModel
+from pydantic import (
+    BaseModel,
+    computed_field,
+)
 
 
 class PlatformConfig(BaseModel):
@@ -17,10 +21,13 @@ class PlatformConfigs(Enum):
     ARM = PlatformConfig(docker_tag_suffix="arm64", runner_suffix="-arm")
 
 
+_INTEGRATION_TEST_RUNNER_VERSION = "22.04"
+
+
 class IntegrationTestConfig(BaseModel):
     """
     Ubuntu version to use for the target docker image in integration tests.
-    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION in noxfile.py.
+    The runner version is fixed via _INTEGRATION_TEST_RUNNER_VERSION.
     """
 
     ubuntu_base_version_docker_test_image: str
@@ -37,6 +44,81 @@ class Config(BaseConfig):
         IntegrationTestConfig(ubuntu_base_version_docker_test_image="24.04"),
         IntegrationTestConfig(ubuntu_base_version_docker_test_image="26.04"),
     ]
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def int_test_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for package integration tests."""
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+                    "python_version": python_version,
+                    "ubuntu_img_int_test": int_test_cfg.ubuntu_base_version_docker_test_image,
+                }
+                for platform in self.supported_platforms
+                for int_test_cfg in self.integration_test_config
+                for python_version in self.python_versions
+            ]
+        }
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def binary_int_test_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for binary integration tests."""
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{_INTEGRATION_TEST_RUNNER_VERSION}{platform.runner_suffix}",
+                    "ubuntu_img_int_test": int_test_cfg.ubuntu_base_version_docker_test_image,
+                }
+                for platform in self.supported_platforms
+                for int_test_cfg in self.integration_test_config
+            ]
+        }
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def build_executable_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for executable builds."""
+        min_ubuntu_version = min(self.supported_ubuntu_versions)
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{min_ubuntu_version}{platform.runner_suffix}",
+                    "binary_suffix": platform.docker_tag_suffix,
+                }
+                for platform in self.supported_platforms
+            ]
+        }
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def docker_image_config(self) -> dict[str, list[dict[str, str]]]:
+        """Matrix include entries for Docker image builds."""
+        runner_ubuntu = min(self.supported_ubuntu_versions)
+        return {
+            "include": [
+                {
+                    "runner": f"ubuntu-{runner_ubuntu}{platform.runner_suffix}",
+                    "base_img": f"ubuntu:{ubuntu_version}",
+                    "complete_docker_tag": _build_docker_img_tag(
+                        ubuntu_version, platform.docker_tag_suffix
+                    ),
+                }
+                for platform in self.supported_platforms
+                for ubuntu_version in self.supported_ubuntu_versions
+            ]
+        }
+
+
+def _build_docker_prefix_tag() -> str:
+    __version__ = version("exasol-script-languages-package-management")
+    return f"exaslpm-{__version__}-ubuntu"
+
+
+def _build_docker_img_tag(ubuntu_version: str, docker_tag_suffix: str) -> str:
+    return f"{_build_docker_prefix_tag()}-{ubuntu_version}-{docker_tag_suffix}"
 
 
 PROJECT_CONFIG = Config(

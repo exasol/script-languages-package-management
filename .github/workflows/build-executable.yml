@@ -9,12 +9,14 @@ on:
         required: true
 
   workflow_dispatch:
-    #No input parameter. We want to avoid the possibility to override artificats for existing releases
+    # No input parameter. We want to avoid the possibility to override artifacts for existing releases
 
 jobs:
   build-matrix-executable-config:
     name: Generate Build Matrix for building executable
-    uses: ./.github/workflows/matrix-build-executable-config.yml
+    uses: ./.github/workflows/matrix.yml
+    with:
+      matrix_keys_json: '["build_executable_config"]'
     permissions:
       contents: read
 
@@ -26,17 +28,19 @@ jobs:
       labels: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.build-matrix-executable-config.outputs.matrix).build_executable_config[0] }}
     permissions:
       contents: write
     env:
-      BINARY_NAME: "exaslpm_linux_${{matrix.binary-suffix}}"
+      BINARY_NAME: "exaslpm_linux_${{matrix.binary_suffix}}"
     steps:
       - name: SCM Checkout
         uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
       - name: Setup Python & Poetry Environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v6
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
@@ -55,6 +59,7 @@ jobs:
 
       - name: Upload to release
         if: ${{ inputs.release-tag != ''}}
-        run: gh release upload ${{ inputs.release-tag }} "dist/$BINARY_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME"
