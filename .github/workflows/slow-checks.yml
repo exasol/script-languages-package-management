@@ -41,7 +41,7 @@ jobs:
 
       - name: Set up Python & Poetry Environment
         id: set-up-python-and-poetry-environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v7
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: "3.10"
           poetry-version: "2.3.0"
@@ -61,6 +61,7 @@ jobs:
           name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-binary-slow
           path: .coverage
           include-hidden-files: true
+          overwrite: false
 
   package-tests:
     name: Package-Integration-Tests (Python-${{ matrix.python_version }} Runner-${{ matrix.runner }} TestImgBase-${{matrix.ubuntu_img_int_test}})
@@ -83,7 +84,7 @@ jobs:
 
       - name: Set up Python & Poetry Environment
         id: set-up-python-and-poetry-environment
-        uses: exasol/python-toolbox/.github/actions/python-environment@v7
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
           python-version: ${{ matrix.python_version }}
           poetry-version: "2.3.0"
@@ -99,3 +100,4 @@ jobs:
           name: coverage-python${{ matrix.python_version }}-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-package-slow
           path: .coverage
           include-hidden-files: true
+          overwrite: false
