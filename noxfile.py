@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 import shutil
 import stat
@@ -11,9 +10,11 @@ from tempfile import TemporaryDirectory
 
 import PyInstaller.__main__
 import docker
-import nox
 import requests
+import nox
+
 # imports all nox task provided by the toolbox
+from exasol.toolbox.nox.tasks import *  # pylint: disable=wildcard-import disable=unused-wildcard-import
 from nox import Session
 
 from noxconfig import (
@@ -22,7 +23,6 @@ from noxconfig import (
     PROJECT_CONFIG,
     PlatformConfig,
     PlatformConfigs,
-    _INTEGRATION_TEST_RUNNER_VERSION,
 )
 
 # default actions to be run if nothing is explicitly specified with the -s option
