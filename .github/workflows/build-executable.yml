@@ -60,6 +60,7 @@ jobs:
 
       - name: Upload to release
         if: ${{ inputs.release-tag != ''}}
-        run: gh release upload ${{ inputs.release-tag }} "dist/$BINARY_NAME"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME"
