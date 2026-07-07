@@ -1,5 +1,6 @@
-# Generated and maintained by the exasol-toolbox.
-# Last generated with exasol-toolbox version 10.2.0.
+# This is nearly completely generated except for `tags` `'!latest'`.
+# This will be resolved in:
+#   https://github.com/exasol/script-languages-package-management/issues/149
 name: CD
 
 on:
