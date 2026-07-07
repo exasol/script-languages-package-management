@@ -1,0 +1,122 @@
+# Generated and maintained by the exasol-toolbox.
+# Last generated with exasol-toolbox version 10.2.0.
+name: Dependency Update
+
+on:
+  schedule:
+    # Every Monday at 03:00 UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  dependency-update:
+    name: Dependency Update
+    runs-on: "ubuntu-24.04"
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check out Repository
+        id: check-out-repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Fail if not running on the default branch
+        id: check-branch
+        if: github.ref != format('refs/heads/{0}', github.event.repository.default_branch)
+        env:
+          CURRENT_BRANCH: ${{ github.ref }}
+        run: |
+          echo "Not running on the default branch. Current ref is: $CURRENT_BRANCH"
+          exit 1
+
+      - name: Set up Python & Poetry Environment
+        id: set-up-python-and-poetry-environment
+        uses: exasol/python-toolbox/.github/actions/python-environment@v10
+        with:
+          python-version: "3.10"
+          poetry-version: "2.3.0"
+
+      - name: Configure git
+        id: configure-git
+        run: |
+          git config --global user.email "opensource@exasol.com"
+          git config --global user.name "Automatic Dependency Updater"
+
+      - name: Create branch
+        id: create-branch
+        run: |
+          branch_name="dependency-update/$(date "+%Y-%m-%d")"
+          echo "Creating branch $branch_name"
+          git switch -C "$branch_name"
+
+      - name: Record current commit
+        id: record-current-commit
+        run: |
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Update Dependencies
+        id: update-dependencies
+        run: |
+          poetry self add poetry-plugin-export
+          poetry run -- nox -s vulnerabilities:update -- vulnerabilities.json
+          cat vulnerabilities.json
+
+      - name: Check for New Commit
+        id: check-for-new-commit
+        env:
+          PRE_UPDATE_HEAD_SHA: ${{ steps.record-current-commit.outputs.head_sha }}
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$PRE_UPDATE_HEAD_SHA" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push Changes
+        id: publish-branch
+        if: steps.check-for-new-commit.outputs.changed == 'true'
+        run: |
+          branch_name=$(git rev-parse --abbrev-ref HEAD)
+          git push --set-upstream origin "$branch_name"
+
+      - name: Create Pull Request
+        id: create-pr
+        if: steps.check-for-new-commit.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BASE_BRANCH=$(gh repo view --json defaultBranchRef -q .defaultBranchRef.name)
+          DEPENDENCY_UPDATE_REPORT="$(cat vulnerabilities.json)"
+
+          PR_BODY="Automated dependency update for \`poetry.lock\`.
+          This PR was created by the workflow \`dependency-update.yml\`
+
+          Remaining vulnerable dependencies after the automated update:
+          \`\`\`json
+          ${DEPENDENCY_UPDATE_REPORT}
+          \`\`\`
+          "
+
+          PR_URL=$(gh pr create \
+                      --base "$BASE_BRANCH" \
+                      --label "security" \
+                      --title "Update dependencies to fix vulnerabilities ($(date '+%Y-%m-%d'))" \
+                      --body "$PR_BODY")
+
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Report New Pull Request to Slack Channel
+        id: report-pr-slack
+        if: ${{ steps.create-pr.outputs.pr_url }}
+        uses: ravsamhq/notify-slack-action@be814b201e233b2dc673608aa46e5447c8ab13f2 # 2.5.0
+        with:
+          status: '${{ job.status }}'
+          token: '${{ secrets.GITHUB_TOKEN }}'
+          notification_title: 'Dependency update for {repo} created a Pull Request'
+          message_format: '{workflow} created Pull Request ${{ steps.create-pr.outputs.pr_url }}'
+        env:
+          SLACK_WEBHOOK_URL: '${{ secrets.INTEGRATION_TEAM_SECURITY_UPDATES_WEBHOOK }}'

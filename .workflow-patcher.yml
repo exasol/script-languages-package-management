@@ -1,0 +1,12 @@
+workflows:
+  - name: build-and-publish
+    step_customizations:
+      - action: INSERT_AFTER
+        job: build-and-publish
+        step_id: publish-release-to-github
+        content:
+          - name: GitHub Latest tag
+            id: push-latest-tag
+            run: |
+              git tag -f latest
+              git push --force origin latest
