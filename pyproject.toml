@@ -25,7 +25,7 @@ homepage = "https://github.com/exasol/script-languages-package-management"
 [dependency-groups]
 
 dev = [
-    "exasol-toolbox >=7.0.0, <8",
+    "exasol-toolbox >=10.2.0, <11",
     "pyinstaller >=6.20.0, <7.0.0",
     "types-pyinstaller >=6.19.0.20260408, <7.0.0.0",
     "types-requests >=2.33.0.20260408, <3.0.0",
