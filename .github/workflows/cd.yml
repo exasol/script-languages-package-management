@@ -1,6 +1,5 @@
-# This is nearly completely generated except for `tags` `'!latest'`.
-# This will be resolved in:
-#   https://github.com/exasol/script-languages-package-management/issues/149
+# Generated and maintained by the exasol-toolbox.
+# Last generated with exasol-toolbox version 10.2.1.
 name: CD
 
 on:
@@ -31,6 +30,7 @@ jobs:
     name: Extension
     uses: ./.github/workflows/cd-extension.yml
     needs:
+      - check-release-tag
       - build-and-publish
     permissions:
       contents: write
