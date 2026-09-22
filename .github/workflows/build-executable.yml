@@ -14,7 +14,7 @@ on:
 jobs:
   build-matrix-executable-config:
     name: Generate Build Matrix for building executable
-    uses: ./.github/workflows/matrix.yml
+    uses: $/.github/workflows/matrix.yml
     with:
       matrix_keys_json: '["build_executable_config"]'
     permissions:
