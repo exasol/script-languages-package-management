@@ -265,6 +265,7 @@ def build_docker_image_from_latest_gh_release(session: nox.Session):
 
         dockerfile_content = cleandoc(f"""
         FROM {base_img}
+        RUN apt-get -y update && apt-get -y upgrade
         COPY exaslpm {exaslpm_target_path}/
         ENV PATH="${{PATH}}:{exaslpm_target_path}"
         ENV EXASLPM={exaslpm_target_path}/exaslpm
