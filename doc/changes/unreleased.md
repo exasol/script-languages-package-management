@@ -9,4 +9,4 @@
  - #145: Add a version parameter and version to help message
  - #148: Update to exasol-toolbox 10.2.0
  - #149: Update to exasol-toolbox 10.2.1 and restore check-workflows in checks.yml
- - Run `apt-get -y update && apt-get -y upgrade` when creating the exaslpm base image 
+ - Run `apt-get -y update && apt-get -y upgrade` when creating the exaslpm base image
