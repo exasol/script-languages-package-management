@@ -8,7 +8,7 @@ Update project dependencies to their latest compatible versions.
 
 Update Nox configuration and CI workflows to run on Python 3.11 or newer.
 
-Use the available `ca-certificates` package in integration tests instead of a stale version pin.
+Update the integration-test `ca-certificates` pins to the current Ubuntu package versions.
 
 ## Security Issues
 

@@ -44,7 +44,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="*"
+            name="ca-certificates", version="20260816ubuntu0.26.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.12ubuntu*"),
         "git": AptPackage(name="git", version="1:2.53.0-1ubuntu*"),
@@ -74,7 +74,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="*"
+            name="ca-certificates", version="20260816ubuntu0.24.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.10ubuntu*"),
         "git": AptPackage(name="git", version="1:2.43.0-1ubuntu*"),
@@ -103,7 +103,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="*"
+            name="ca-certificates", version="20260816ubuntu0.22.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.9ubuntu*"),
         "git": AptPackage(name="git", version="1:2.34.1-1ubuntu*"),
