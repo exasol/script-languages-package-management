@@ -6,6 +6,8 @@ Drop support for Python 3.10; the minimum supported Python version is now 3.11.
 
 Update project dependencies to their latest compatible versions.
 
+Update Nox configuration and CI workflows to run on Python 3.11 or newer.
+
 ## Security Issues
 
 This release fixes vulnerabilities by updating dependencies:
