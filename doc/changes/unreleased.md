@@ -1,6 +1,7 @@
 # Unreleased
 
 ## Summary
+Drop support for Python 3.10; the minimum supported Python version is now 3.11.
 
 ## Refactorings
 
