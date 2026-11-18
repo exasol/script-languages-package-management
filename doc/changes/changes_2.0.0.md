@@ -4,12 +4,6 @@
 
 Drop support for Python 3.10; the minimum supported Python version is now 3.11.
 
-Update project dependencies to their latest compatible versions.
-
-Update Nox configuration and CI workflows to run on Python 3.11 or newer.
-
-Update the integration-test `ca-certificates` pins to the current Ubuntu package versions.
-
 ## Security Issues
 
 This release fixes vulnerabilities by updating dependencies:
@@ -75,6 +69,7 @@ This release fixes vulnerabilities by updating dependencies:
 
 ## Refactorings
 
+ - #155: Drop Python 3.10 support; update dependencies, Nox/CI workflows, and integration-test package pins.
  - #140: Allowed install_pip to run without definition of tools.pip
  - #144: Remove python script in pyproject.toml and changed exaslpm install path
  - #145: Add a version parameter and version to help message
