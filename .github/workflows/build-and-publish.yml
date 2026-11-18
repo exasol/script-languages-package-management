@@ -57,6 +57,10 @@ jobs:
           "$SBOM_NAME"
       - name: GitHub Latest tag
         id: push-latest-tag
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          git tag -f latest
-          git push --force origin latest
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/latest" \
+            -f sha="${GITHUB_SHA}" -F force=true
+          echo "Updated latest tag to ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"

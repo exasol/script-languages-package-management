@@ -9,7 +9,11 @@ on:
         required: true
 
   workflow_dispatch:
-    # No input parameter. We want to avoid the possibility to override artifacts for existing releases
+    inputs:
+      release-tag:
+        type: string
+        description: 'Existing GitHub release tag to upload executables to; leave empty to build only'
+        required: false
 
 jobs:
   build-matrix-executable-config:
@@ -58,7 +62,7 @@ jobs:
         working-directory: ./dist
 
       - name: Upload to release
-        if: ${{ inputs.release-tag != ''}}
+        if: ${{ inputs.release-tag != '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release-tag }}
