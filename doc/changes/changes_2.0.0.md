@@ -4,6 +4,8 @@
 
 Drop support for Python 3.10; the minimum supported Python version is now 3.11.
 
+Other changes: update dependencies, Nox and CI workflows, and integration-test package pins.
+
 ## Security Issues
 
 This release fixes vulnerabilities by updating dependencies:
