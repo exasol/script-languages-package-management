@@ -44,7 +44,7 @@ jobs:
         id: set-up-python-and-poetry-environment
         uses: exasol/python-toolbox/.github/actions/python-environment@v10
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           poetry-version: "2.3.0"
 
       - name: Build binary build image
@@ -59,7 +59,7 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-python3.10-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-binary-slow
+          name: coverage-python3.11-${{matrix.runner}}-${{matrix.ubuntu_img_int_test}}-binary-slow
           path: .coverage
           include-hidden-files: true
           overwrite: false

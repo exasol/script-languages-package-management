@@ -12,7 +12,7 @@ Get the environment up and running.
 
 Requirements
 ~~~~~~~~~~~~
-| Python >= 3.10
+| Python >= 3.11
 | Poetry >= 2.1.0
 | Docker (for running integration tests)
 

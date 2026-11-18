@@ -44,7 +44,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="20260601~26.04.1"
+            name="ca-certificates", version="20260816ubuntu0.26.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.12ubuntu*"),
         "git": AptPackage(name="git", version="1:2.53.0-1ubuntu*"),
@@ -74,7 +74,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="20260601~24.04.1"
+            name="ca-certificates", version="20260816ubuntu0.24.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.10ubuntu*"),
         "git": AptPackage(name="git", version="1:2.43.0-1ubuntu*"),
@@ -103,7 +103,7 @@ APT_PACKAGE_DEFS = {
             version="1.0.8-*",
         ),
         "ca-certificates": AptPackage(
-            name="ca-certificates", version="20260601~22.04.1"
+            name="ca-certificates", version="20260816ubuntu0.22.04.2"
         ),
         "build-essential": AptPackage(name="build-essential", version="12.9ubuntu*"),
         "git": AptPackage(name="git", version="1:2.34.1-1ubuntu*"),
@@ -491,7 +491,7 @@ def conda_packages_file_content() -> PackageFile:
                                     build="py314*",
                                 ),
                                 CondaPackage(name="pydantic", version="=2.*"),
-                                CondaPackage(name="bazel", version="=8.3.1"),
+                                CondaPackage(name="bazel", version="=8.8.2"),
                             ],
                             binary=CondaBinary.Conda,
                         ),
@@ -684,7 +684,7 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
                             ],
                         ),
                     ),
-                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.3.1"))),
+                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.8.2"))),
                 ],
             ),
         ]
