@@ -4,7 +4,7 @@
 
 Drop support for Python 3.10; the minimum supported Python version is now 3.11.
 
-Other changes: update dependencies, Nox and CI workflows, and integration-test package pins.
+Other refactorings: simplify package installation, improve version reporting, update the Exasol Toolbox and CI workflows, and upgrade packages in the base image.
 
 ## Security Issues
 
