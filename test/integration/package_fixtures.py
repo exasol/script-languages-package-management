@@ -491,7 +491,7 @@ def conda_packages_file_content() -> PackageFile:
                                     build="py314*",
                                 ),
                                 CondaPackage(name="pydantic", version="=2.*"),
-                                CondaPackage(name="bazel", version="=8.3.1"),
+                                CondaPackage(name="bazel", version="=8.8.2"),
                             ],
                             binary=CondaBinary.Conda,
                         ),
@@ -684,7 +684,7 @@ def bazel_file_content(apt_package_with_version: dict[str, AptPackage]) -> Packa
                             ],
                         ),
                     ),
-                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.3.1"))),
+                    Phase(name="phase_2", tools=Tools(bazel=Bazel(version="8.8.2"))),
                 ],
             ),
         ]
