@@ -41,6 +41,7 @@ jobs:
       - name: SCM Checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.release-tag || github.ref }}
           persist-credentials: false
 
       - name: Setup Python & Poetry Environment

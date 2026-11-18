@@ -11,6 +11,11 @@ workflows:
             env:
               GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             run: |
-              gh api --method PATCH "repos/${GITHUB_REPOSITORY}/git/refs/tags/latest" \
-                -f sha="${GITHUB_SHA}" -F force=true
+              ref="repos/${GITHUB_REPOSITORY}/git/refs/tags/latest"
+              if gh api "$ref" >/dev/null 2>&1; then
+                gh api --method PATCH "$ref" -f sha="${GITHUB_SHA}" -F force=true
+              else
+                gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+                  -f ref=refs/tags/latest -f sha="${GITHUB_SHA}"
+              fi
               echo "Updated latest tag to ${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
