@@ -67,4 +67,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release-tag }}
-        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME"
+        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME" --clobber
