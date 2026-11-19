@@ -9,7 +9,11 @@ on:
         required: true
 
   workflow_dispatch:
-    # No input parameter. We want to avoid the possibility to override artifacts for existing releases
+    inputs:
+      release-tag:
+        type: string
+        description: 'Existing GitHub release tag to upload executables to; leave empty to build only'
+        required: false
 
 jobs:
   build-matrix-executable-config:
@@ -37,6 +41,7 @@ jobs:
       - name: SCM Checkout
         uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.release-tag || github.ref }}
           persist-credentials: false
 
       - name: Setup Python & Poetry Environment
@@ -58,8 +63,8 @@ jobs:
         working-directory: ./dist
 
       - name: Upload to release
-        if: ${{ inputs.release-tag != ''}}
+        if: ${{ inputs.release-tag != '' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ inputs.release-tag }}
-        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME"
+        run: gh release upload "$RELEASE_TAG" "dist/$BINARY_NAME" --clobber
